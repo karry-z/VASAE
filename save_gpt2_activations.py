@@ -1,16 +1,18 @@
-import os
 import gc
 import json
-import torch
-import numpy as np
 import logging
-from transformers import GPT2LMHeadModel, GPT2TokenizerFast
+import os
+
+import numpy as np
+import torch
 from datasets import load_dataset
+from transformers import GPT2LMHeadModel, GPT2TokenizerFast
 
 logging.basicConfig(
-    format='[%(levelname)s] %(asctime)s %(message)s',
+    format="[%(levelname)s] %(asctime)s %(message)s",
     level=logging.INFO,
-    datefmt='%Y-%m-%d %H:%M:%S'
+    datefmt="%Y-%m-%d %H:%M:%S",
+    handlers=[logging.StreamHandler(), logging.FileHandler("app.log")],
 )
 
 
@@ -19,8 +21,16 @@ class NumpyActivationCache:
     Efficient activation capture using np.memmap (.dat files) with JSON metadata.
     Automatically pads/truncates to fixed sequence length.
     """
-    def __init__(self, model, layers_to_hook, save_dir, total_examples,
-                 max_length=512, vocab_size=50257):
+
+    def __init__(
+        self,
+        model,
+        layers_to_hook,
+        save_dir,
+        total_examples,
+        max_length=512,
+        vocab_size=50257,
+    ):
         self.model = model
         self.layers_to_hook = layers_to_hook
         self.save_dir = save_dir
@@ -45,6 +55,7 @@ class NumpyActivationCache:
         def make_hook(name):
             def hook(_, __, output):
                 activations[name] = output.detach().cpu()
+
             return hook
 
         for name, module in self.model.named_modules():
@@ -81,7 +92,7 @@ class NumpyActivationCache:
             self.meta[layer] = {
                 "path": path,
                 "shape": list(memmap_shape),
-                "dtype": "float32"
+                "dtype": "float32",
             }
 
         # save metadata JSON
@@ -92,11 +103,13 @@ class NumpyActivationCache:
 
     def register_hooks(self):
         """Register hooks that write activations with padding/truncation."""
+
         def make_hook(layer_name):
             def hook(_, __, output):
                 arr = output.detach().cpu().to(torch.float32).numpy().squeeze(0)
 
                 self._memmaps[layer_name][self.current_example_id] = arr
+
             return hook
 
         for name, module in self.model.named_modules():
@@ -116,12 +129,9 @@ class NumpyActivationCache:
         logging.info("Memmaps flushed to disk.")
 
 
-
-
-
 model_name = "gpt2"
 save_dir = "/mnt/data/gpt2_activations"
-max_length = 512
+max_length = 64
 log_interval = 10
 
 os.makedirs(save_dir, exist_ok=True)
@@ -142,14 +152,22 @@ logging.info(f"Dataset size: {total_examples}")
 layers_to_hook = [n for n, _ in model.named_modules() if "mlp.c_" in n]
 logging.info(f"Hooking {len(layers_to_hook)} layers: {layers_to_hook}")
 
-cache = NumpyActivationCache(model, layers_to_hook, save_dir, total_examples, max_length=max_length)
+cache = NumpyActivationCache(
+    model, layers_to_hook, save_dir, total_examples, max_length=max_length
+)
 
 try:
     for i in range(total_examples):
         cache.current_example_id = i
         ex = ds[i]
         text = f"Context: {ex['context']}\nQuestion: {ex['question']}\nAnswer:"
-        inputs = tokenizer(text, return_tensors="pt", truncation=True, padding="max_length", max_length=max_length).to(device)
+        inputs = tokenizer(
+            text,
+            return_tensors="pt",
+            truncation=True,
+            padding="max_length",
+            max_length=max_length,
+        ).to(device)
 
         with torch.no_grad():
             _ = model(**inputs)
