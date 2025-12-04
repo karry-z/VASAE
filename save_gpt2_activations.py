@@ -130,7 +130,7 @@ class NumpyActivationCache:
 
 
 model_name = "gpt2"
-save_dir = "/mnt/data/gpt2_activations"
+save_dir = "/scratch/b5bq/pu22650.b5bq/gpt2_activations"
 max_length = 64
 log_interval = 10
 

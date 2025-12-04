@@ -1,5 +1,4 @@
 import json
-import logging
 import os
 import pickle
 import random
@@ -15,11 +14,9 @@ from transformers import GPT2LMHeadModel, GPT2TokenizerFast
 from dataset import GPT2LayerActivations
 from vasae import VASAE
 
-logging.basicConfig(
-    format="[%(levelname)s] %(asctime)s %(message)s",
-    level=logging.INFO,
-    datefmt="%Y-%m-%d %H:%M:%S",
-)
+from utils import get_logger, set_seed
+
+logger = get_logger(__file__)
 
 
 def train_model(model, train_loader, test_loader, args):
@@ -87,7 +84,7 @@ class CFG:
     seed = 42
     k = 20  # topk sparsity for SAE
 
-    meta_path = "/mnt/data/gpt2_activations/meta.json"
+    meta_path = "/scratch/b5bq/pu22650.b5bq/gpt2_activations/meta.json"
     layer_name = "transformer.h.5.mlp.c_proj"
     device = "cuda" if torch.cuda.is_available() else "cpu"
     model_name = "gpt2"
@@ -96,15 +93,7 @@ class CFG:
     num_epochs = 20
 
 
-def set_seed(seed=42):
-    random.seed(seed)
-    np.random.seed(seed)
-    torch.manual_seed(seed)
-    torch.cuda.manual_seed(seed)
-    torch.cuda.manual_seed_all(seed)
 
-    torch.backends.cudnn.deterministic = True
-    torch.backends.cudnn.benchmark = False
 
 
 def get_dataloader(meta_path, layer_name, train_bs=32, test_bs=32):
@@ -148,11 +137,11 @@ def main():
             },
             f,
         )
-    logging.info(f"save loss in {save_path}.")
+    logger.info(f"save loss in {save_path}.")
 
     save_model_path = os.path.join(args.save_dir, "sae.pth")
     torch.save(model.state_dict(), save_model_path)
-    logging.info(f"save model in {save_model_path}.")
+    logger.info(f"save model in {save_model_path}.")
 
 
 main()
