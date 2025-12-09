@@ -1,29 +1,20 @@
-import json
 import os
 import pickle
-import random
 
 import numpy as np
 import torch
-import torch.nn as nn
 import torch.optim as optim
-from torch.utils.data import DataLoader, Dataset, random_split
-from tqdm import tqdm
+from torch.utils.data import DataLoader, random_split
 from transformers import GPT2LMHeadModel, GPT2TokenizerFast
 
 from dataset import GPT2LayerActivations
-from vasae import VASAE
-
+from models import VASAE
 from utils import get_logger, set_seed
 
-logger = get_logger(__file__)
 
-
-def train_model(model, train_loader, test_loader, args):
+def train_model(model: VASAE, train_loader, test_loader, args, logger):
     device = args.device
     num_epochs = args.num_epochs
-    # Per-sample loss (no reduction)
-    criterion = nn.MSELoss(reduction="none")
     optimizer = optim.Adam(model.parameters(), lr=1e-3)
 
     train_loss_means, train_loss_stds = [], []
@@ -33,27 +24,27 @@ def train_model(model, train_loader, test_loader, args):
         model.train()
         sample_losses = []
 
-        for data in tqdm(train_loader, desc=f"Epoch {epoch+1}/{num_epochs} [Train]"):
+        for batch_i, data in enumerate(train_loader):
             data = data.to(device)
             optimizer.zero_grad()
 
             decoded, _ = model(data)
-            # Compute per-sample loss
-            loss_per_sample = criterion(decoded, data).mean(
-                dim=list(range(1, decoded.ndim))
-            )  # mean over all dims except batch
-            loss = loss_per_sample.mean()  # overall batch mean for backward pass
-
-            loss.backward()
+            loss_dict = model.compute_loss(data, decoded, None)
+            loss_dict["loss"].backward()
             optimizer.step()
 
-            sample_losses.extend(loss_per_sample.detach().cpu().numpy())
+            sample_losses.extend(loss_dict["loss_per_sample"].detach().cpu().numpy())
+            logger.info(
+                f"Epoch {epoch+1}/{num_epochs} [Train] batch {batch_i+1}/{len(train_loader)} loss {loss_dict["loss"].item():.4f}"
+            )
+            if batch_i == 2:
+                break
 
         train_mean = np.mean(sample_losses)
         train_std = np.std(sample_losses)
         train_loss_means.append(train_mean)
         train_loss_stds.append(train_std)
-        print(
+        logger.info(
             f"Epoch [{epoch+1}/{num_epochs}] Train Loss: {train_mean:.6f} ± {train_std:.6f}"
         )
 
@@ -61,19 +52,22 @@ def train_model(model, train_loader, test_loader, args):
         model.eval()
         sample_losses = []
         with torch.no_grad():
-            for data in tqdm(test_loader, desc=f"Epoch {epoch+1}/{num_epochs} [Test]"):
+            for batch_i, data in enumerate(test_loader):
                 data = data.to(device)
                 decoded, _ = model(data)
-                loss_per_sample = criterion(decoded, data).mean(
-                    dim=list(range(1, decoded.ndim))
+                loss_dict = model.compute_loss(data, decoded, None)
+                sample_losses.extend(loss_dict["loss_per_sample"].cpu().numpy())
+                logger.info(
+                    f"Epoch {epoch+1}/{num_epochs} [Test] batch {batch_i+1}/{len(train_loader)} loss {loss_dict["loss"].item():.4f}"
                 )
-                sample_losses.extend(loss_per_sample.cpu().numpy())
+                if batch_i == 2:
+                    break
 
         test_mean = np.mean(sample_losses)
         test_std = np.std(sample_losses)
         test_loss_means.append(test_mean)
         test_loss_stds.append(test_std)
-        print(
+        logger.info(
             f"Epoch [{epoch+1}/{num_epochs}] Test Loss: {test_mean:.6f} ± {test_std:.6f}"
         )
 
@@ -91,9 +85,8 @@ class CFG:
     save_dir = "out"
     save_filename = "loss_data.pkl"
     num_epochs = 20
-
-
-
+    train_batchsize = 32
+    test_batchsize = 32
 
 
 def get_dataloader(meta_path, layer_name, train_bs=32, test_bs=32):
@@ -108,21 +101,25 @@ def get_dataloader(meta_path, layer_name, train_bs=32, test_bs=32):
 
 def main():
     args = CFG()
+    logger = get_logger(__file__)
     set_seed(args.seed)
     train_loader, test_loader = get_dataloader(
-        args.meta_path, args.layer_name, train_bs=32, test_bs=32
+        args.meta_path,
+        args.layer_name,
+        train_bs=args.train_batchsize,
+        test_bs=args.test_batchsize,
     )
 
     tokenizer = GPT2TokenizerFast.from_pretrained(args.model_name)
     tokenizer.pad_token = tokenizer.eos_token
     gpt = GPT2LMHeadModel.from_pretrained(args.model_name)
     model = VASAE(
-        topk=args.k,
-        emb_weight=gpt.transformer.wte.weight,
+        k=args.k,
+        embedding_weight=gpt.transformer.wte.weight,
     ).to(args.device)
 
     train_loss, train_loss_stds, test_loss, test_loss_stds = train_model(
-        model, train_loader, test_loader, args
+        model, train_loader, test_loader, args, logger
     )
 
     os.makedirs(args.save_dir, exist_ok=True)
