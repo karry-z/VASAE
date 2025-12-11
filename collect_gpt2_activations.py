@@ -1,10 +1,10 @@
+import argparse
 import json
 import os
 
 import numpy as np
 import torch
 from datasets import load_dataset
-from librosa import ex
 from transformers import GPT2LMHeadModel, GPT2TokenizerFast
 
 from utils import get_logger
@@ -23,6 +23,8 @@ class HookCollector:
 
     def _make_hook(self, name):
         def hook(_, __, output):
+            if isinstance(output, tuple):
+                output = output[0]  # the output of a GPT2Block is a tuple
             self.data[name] = output.detach().cpu().to(torch.float32).numpy()
 
         return hook
@@ -51,7 +53,7 @@ def probe_shapes(model, layers, vocab_size, max_len, device):
 class MemmapStore:
     def __init__(self, total_examples, layer_shapes, save_dir):
         self.save_dir = save_dir
-        self.i = 0
+        self.memmap_arr_i = 0
 
         self.mem = {}
         self.meta = {}
@@ -71,13 +73,18 @@ class MemmapStore:
                 "dtype": "float32",
             }
 
-        with open(os.path.join(save_dir, "meta.json"), "w") as f:
+        meta_path = os.path.join(save_dir, "meta.json")
+        if os.path.exists(meta_path):
+            raise FileExistsError(
+                f"{meta_path} exists. please consider remove it or create a copy of it."
+            )
+        with open(meta_path, "w") as f:
             json.dump(self.meta, f, indent=2)
 
     def append(self, activations):
         for layer, arr in activations.items():
-            self.mem[layer][self.i] = arr.squeeze(0)
-        self.i += 1
+            self.mem[layer][self.memmap_arr_i] = arr.squeeze(0)
+        self.memmap_arr_i += 1
 
     def flush(self):
         for mm in self.mem.values():
@@ -93,42 +100,101 @@ def get_blackbox_model(model_name, device):
     return model, tokenizer
 
 
-def get_dataset(dataset):
-    return load_dataset(dataset, split="train")
+def get_dataset(dataset: str):
+    if "openwebtext" in dataset:
+        ds = load_dataset(dataset, split="train")
+        ds = ds.shuffle(seed=42).select(range(10000))
+    elif "squad" in dataset:
+        ds = load_dataset(dataset, split="validation")
+
+        def build(ex):
+            ans = ex["answers"]["text"][0] if ex["answers"]["text"] else ""
+            return {
+                "text": (
+                    "context: "
+                    + ex["context"].strip()
+                    + "\nquestion: "
+                    + ex["question"].strip()
+                    + "\nanswer: "
+                    + ans.strip()
+                )
+            }
+
+        ds = ds.map(build)
+    else:
+        raise ValueError("invalid dataset")
+
+    return ds
 
 
-class CFG:
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    save_dir = "/scratch/b5bq/pu22650.b5bq/activations_{model}_{dataset}"
-    max_length = 64
-    model_name = "gpt2"
-    dataset = "Geralt-Targaryen/openwebtext2"
+def parse_args():
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--device",
+        type=str,
+        default=torch.device("cuda" if torch.cuda.is_available() else "cpu"),
+        help="device, cpu or cuda",
+    )
+    parser.add_argument(
+        "--save_dir",
+        type=str,
+        default="/scratch/b5bq/pu22650.b5bq/",
+        help="a folder under this directory will be created to store activations",
+    )
+    parser.add_argument(
+        "--max_length",
+        type=int,
+        default=64,
+        help="max length of context",
+    )
+    parser.add_argument(
+        "--blackbox_model",
+        type=str,
+        default="gpt2",
+        help="blackbox model",
+    )
+    parser.add_argument(
+        "--dataset",
+        type=str,
+        default="Geralt-Targaryen/openwebtext2",
+        help="dataset name to collect activations on, support Geralt-Targaryen/openwebtext2, squad",
+    )
+    parser.add_argument(
+        "--log",
+        type=str,
+        default=__file__,
+        help="log path",
+    )
+    return parser.parse_args()
 
 
 def main():
-    args = CFG()
-    logger = get_logger(__file__)
-    args.save_dir = args.save_dir.format(
-        model=args.model_name, dataset=args.dataset.replace("/", "_")
+    args = parse_args()
+    logger = get_logger(args.log)
+    out_dir = os.path.join(
+        args.save_dir,
+        "activations_{blackbox_model}_{dataset}".format(
+            blackbox_model=args.blackbox_model, dataset=args.dataset.replace("/", "_")
+        ),
     )
-    logger.info(f"the output dir: {args.save_dir}")
-    os.makedirs(args.save_dir, exist_ok=True)
+    logger.info(f"the output dir: {out_dir}")
+    os.makedirs(out_dir, exist_ok=True)
 
     # Load model
-    model, tokenizer = get_blackbox_model(args.model_name, args.device)
-    logger.info(f"model {args.model_name} loaded")
+    model, tokenizer = get_blackbox_model(args.blackbox_model, args.device)
+    logger.info(f"model {args.blackbox_model} loaded")
 
     # Load dataset
     ds = get_dataset(args.dataset)
     total_examples = len(ds)
-    logger.info(f"dataset {args.save_dir} loaded with {total_examples} examples")
+    logger.info(f"dataset {out_dir} loaded with {total_examples} examples")
 
-    # Determine which layers to hook (MLP blocks)
+    # Determine which layers to hook
     layers_to_hook = [
         name
-        for name, _ in model.named_modules()
-        if "mlp.c_fc" in name or "mlp.c_proj" in name
-    ]  # TODO: 我目前分析的是mlp.c_fc，也就是说，这不是residule stream
+        for name, module in model.named_modules()
+        if name.startswith("transformer.h.") and name.count(".") == 2
+    ]
 
     # Probe activation shapes
     logger.info(f"start to probe shapes ...")
@@ -141,13 +207,19 @@ def main():
 
     # Initialize memmap store + collector
     logger.info(f"start to create memmap store ...")
-    store = MemmapStore(total_examples, layer_shapes, args.save_dir)
-    logger.info(
-        f"create memmap store. the meta file saved at {os.path.join(args.save_dir, "meta.json")}"
-    )
+    meta_path = os.path.join(out_dir, "meta.json")
+    if os.path.exists(meta_path):
+        logger.warning(
+            f"{meta_path} exists. a copy made and the original one will be covered"
+        )
+        os.rename(meta_path, meta_path + ".bak")
+
+    store = MemmapStore(total_examples, layer_shapes, out_dir)
+    logger.info(f"create memmap store.")
+
     collector = HookCollector(model, layers_to_hook)
 
-    # Main loop # TODO: batch process
+    # Main loop
     for example_i in range(total_examples):
         collector.clear()
 
@@ -171,7 +243,7 @@ def main():
     # Finalize
     store.flush()
     collector.remove()
-    logger.info(f"activations saved at {args.save_dir}")
+    logger.info(f"activations saved at {out_dir}")
 
 
 if __name__ == "__main__":
