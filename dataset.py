@@ -21,9 +21,10 @@ class GPT2LayerActivations(Dataset):
     }
     """
 
-    def __init__(self, meta_path, layer_name):
+    def __init__(self, meta_path, layer_name, use_centralize=False):
         self.layer_name = layer_name
         self.meta_path = meta_path
+        self.use_centralize = use_centralize
         # Load metadata
         with open(meta_path, "r") as f:
             meta = json.load(f)
@@ -56,7 +57,8 @@ class GPT2LayerActivations(Dataset):
             torch.Tensor: [seq_len, hidden_dim]
         """
         arr = self.memmap[idx]
-        arr = self.centralize(arr)
+        if self.use_centralize:
+            arr = self.centralize(arr)
         return torch.from_numpy(arr)
 
     def centralize(self, x):
