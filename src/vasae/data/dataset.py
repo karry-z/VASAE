@@ -2,7 +2,7 @@ import json
 
 import numpy as np
 import torch
-from torch.utils.data import Dataset
+from torch.utils.data import DataLoader, Dataset, random_split
 
 
 class GPT2LayerActivations(Dataset):
@@ -59,7 +59,7 @@ class GPT2LayerActivations(Dataset):
         arr = self.memmap[idx]
         if self.use_centralize:
             arr = self.centralize(arr)
-        return torch.from_numpy(arr)
+        return torch.from_numpy(arr.copy())
 
     def centralize(self, x):
         # https://cdn.openai.com/papers/sparse-autoencoders.pdf the paper of OpenAI SAE pipeline include normalization on activations but it does not shown data preprocessing in the code repo, nor does the BatchTopKSAE repo.
@@ -82,3 +82,15 @@ class GPT2LayerActivations(Dataset):
 
         with open(self.meta_path, "w") as f:
             json.dump(meta, f)
+
+
+def get_dataloader(
+    meta_path, layer_name, train_bs=32, test_bs=32, use_centralize=False
+):
+    dataset = GPT2LayerActivations(meta_path, layer_name, use_centralize)
+    train_size = int(0.8 * len(dataset))
+    test_size = len(dataset) - train_size
+    train_dataset, test_dataset = random_split(dataset, [train_size, test_size])
+    train_loader = DataLoader(train_dataset, batch_size=train_bs, shuffle=True)
+    test_loader = DataLoader(test_dataset, batch_size=test_bs, shuffle=False)
+    return train_loader, test_loader

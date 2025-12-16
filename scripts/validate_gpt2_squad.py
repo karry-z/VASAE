@@ -7,12 +7,11 @@ import evaluate
 import numpy as np
 import torch
 from datasets import load_dataset
-from sentence_transformers import SentenceTransformer
-from sentence_transformers import util as st_util
 from torch.utils.data import DataLoader
 from transformers import GPT2LMHeadModel, GPT2TokenizerFast
 
-from utils import get_logger
+from vasae.metrics.sbert_score import SBERTScore
+from vasae.utils.log import get_logger
 
 
 class CFG:
@@ -34,26 +33,6 @@ def get_model(device="cpu"):
     model = GPT2LMHeadModel.from_pretrained("gpt2").to(device).eval()
     model.config.pad_token_id = model.config.eos_token_id
     return model, tokenizer
-
-
-class SBERTScore:
-    def __init__(self):
-        self.model = SentenceTransformer("sentence-transformers/all-mpnet-base-v2")
-
-    def compute(self, predictions, references):
-        pred_texts = [p["prediction_text"] for p in predictions]
-        ref_texts = [r["answers"]["text"][0] for r in references]
-
-        emb_preds = self.model.encode(
-            pred_texts, convert_to_tensor=True, show_progress_bar=False
-        )
-        emb_refs = self.model.encode(
-            ref_texts, convert_to_tensor=True, show_progress_bar=False
-        )
-
-        cosine_scores = st_util.pairwise_cos_sim(emb_preds, emb_refs).tolist()
-
-        return cosine_scores
 
 
 def build_dataset(example):

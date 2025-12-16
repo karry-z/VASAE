@@ -7,7 +7,7 @@ from datasets import load_dataset
 from tqdm.auto import tqdm
 from transformers import GPT2LMHeadModel, GPT2TokenizerFast
 
-from utils import get_logger
+from vasae.utils.log import get_logger
 
 
 def parse_args():

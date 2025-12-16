@@ -2,6 +2,7 @@ __pycache__/
 jobs/
 logs/
 out/
+*.egg-info
 
 # when release, open below comments
 # .gitignore

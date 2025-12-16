@@ -5,14 +5,25 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Python Debugger: Current File",
+            "name": "train_sae",
             "type": "debugpy",
             "request": "launch",
             "program": "${file}",
             "console": "integratedTerminal",
             "args": [
                 "--sae", "VanillaSAE",
+                "--max_batchsize", "3",
+                "--sae_save_path", "out/sae.pth",
+                "--meta_path", "/scratch/b5bq/pu22650.b5bq/activations_gpt2_Geralt-Targaryen_openwebtext2/meta.json",
+                "--log", "/home/b5bq/pu22650.b5bq/work/VASAE/logs/sae.log"
             ]
+        },
+        {
+            "name": "collect_activations",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${file}",
+            "console": "integratedTerminal",
         }
     ]
 }

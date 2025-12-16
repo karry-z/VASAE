@@ -7,7 +7,7 @@ import torch
 from datasets import load_dataset
 from transformers import GPT2LMHeadModel, GPT2TokenizerFast
 
-from utils import get_logger
+from vasae.utils.log import get_logger
 
 
 class HookCollector:
@@ -162,7 +162,7 @@ def parse_args():
     parser.add_argument(
         "--log",
         type=str,
-        default=__file__,
+        default="logs/collect_gpt2_activations",
         help="log path",
     )
     return parser.parse_args()
