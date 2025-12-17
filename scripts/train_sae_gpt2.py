@@ -32,9 +32,7 @@ def train_model(
     train_loss_means, train_loss_stds = [], []
     test_loss_means, test_loss_stds = [], []
     train_acc_epoch = []
-    train_acc_std_epoch = []
     test_acc_epoch = []
-    test_acc_std_epoch = []
 
     for epoch in range(num_epochs):
         model.train()
@@ -42,7 +40,7 @@ def train_model(
         data_ids_train_epoch, recons_ids_train_epoch = [], []
 
         for batch_i, data in enumerate(train_loader):
-            data = data.to(device)  # TODO： data是全0
+            data = data.to(device)
             optimizer.zero_grad()
 
             decoded, sparse_code = model(data)
@@ -55,7 +53,7 @@ def train_model(
             # logitlen acc
             data_ids = logitlens.top1(data).cpu()
             recons_ids = logitlens.top1(decoded).cpu()
-            acc, acc_std = logitlens_acc.compute(data_ids, recons_ids)
+            acc = logitlens_acc.compute(data_ids, recons_ids)
             data_ids_train_epoch.append(data_ids.flatten().tolist())
             recons_ids_train_epoch.append(recons_ids.flatten().tolist())
 
@@ -63,7 +61,7 @@ def train_model(
                 f"Epoch {epoch+1}/{num_epochs} [Train] "
                 f"batch {batch_i+1}/{len(train_loader)} "
                 f"loss {loss_dict['loss'].item():.4f} "
-                f"acc: {acc * 100:.2f}% ± {acc_std * 100:.2f}% "
+                f"acc: {acc * 100:.2f}% "
             )
 
             if max_batchsize > 0 and batch_i >= max_batchsize:
@@ -75,16 +73,13 @@ def train_model(
         train_loss_means.append(train_mean)
         train_loss_stds.append(train_std)
 
-        acc, acc_std = logitlens_acc.compute(
-            recons_ids_train_epoch, data_ids_train_epoch
-        )
+        acc = logitlens_acc.compute(recons_ids_train_epoch, data_ids_train_epoch)
         train_acc_epoch.append(acc)
-        train_acc_std_epoch.append(acc_std)
 
         logger.info(
             f"Epoch [{epoch+1}/{num_epochs}] "
             f"Train Loss: {train_mean:.4f} ± {train_std:.4f} "
-            f"acc: {acc * 100:.2f}% ± {acc_std * 100:.2f}% "
+            f"acc: {acc * 100:.2f}% "
         )
 
         model.eval()
@@ -102,7 +97,7 @@ def train_model(
                 # logitlen acc
                 data_ids = logitlens.top1(data).cpu()
                 recons_ids = logitlens.top1(decoded).cpu()
-                acc, acc_std = logitlens_acc.compute(data_ids, recons_ids)
+                acc = logitlens_acc.compute(data_ids, recons_ids)
                 data_ids_test_epoch.extend(data_ids.flatten().tolist())
                 recons_ids_test_epoch.extend(recons_ids.flatten().tolist())
 
@@ -110,7 +105,7 @@ def train_model(
                     f"Epoch {epoch+1}/{num_epochs} [Test] "
                     f"batch {batch_i+1}/{len(test_loader)} "
                     f"loss {loss_dict['loss'].item():.4f} "
-                    f"acc: {acc * 100:.2f}% ± {acc_std * 100:.2f}% "
+                    f"acc: {acc * 100:.2f}% "
                 )
 
                 if max_batchsize > 0 and batch_i >= max_batchsize:
@@ -122,14 +117,13 @@ def train_model(
         test_loss_means.append(test_mean)
         test_loss_stds.append(test_std)
 
-        acc, acc_std = logitlens_acc.compute(recons_ids_test_epoch, data_ids_test_epoch)
+        acc = logitlens_acc.compute(recons_ids_test_epoch, data_ids_test_epoch)
         test_acc_epoch.append(acc)
-        test_acc_std_epoch.append(acc_std)
 
         logger.info(
             f"Epoch [{epoch+1}/{num_epochs}] "
             f"Test Loss: {test_mean:.4f} ± {test_std:.4f} "
-            f"acc: {acc * 100:.2f}% ± {acc_std * 100:.2f}% "
+            f"acc: {acc * 100:.2f}% "
         )
 
     return (
@@ -138,9 +132,7 @@ def train_model(
         test_loss_means,
         test_loss_stds,
         train_acc_epoch,
-        train_acc_std_epoch,
         test_acc_epoch,
-        test_acc_std_epoch,
     )
 
 
@@ -289,9 +281,7 @@ def main():
         test_loss,
         test_loss_stds,
         train_acc_epoch,
-        train_acc_std_epoch,
         test_acc_epoch,
-        test_acc_std_epoch,
     ) = train_model(
         model,
         train_loader,
@@ -320,9 +310,7 @@ def main():
                 "test_loss": test_loss,
                 "test_loss_stds": test_loss_stds,
                 "train_acc_epoch": train_acc_epoch,
-                "train_acc_std_epoch": train_acc_std_epoch,
                 "test_acc_epoch": test_acc_epoch,
-                "test_acc_std_epoch": test_acc_std_epoch,
             },
             f,
         )
