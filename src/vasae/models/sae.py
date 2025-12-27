@@ -16,17 +16,46 @@ class KSparse(nn.Module):
 
 
 class BatchKSparse(nn.Module):
-    def __init__(self, k):
-        super().__init__()
-        self.k = k
+    """
+    BatchTopK-style k-sparse activation.
 
-    def forward(self, x):
-        x_shape = x.shape
-        x_flat = x.reshape(-1)
-        _, idx = torch.topk(x_flat, self.k)
-        mask = torch.zeros_like(x_flat)
+    Interprets k as "average number of active latents per item" (item = each slice
+    along the last dim). For input shape (..., d), let n_items = prod(shape[:-1]).
+    Keeps top (k * n_items) activations globally across the flattened tensor,
+    then reshapes back.
+
+    Optional: in eval mode, you may want per-item TopK to avoid cross-sample coupling.
+    """
+
+    def __init__(self, k: int, per_item_in_eval: bool = False):
+        super().__init__()
+        self.k = int(k)
+        self.per_item_in_eval = per_item_in_eval
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        # Standard SAE practice: non-negative latents
+        # x = F.relu(x)
+
+        # Optional: make inference independent per item
+        if (not self.training) and self.per_item_in_eval:
+            # per-item topk over last dim
+            _, idx = torch.topk(x, k=min(self.k, x.size(-1)), dim=-1)
+            mask = torch.zeros_like(x)
+            mask.scatter_(-1, idx, 1.0)
+            return x * mask
+
+        # compute k_total = B (or B*T when T dim exists) * topk
+        d = x.size(-1)
+        n_items = x.numel() // d  # e.g. B or B*T
+        k_total = self.k * n_items
+        flat = x.reshape(
+            -1
+        )  # topk works on one-dim, so flatten x to pick topk globally.
+
+        _, idx = torch.topk(flat, k_total, sorted=False)
+        mask = torch.zeros_like(flat)
         mask[idx] = 1.0
-        return (x_flat * mask).reshape(x_shape)
+        return (flat * mask).reshape_as(x)
 
 
 class SAEEncoder(nn.Module):
@@ -93,9 +122,13 @@ class BatchTopKSAE(nn.Module):
     https://github.com/bartbussmann/BatchTopK/blob/main/sae.py
     """
 
-    def __init__(self, dim_input, dim_sparse, k):
+    def __init__(self, dim_input, dim_sparse, k, per_item_in_eval: bool = False):
         super().__init__()
-        self.encoder = SAEEncoder(dim_input, dim_sparse, act_fn=BatchKSparse(k))
+        self.encoder = SAEEncoder(
+            dim_input,
+            dim_sparse,
+            act_fn=BatchKSparse(k, per_item_in_eval=per_item_in_eval),
+        )
         self.decoder = nn.Linear(dim_sparse, dim_input)
         self.k = k
 
@@ -113,13 +146,13 @@ class BatchTopKSAE(nn.Module):
 
 
 class VASAE(nn.Module):
-    def __init__(self, k=4, embedding_weight=None, act_fn=None):
+    def __init__(self, k=4, embedding_weight=None, act_fn=None, per_item_in_eval=False):
         super().__init__()
         dim_input = embedding_weight.size(1)
         dim_sparse = embedding_weight.size(0)
 
         if act_fn is None:
-            act_fn = BatchKSparse(k)
+            act_fn = BatchKSparse(k, per_item_in_eval)
         self.encoder = SAEEncoder(dim_input, dim_sparse, act_fn=act_fn)
 
         self.decoder = nn.Linear(dim_sparse, dim_input, bias=False)
