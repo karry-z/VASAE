@@ -50,6 +50,21 @@ def probe_shapes(model, layers, vocab_size, max_len, device):
     return shapes
 
 
+def get_display_tokens(text, enc, tokenizer):
+    input_ids = enc["input_ids"][0]
+    offsets = enc["offset_mapping"][0].tolist()
+
+    display_tokens = []
+    for i, (s, e) in enumerate(offsets):
+        if s == e == 0:  # special tokens
+            display_tokens.append(tokenizer.convert_ids_to_tokens(int(input_ids[i])))
+        else:
+            display_tokens.append(
+                text[s:e]
+            )  # 直接取原始位置的文本，避免可视化得到不干净的token
+    return display_tokens
+
+
 class MemmapStore:
     def __init__(self, total_examples, layer_shapes, save_dir):
         self.save_dir = save_dir
@@ -103,7 +118,11 @@ def get_blackbox_model(model_name, device):
 def get_dataset(dataset: str):
     if "openwebtext" in dataset:
         ds = load_dataset(dataset, split="train")
-        ds = ds.shuffle(seed=42).select(range(10000))
+        ds = ds.add_column(
+            "orig_idx", list(range(len(ds)))
+        )  # keep orig_idx to track original text
+        ds = ds.shuffle(seed=42).select(range(20000))
+
     elif "squad" in dataset:
         ds = load_dataset(dataset, split="validation")
 
@@ -220,6 +239,7 @@ def main():
     collector = HookCollector(model, layers_to_hook)
 
     # Main loop
+    data_info = []
     for example_i in range(total_examples):
         collector.clear()
 
@@ -230,18 +250,30 @@ def main():
             max_length=args.max_length,
             truncation=True,
             padding="max_length",
+            return_offsets_mapping=True,  # 保存原始位置(start, end)
+            add_special_tokens=True,
         ).to(args.device)
 
         with torch.no_grad():
             model(**tokens)
 
         store.append(collector.data)
+        data_info.append(
+            {
+                "example_i": example_i,
+                "orig_idx": ds[example_i]["orig_idx"],
+                "display_text": get_display_tokens(text, tokens, tokenizer),
+            }
+        )
 
         if example_i % 100 == 0:
             logger.info(f"processed {example_i+1}/{total_examples}")
 
     # Finalize
     store.flush()
+    meta_path = os.path.join(out_dir, "data_info.json")
+    with open(meta_path, "w") as f:
+        json.dump(data_info, f, indent=2)
     collector.remove()
     logger.info(f"activations saved at {out_dir}")
 
