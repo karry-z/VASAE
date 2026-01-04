@@ -119,6 +119,7 @@ class SAEConfig(PretrainedConfig):
         l1_coeff: float = 0.0,  # only meaningful if sparsity_type == "none"
         tied_decoder: bool = False,  # if True, use attach_embedding() to tie
         mse_reduction: str = "mean",  # "mean" or "none" (we still provide loss_per_sample)
+        sae_save_path: str = "",
         **kwargs,
     ):
         super().__init__(**kwargs)
@@ -132,6 +133,7 @@ class SAEConfig(PretrainedConfig):
         self.l1_coeff = float(l1_coeff)
         self.tied_decoder = bool(tied_decoder)
         self.mse_reduction = mse_reduction
+        self.sae_save_path = sae_save_path
 
         self._validate()
 

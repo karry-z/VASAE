@@ -3,7 +3,13 @@ jobs/
 logs/
 out/
 *.egg-info
-
+launch.json
+exp/
+wandb/
 # when release, open below comments
 # .gitignore
 # .vscode/
+
+
+# when release, comment below
+readme.md
