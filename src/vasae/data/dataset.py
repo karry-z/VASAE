@@ -81,16 +81,38 @@ class GPT2LayerActivations(Dataset):
         meta[self.layer_name]["mean"] = mean.tolist()
 
         with open(self.meta_path, "w") as f:
-            json.dump(meta, f)
+            json.dump(
+                meta, f
+            )  # TODO：这里可能引发并行时读不出的问题，应该把数据集提前处理好，这里只读不处理
 
 
-def get_dataloader(
-    meta_path, layer_name, train_bs=32, test_bs=32, use_centralize=False
-):
-    dataset = GPT2LayerActivations(meta_path, layer_name, use_centralize)
-    train_size = int(0.8 * len(dataset))
-    test_size = len(dataset) - train_size
-    train_dataset, test_dataset = random_split(dataset, [train_size, test_size])
-    train_loader = DataLoader(train_dataset, batch_size=train_bs, shuffle=True)
-    test_loader = DataLoader(test_dataset, batch_size=test_bs, shuffle=False)
-    return train_loader, test_loader
+def get_dataloader(data_cfg, seed):
+    generator = torch.Generator().manual_seed(seed)
+    dataset = GPT2LayerActivations(
+        data_cfg.meta_path,
+        data_cfg.layer_name,
+        data_cfg.use_centralize,
+    )
+
+    # split into train, valid, test 7:2:1
+    train_size = int(0.7 * len(dataset))
+    valid_size = int(0.2 * len(dataset))
+    test_size = len(dataset) - train_size - valid_size
+
+    train_dataset, valid_dataset, test_dataset = random_split(
+        dataset,
+        [train_size, valid_size, test_size],
+        generator,
+    )
+
+    train_loader = DataLoader(
+        train_dataset, batch_size=data_cfg.train_batchsize, shuffle=True
+    )
+    valid_loader = DataLoader(
+        valid_dataset, batch_size=data_cfg.valid_batchsize, shuffle=False
+    )
+    test_loader = DataLoader(
+        test_dataset, batch_size=data_cfg.test_batchsize, shuffle=False
+    )
+
+    return train_loader, valid_loader, test_loader

@@ -120,6 +120,7 @@ class SAEConfig(PretrainedConfig):
         tied_decoder: bool = False,  # if True, use attach_embedding() to tie
         mse_reduction: str = "mean",  # "mean" or "none" (we still provide loss_per_sample)
         sae_save_path: str = "",
+        freeze_decoder: bool = True,
         **kwargs,
     ):
         super().__init__(**kwargs)
@@ -134,6 +135,7 @@ class SAEConfig(PretrainedConfig):
         self.tied_decoder = bool(tied_decoder)
         self.mse_reduction = mse_reduction
         self.sae_save_path = sae_save_path
+        self.freeze_decoder = freeze_decoder
 
         self._validate()
 
@@ -172,7 +174,7 @@ class SAEModel(PreTrainedModel):
 
         # sparsity
         if config.sparsity_type == "none":
-            self.sparsity = IdentitySparsity()  # TODO： nn.Identity
+            self.sparsity = IdentitySparsity()
             # relu
         elif config.sparsity_type == "topk":
             self.sparsity = TopKSparse(config.k)

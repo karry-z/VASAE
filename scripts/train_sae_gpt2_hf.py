@@ -89,7 +89,7 @@ def train_model(
                         "valid/loss": output.loss,
                         "valid/loss_recons": output.recon_loss,
                         "valid/loss_l1": output.l1_loss,
-                        "valid/acc": train_eval_outcomes["logitlens_acc"],
+                        "valid/acc": valid_eval_outcomes["logitlens_acc"],
                     }
                 )
 
@@ -130,20 +130,17 @@ def main():
     device = torch.device(system_cfg["device"])
     set_seed(system_cfg["seed"])
 
-    logger = get_logger(args.log)
-    logger.info(vars(args))
-
     # prepare_paths
+    log_path = Path(args.log)
+    log_path.parent.mkdir(parents=True, exist_ok=True)
+
     model_path = Path(sae_cfg.sae_save_path)
     model_path.parent.mkdir(parents=True, exist_ok=True)
 
-    train_loader, valid_loader, _ = get_dataloader(
-        data_cfg.meta_path,
-        data_cfg.layer_name,
-        train_bs=data_cfg.train_batchsize,
-        test_bs=data_cfg.valid_batchsize,
-        use_centralize=data_cfg.use_centralize,
-    )
+    logger = get_logger(log_path)
+    logger.info(vars(args))
+
+    train_loader, valid_loader, _ = get_dataloader(data_cfg, system_cfg["seed"])
 
     blackbox_model, _ = get_blackbox_model(
         cfg["blackbox_model_cfg"]["model_name"],
@@ -155,9 +152,10 @@ def main():
     sae_cfg.dim_input = model_dim
     sae_cfg.dim_sparse = vocab_size
     model = SAEModel(sae_cfg).to(device)
-    model.attach_embedding(blackbox_model.transformer.wte, freeze=True)
-
-    logger.info(f"model {type(model).__name__} loaded")
+    if sae_cfg.tied_decoder:
+        model.attach_embedding(
+            blackbox_model.transformer.wte, freeze=sae_cfg.freeze_decoder
+        )
 
     # train
     logitlens = LogitLens(blackbox_model.lm_head)
@@ -171,7 +169,7 @@ def main():
             project="VASAE", name=cfg["exp_name"], config={"cfg_path": args.config}
         )
     else:
-        wandb.init(mode="disable")
+        wandb.init(mode="disabled")
 
     train_model(
         model,

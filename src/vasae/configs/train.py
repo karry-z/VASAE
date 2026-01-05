@@ -7,6 +7,5 @@ class TrainConfig:
     num_epochs: int
     max_batchsize: int
 
-    device: str
     # optim
     lr: float
