@@ -70,6 +70,38 @@ class SAEEncoder(nn.Module):
         return pre_activation, z
 
 
+class SAEEncoderMLP(nn.Module):
+    def __init__(self, dim_input, dim_sparse, act_fn):
+        super().__init__()
+        self.mlp = nn.Sequential(
+            nn.Linear(dim_input, dim_input * 4),
+            nn.GELU(),
+            nn.Linear(dim_input * 4, dim_sparse),
+        )
+        self.act_fn = act_fn
+
+    def forward(self, x):
+        pre_activation = self.mlp(x)
+        z = self.act_fn(pre_activation)
+        return pre_activation, z
+
+
+class SAEBase(nn.Module):
+    def __init__(self, encoder: SAEEncoder, decoder: nn.Module):
+        super().__init__()
+        self.encoder = encoder
+        self.decoder = decoder
+
+    def forward(self, x):
+        _, z = self.encoder(x)
+        x_recon = self.decoder(z)
+        return x_recon, z
+
+    def from_pretrained(self, path):
+        self.load_state_dict(torch.load(path))
+        return self
+
+
 class VanillaSAE(nn.Module):
     def __init__(self, dim_input, dim_sparse, l1_coeff=1e-3):
         super().__init__()
@@ -173,3 +205,113 @@ class VASAE(nn.Module):
         )  # mean over all dims except batch
         recon_loss = loss_per_sample.mean()
         return {"loss": recon_loss, "loss_per_sample": loss_per_sample}
+
+
+class VASAEMLP(nn.Module):
+    def __init__(self, k=4, embedding_weight=None, act_fn=None, per_item_in_eval=False):
+        super().__init__()
+        dim_input = embedding_weight.size(1)
+        dim_sparse = embedding_weight.size(0)
+
+        if act_fn is None:
+            act_fn = BatchKSparse(k, per_item_in_eval)
+        self.encoder = SAEEncoderMLP(dim_input, dim_sparse, act_fn=act_fn)
+
+        self.decoder = nn.Linear(dim_sparse, dim_input, bias=False)
+        # fixed decoder tied to embedding matrix
+        self.decoder.weight = nn.Parameter(
+            embedding_weight.T,
+            requires_grad=False,
+        )
+
+    def forward(self, x):
+        _, z = self.encoder(x)
+        x_recon = self.decoder(z)
+        return x_recon, z
+
+    def compute_loss(self, x, x_recon, z):
+        loss_per_sample = F.mse_loss(x_recon, x, reduction="none").mean(
+            dim=list(range(1, x_recon.ndim))
+        )  # mean over all dims except batch
+        recon_loss = loss_per_sample.mean()
+        return {"loss": recon_loss, "loss_per_sample": loss_per_sample}
+
+
+class VASAE_ReLU(SAEBase):
+    def __init__(self, embedding_weight, l1_coeff=1e-3):
+        dim_input = embedding_weight.size(1)
+        dim_sparse = embedding_weight.size(0)
+
+        encoder = SAEEncoder(dim_input, dim_sparse, nn.ReLU())
+        decoder = nn.Linear(dim_sparse, dim_input)
+
+        decoder.weight = nn.Parameter(
+            embedding_weight.T,
+            requires_grad=False,
+        )
+
+        super().__init__(encoder, decoder)
+        self.l1_coeff = l1_coeff
+
+    def compute_loss(self, x, x_recon, z):
+        loss_per_sample = F.mse_loss(x_recon, x, reduction="none").mean(
+            dim=list(range(1, x_recon.ndim))
+        )  # mean over all dims except batch
+        recon_loss = loss_per_sample.mean()
+        l1_loss = z.abs().mean()
+        loss = recon_loss + self.l1_coeff * l1_loss
+        return {
+            "loss": loss,
+            "loss_per_sample": loss_per_sample,
+            "recon_loss": recon_loss,
+            "l1_loss": l1_loss,
+        }
+
+
+class VASAE_LearnedDecoder(nn.Module):
+    def __init__(
+        self,
+        k=4,
+        embedding_weight=None,
+        act_fn=None,
+        per_item_in_eval=False,
+        lambda_cos=0.1,
+    ):
+        super().__init__()
+        dim_input = embedding_weight.size(1)
+        dim_sparse = embedding_weight.size(0)
+
+        if act_fn is None:
+            act_fn = BatchKSparse(k, per_item_in_eval)
+        self.encoder = SAEEncoder(dim_input, dim_sparse, act_fn=act_fn)
+
+        self.decoder = nn.Linear(dim_sparse, dim_input, bias=False)
+
+        self.decoder.weight = nn.Parameter(
+            embedding_weight.T,
+        )
+
+        self.emb_weight = embedding_weight.T
+        self.lambda_cos = lambda_cos
+
+    def forward(self, x):
+        _, z = self.encoder(x)
+        x_recon = self.decoder(z)
+        return x_recon, z
+
+    def compute_loss(self, x, x_recon, z):
+        loss_per_sample = F.mse_loss(x_recon, x, reduction="none").mean(
+            dim=list(range(1, x_recon.ndim))
+        )  # mean over all dims except batch
+        recon_loss = loss_per_sample.mean()
+
+        cos_sim = F.cosine_similarity(self.emb_weight, self.decoder.weight, dim=0)
+        cos_loss = 1 - cos_sim.mean()
+        loss = recon_loss + self.lambda_cos * cos_loss
+
+        return {
+            "loss": loss,
+            "recon_loss": recon_loss,
+            "loss_per_sample": loss_per_sample,
+            "cos_loss": cos_loss,
+        }

@@ -1,16 +1,17 @@
 import argparse
 import os
 import pickle
+from pathlib import Path
 
 import numpy as np
 import torch
 import torch.optim as optim
-from regex import R
 
 from vasae.data.dataset import get_dataloader
 from vasae.metrics.logitlens import LogitLens, LogitLensAccuracy
 from vasae.models.factory import VASAE, get_blackbox_model, get_sae_model
 from vasae.utils.log import get_logger
+from vasae.utils.path import prepare_paths
 from vasae.utils.seed import set_seed
 
 
@@ -51,11 +52,11 @@ def train_model(
             sample_losses.extend(loss_dict["loss_per_sample"].detach().cpu().numpy())
 
             # logitlen acc
-            data_ids = logitlens.top1(data).cpu()
-            recons_ids = logitlens.top1(decoded).cpu()
+            data_ids = logitlens.top1(data)["token_ids"].cpu()
+            recons_ids = logitlens.top1(decoded)["token_ids"].cpu()
             acc = logitlens_acc.compute(data_ids, recons_ids)
-            data_ids_train_epoch.append(data_ids.flatten().tolist())
-            recons_ids_train_epoch.append(recons_ids.flatten().tolist())
+            data_ids_train_epoch.extend(data_ids.flatten().tolist())
+            recons_ids_train_epoch.extend(recons_ids.flatten().tolist())
 
             logger.info(
                 f"Epoch {epoch+1}/{num_epochs} [Train] "
@@ -95,8 +96,8 @@ def train_model(
                 sample_losses.extend(loss_dict["loss_per_sample"].cpu().numpy())
 
                 # logitlen acc
-                data_ids = logitlens.top1(data).cpu()
-                recons_ids = logitlens.top1(decoded).cpu()
+                data_ids = logitlens.top1(data)["token_ids"].cpu()
+                recons_ids = logitlens.top1(decoded)["token_ids"].cpu()
                 acc = logitlens_acc.compute(data_ids, recons_ids)
                 data_ids_test_epoch.extend(data_ids.flatten().tolist())
                 recons_ids_test_epoch.extend(recons_ids.flatten().tolist())
@@ -185,6 +186,11 @@ def parse_args():
         type=int,
         default=50257,
     )
+    parser.add_argument(
+        "--lambda_cos",
+        type=float,
+        default=0.1,
+    )
 
     # training
     parser.add_argument(
@@ -248,7 +254,10 @@ def main():
     logger = get_logger(args.log)
     logger.info(vars(args))
 
-    train_loader, test_loader = get_dataloader(
+    # prepare_paths
+    # prepare_paths(args.meta_path, args.save_dir)
+
+    train_loader, valid_loader, test_loader = get_dataloader(
         args.meta_path,
         args.layer_name,
         train_bs=args.train_batchsize,
@@ -267,6 +276,7 @@ def main():
         dim_input=args.dim_input,
         dim_sparse=args.dim_sparse,
         embedding_weight=blackbox_model.transformer.wte.weight,
+        lambda_cos=args.lambda_cos,
     ).to(device)
 
     logger.info(f"model {type(model)} loaded with k={args.k}")
@@ -285,7 +295,7 @@ def main():
     ) = train_model(
         model,
         train_loader,
-        test_loader,
+        valid_loader,
         device=device,
         num_epochs=args.num_epochs,
         lr=args.lr,
@@ -296,12 +306,14 @@ def main():
     )
 
     # save results
-    os.makedirs(args.save_dir, exist_ok=True)
+    save_dir = Path(args.save_dir)
+    save_dir.mkdir(parents=True, exist_ok=True)
 
     save_path = os.path.join(
-        args.save_dir,
+        save_dir,
         args.save_filename,
     )
+
     with open(save_path, "wb") as f:
         pickle.dump(
             {
@@ -319,6 +331,8 @@ def main():
 
     # save model
     model_path = args.sae_save_path
+    # TODO: 使用pathlib，保证是一个路径，而不是文件名这种问题
+    os.makedirs(os.path.dirname(model_path), exist_ok=True)
     torch.save(model.state_dict(), model_path)
 
     logger.info(f"save model in {model_path}")

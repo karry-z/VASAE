@@ -1,6 +1,15 @@
 import torch.nn as nn
+from transformers import model_addition_debugger_context
 
-from .sae import VASAE, BatchTopKSAE, KSparse, TopKSAE, VanillaSAE
+from .sae import (
+    VASAE,
+    BatchTopKSAE,
+    KSparse,
+    TopKSAE,
+    VanillaSAE,
+    VASAE_LearnedDecoder,
+    VASAE_ReLU,
+)
 
 
 def get_sae_model(model_name: str, **args) -> nn.Module:
@@ -14,6 +23,12 @@ def get_sae_model(model_name: str, **args) -> nn.Module:
         model = TopKSAE(args["dim_input"], args["dim_sparse"], args["k"])
     elif model_name == "BatchTopKSAE":
         model = BatchTopKSAE(args["dim_input"], args["dim_sparse"], args["k"])
+    elif model_name == "VASAE_ReLU":
+        model = VASAE_ReLU(args["embedding_weight"])
+    elif model_name == "VASAE_LearnedDecoder":
+        model = VASAE_LearnedDecoder(
+            args["k"], args["embedding_weight"], lambda_cos=args["lambda_cos"]
+        )
     else:
         raise ValueError(f"invalid model_name {model_name}")
     return model
