@@ -7,6 +7,9 @@ import torch
 from datasets import load_dataset
 from transformers import GPT2LMHeadModel, GPT2TokenizerFast
 
+from vasae.configs.data import DataConfig
+from vasae.data.data_schema import Meta
+from vasae.data.dataset import load_meta
 from vasae.utils.log import get_logger
 
 
@@ -146,6 +149,20 @@ def get_dataset(dataset: str):
     return ds
 
 
+def save_means(meta: Meta, cfg: DataConfig):
+    for layer in meta:
+        mm = np.memmap(
+            cfg.data_dir / meta[layer].path,
+            mode="r",
+            dtype=meta[layer].dtype,
+            shape=tuple(meta[layer].shape),
+        )
+        mean = mm.mean(axis=0, dtype=np.float64).astype(np.float32)
+        path = cfg.data_dir / "mean" / f"{layer.replace(".", "_")}_mean.npy"
+        np.save(path, mean)
+        path.chmod(0o444)
+
+
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument(
@@ -271,9 +288,15 @@ def main():
 
     # Finalize
     store.flush()
+    # save data_info
     meta_path = os.path.join(out_dir, "data_info.json")
     with open(meta_path, "w") as f:
         json.dump(data_info, f, indent=2)
+
+    # save mean values
+    data_cfg = DataConfig(data_dir=out_dir)
+    meta: Meta = load_meta(data_cfg.data_dir / "meta.json")
+    save_means(meta, data_cfg)
     collector.remove()
     logger.info(f"activations saved at {out_dir}")
 

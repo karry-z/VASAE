@@ -1,89 +1,84 @@
 import json
+from pathlib import Path
 
 import numpy as np
 import torch
 from torch.utils.data import DataLoader, Dataset, random_split
+
+from vasae.configs.data import DataConfig
+from vasae.data.data_schema import LayerMeta, Meta
+
+
+def load_meta(meta_path: Path) -> Meta:
+    meta_path = Path(meta_path)
+    with meta_path.open() as f:
+        raw: dict = json.load(f)
+
+    base = meta_path.parent
+
+    return {
+        name: LayerMeta(
+            path=base / meta["path"],
+            shape=meta["shape"],
+            dtype=meta["dtype"],
+            mean=base / meta["mean"],
+        )
+        for name, meta in raw.items()
+    }
 
 
 class GPT2LayerActivations(Dataset):
     """
     PyTorch Dataset for loading activations of a specific GPT-2 layer
     from a .dat memmap file defined in the metadata JSON.
-
-    Meta JSON format:
-    {
-      "transformer.h.0.mlp.c_fc": {
-        "path": "/path/to/layer.dat",
-        "shape": [num_examples, seq_len, hidden_dim],
-        "dtype": "float32"
-      },
-      ...
-    }
     """
 
-    def __init__(self, meta_path, layer_name, use_centralize=False):
-        self.layer_name = layer_name
-        self.meta_path = meta_path
-        self.use_centralize = use_centralize
-        # Load metadata
-        with open(meta_path, "r") as f:
-            meta = json.load(f)
+    def __init__(self, data_cfg: DataConfig):
+        self.layer_name = data_cfg.layer_name
+        self.meta_path = data_cfg.meta_path
+        self.use_centralize = data_cfg.use_centralize
 
-        if layer_name not in meta:
-            raise KeyError(
-                f"Layer '{layer_name}' not found in metadata keys: {list(meta.keys())}"
-            )
+        data_folder = Path(self.meta_path).parent
+        # load meta
+        meta = load_meta(Path(self.meta_path))
 
-        info = meta[layer_name]
-        self.path = info["path"]
-        self.shape = tuple(info["shape"])
-        self.dtype = info["dtype"]
+        info = meta[self.layer_name]
+        self.path = info.path
+        self.shape = info.shape
+        self.dtype = info.dtype
 
         # Memory-map the activation file
         self.memmap = np.memmap(self.path, mode="r", dtype=self.dtype, shape=self.shape)
         self.num_examples = self.shape[0]
 
-        if "mean" in info:
-            self.mean = np.array(info["mean"], dtype=np.float32)
-        else:
-            self.__compute_and_store_mean()
+        # load mean
+        self.mean = np.load(info.mean)
+
+        # load data_info
+        data_info_path = data_folder / "data_info.json"
+        with data_info_path.open() as f:
+            self.data_info = json.load(f)
 
     def __len__(self):
         return self.num_examples
 
-    def __getitem__(self, idx):
+    def __getitem__(self, example_i):
         """
         Returns:
             torch.Tensor: [seq_len, hidden_dim]
         """
-        arr = self.memmap[idx]
+        arr = self.memmap[example_i]
         if self.use_centralize:
             arr = self.centralize(arr)
-        return torch.from_numpy(arr.copy())
+
+        return {
+            "activations": torch.from_numpy(arr.copy()),
+            "display_text": self.data_info[example_i]["display_text"],
+        }
 
     def centralize(self, x):
         # https://cdn.openai.com/papers/sparse-autoencoders.pdf the paper of OpenAI SAE pipeline include normalization on activations but it does not shown data preprocessing in the code repo, nor does the BatchTopKSAE repo.
         return x - self.mean
-
-    def __compute_and_store_mean(self):
-        mean = np.zeros(self.shape[1:], dtype=np.float64)
-
-        for i in range(self.num_examples):
-            mean += self.memmap[i]
-
-        mean /= self.num_examples
-        mean = mean.astype(np.float32)
-        self.mean = mean
-
-        with open(self.meta_path, "r") as f:
-            meta = json.load(f)
-
-        meta[self.layer_name]["mean"] = mean.tolist()
-
-        with open(self.meta_path, "w") as f:
-            json.dump(
-                meta, f
-            )  # TODO：这里可能引发并行时读不出的问题，应该把数据集提前处理好，这里只读不处理
 
 
 def get_dataloader(data_cfg, seed):

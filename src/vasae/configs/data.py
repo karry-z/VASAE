@@ -3,9 +3,10 @@ from dataclasses import dataclass
 
 @dataclass
 class DataConfig:
-    train_batchsize: int
-    valid_batchsize: int
-    test_batchsize: int
-    use_centralize: bool
+    train_batchsize: int = 32
+    valid_batchsize: int = 32
+    test_batchsize: int = 32
+    use_centralize: bool = True
     meta_path: str = ""
     layer_name: str = ""
+    data_dir: str = ""
