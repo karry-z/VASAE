@@ -1,6 +1,8 @@
 import argparse
 import runpy
 from gc import disable
+from json import load
+from logging import Logger
 from pathlib import Path
 
 import torch
@@ -10,6 +12,7 @@ import wandb
 from vasae.configs.data import DataConfig
 from vasae.configs.train import TrainConfig
 from vasae.data.dataset import get_dataloader
+from vasae.engine import evaluate, train
 from vasae.metrics.interface import MetricComposer
 from vasae.metrics.logitlens import LogitLens, LogitLensAccuracy, LogitLensMetric
 from vasae.models.factory import get_blackbox_model
@@ -18,9 +21,62 @@ from vasae.utils.log import get_logger
 from vasae.utils.seed import set_seed
 
 
+def run_epoch(
+    *,
+    model: SAEModel,
+    loader,
+    optimizer: optim.Optimizer,
+    metrics: MetricComposer,
+    device,
+    logger: Logger,
+    train: bool,
+    epoch: int,
+    split: str,
+    train_cfg: TrainConfig,
+):
+    model.train() if train else model.eval()
+
+    for batch_i, data in enumerate(loader):
+        activations = data["activations"]
+        activations = activations.to(device)
+
+        if train:
+            optimizer.zero_grad()
+
+        with torch.set_grad_enabled(train):
+            output: SAEOutput = model(activations)
+            decoded = output.hidden_states_recon
+            eval_outcomes = metrics.compute({"data": activations, "decoded": decoded})
+
+            if train:
+                output.loss.backward()
+                optimizer.step()
+
+        logger.info(
+            f"[{split}] Epoch {epoch+1}/{train_cfg.num_epochs} "
+            f"batch {batch_i+1}/{len(loader)} "
+            f"loss {output.loss.item():.4f} "
+            f"acc: {eval_outcomes['logitlens_acc']*100:.2f}%"
+        )
+
+        wandb.log(
+            {
+                f"{split}/loss": output.loss.item(),
+                f"{split}/loss_recons": output.recon_loss.item(),
+                f"{split}/loss_l1": output.l1_loss.item(),
+                f"{split}/acc": eval_outcomes["logitlens_acc"],
+            },
+            step=epoch * len(loader) + batch_i,
+        )
+
+        if train_cfg.max_batchsize > 0 and batch_i >= train_cfg.max_batchsize:
+            break
+
+
 def train_model(
     model: SAEModel,
     *,
+    optimizer: optim.Optimizer,
     train_cfg: TrainConfig,
     train_loader,
     valid_loader,
@@ -28,74 +84,34 @@ def train_model(
     metrics: MetricComposer,
     device,
 ):
-    optimizer = optim.Adam(model.parameters(), lr=train_cfg.lr)
-    logger.info(f"use Adam with lr={train_cfg.lr}")
 
     for epoch in range(train_cfg.num_epochs):
-        model.train()
+        # train
+        train_out = train.train_one_epoch(
+            model=model,
+            loader=train_loader,
+            train_cfg=train_cfg,
+            device=device,
+            optimizer=optimizer,
+            metrics=metrics,
+            logger=logger,
+            epoch=epoch,
+        )
 
-        for batch_i, data in enumerate(train_loader):
-            data = data.to(device)
-            optimizer.zero_grad()
+        eval_out = evaluate.evaluate(
+            model=model,
+            data_loader=valid_loader,
+            metrics=metrics,
+            device=device,
+            logger=logger,
+        )
 
-            output: SAEOutput = model(data)
-
-            output.loss.backward()
-            optimizer.step()
-            decoded = output.hidden_states_recon
-
-            train_eval_outcomes = metrics.compute({"data": data, "decoded": decoded})
-
-            logger.info(
-                f"[Train] Epoch {epoch+1}/{train_cfg.num_epochs} "
-                f"batch {batch_i+1}/{len(train_loader)} "
-                f"loss {output.loss.item():.4f} "
-                f"acc: {train_eval_outcomes["logitlens_acc"] * 100:.2f}% "
-            )
-
-            wandb.log(
-                {
-                    "train/loss": output.loss,
-                    "train/loss_recons": output.recon_loss,
-                    "train/loss_l1": output.l1_loss,
-                    "train/acc": train_eval_outcomes["logitlens_acc"],
-                }
-            )
-
-            if train_cfg.max_batchsize > 0 and batch_i >= train_cfg.max_batchsize:
-                logger.debug(f"break at batch {batch_i}")
-                break
-
-        model.eval()
-
-        with torch.no_grad():
-            for batch_i, data in enumerate(valid_loader):
-                data = data.to(device)
-                output = model(data)
-                decoded = output.hidden_states_recon
-
-                valid_eval_outcomes = metrics.compute(
-                    {"data": data, "decoded": decoded}
-                )
-                logger.info(
-                    f"[Valid] Epoch {epoch+1}/{train_cfg.num_epochs} "
-                    f"batch {batch_i+1}/{len(valid_loader)} "
-                    f"loss {output.loss.item():.4f} "
-                    f"acc: {valid_eval_outcomes["logitlens_acc"] * 100:.2f}% "
-                )
-
-                wandb.log(
-                    {
-                        "valid/loss": output.loss,
-                        "valid/loss_recons": output.recon_loss,
-                        "valid/loss_l1": output.l1_loss,
-                        "valid/acc": valid_eval_outcomes["logitlens_acc"],
-                    }
-                )
-
-                if train_cfg.max_batchsize > 0 and batch_i >= train_cfg.max_batchsize:
-                    logger.debug(f"break at batch {batch_i}")
-                    break
+        wandb.log(
+            {
+                **{f"train/{k}": v for k, v in train_out.items()},
+                **{f"valid/{k}": v for k, v in eval_out.items()},
+            },
+        )
 
 
 def parse_args():
@@ -140,7 +156,9 @@ def main():
     logger = get_logger(log_path)
     logger.info(vars(args))
 
-    train_loader, valid_loader, _ = get_dataloader(data_cfg, system_cfg["seed"])
+    train_loader, valid_loader, test_loader = get_dataloader(
+        data_cfg, system_cfg["seed"]
+    )
 
     blackbox_model, _ = get_blackbox_model(
         cfg["blackbox_model_cfg"]["model_name"],
@@ -166,13 +184,20 @@ def main():
     # wandb
     if system_cfg["wandb"]:
         wandb.init(
-            project="VASAE", name=cfg["exp_name"], config={"cfg_path": args.config}
+            project="VASAE",
+            name=cfg["exp_name"],
+            group=system_cfg.get("wandb_group", None),
+            config={"cfg_path": args.config},
         )
     else:
         wandb.init(mode="disabled")
 
+    optimizer = optim.Adam(model.parameters(), lr=train_cfg.lr)
+    logger.info(f"use Adam with lr={train_cfg.lr}")
+
     train_model(
         model,
+        optimizer=optimizer,
         train_cfg=train_cfg,
         train_loader=train_loader,
         valid_loader=valid_loader,
@@ -184,6 +209,29 @@ def main():
     # save model
     torch.save(model.state_dict(), model_path)
     logger.info(f"save model in {model_path}")
+
+    # test
+    outcome = evaluate.evaluate(
+        model=model,
+        data_loader=test_loader,
+        metrics=metrics,
+        device=system_cfg["device"],
+        logger=logger,
+    )
+
+    logger.info(
+        f"[Test] "
+        f"loss {outcome["loss_reconst"]:.4f} ± {outcome["loss_reconst_std"]:.4f} "
+        f"acc: {outcome["acc"] * 100:.2f}% "
+    )
+
+    wandb.log(
+        {
+            "test/loss_recons": outcome["loss_reconst"],
+            "test/loss_recons_std": outcome["loss_reconst_std"],
+            "test/acc": outcome["acc"],
+        }
+    )
 
     wandb.finish()
 

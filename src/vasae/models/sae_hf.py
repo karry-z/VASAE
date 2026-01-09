@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from pathlib import Path
 from typing import Any, Dict, Optional, Tuple
 
 import torch
@@ -119,7 +120,7 @@ class SAEConfig(PretrainedConfig):
         l1_coeff: float = 0.0,  # only meaningful if sparsity_type == "none"
         tied_decoder: bool = False,  # if True, use attach_embedding() to tie
         mse_reduction: str = "mean",  # "mean" or "none" (we still provide loss_per_sample)
-        sae_save_path: str = "",
+        sae_save_path: Path | None = None,
         freeze_decoder: bool = True,
         **kwargs,
     ):
@@ -265,9 +266,7 @@ class SAEModel(PreTrainedModel):
             mse_per = F.mse_loss(xr, x, reduction="none").mean(dim=1)  # (B,)
         else:
             # (B, ... , D) -> mean over dims 1..end
-            mse_per = F.mse_loss(xr, x, reduction="none").mean(
-                dim=tuple(range(1, x.ndim))
-            )
+            mse_per = F.mse_loss(xr, x, reduction="none").mean(dim=-1)
 
         recon_loss = mse_per.mean()
 
