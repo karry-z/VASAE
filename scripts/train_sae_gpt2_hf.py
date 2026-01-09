@@ -1,7 +1,5 @@
 import argparse
 import runpy
-from gc import disable
-from json import load
 from logging import Logger
 from pathlib import Path
 
@@ -15,7 +13,7 @@ from vasae.data.dataset import get_dataloader
 from vasae.engine import evaluate, train
 from vasae.metrics.interface import MetricComposer
 from vasae.metrics.logitlens import LogitLens, LogitLensAccuracy, LogitLensMetric
-from vasae.models.factory import get_blackbox_model
+from vasae.models.factory import load_embeding_layer, load_unembeding_layer
 from vasae.models.sae_hf import SAEConfig, SAEModel, SAEOutput
 from vasae.utils.log import get_logger
 from vasae.utils.seed import set_seed
@@ -160,23 +158,19 @@ def main():
         data_cfg, system_cfg["seed"]
     )
 
-    blackbox_model, _ = get_blackbox_model(
-        cfg["blackbox_model_cfg"]["model_name"],
-        device,
-    )
+    emb = load_embeding_layer(cfg["blackbox_model_cfg"])
+    unemb = load_unembeding_layer(cfg["blackbox_model_cfg"])
 
-    vocab_size, model_dim = blackbox_model.transformer.wte.weight.shape
+    vocab_size, model_dim = emb.weight.shape
 
     sae_cfg.dim_input = model_dim
     sae_cfg.dim_sparse = vocab_size
     model = SAEModel(sae_cfg).to(device)
     if sae_cfg.tied_decoder:
-        model.attach_embedding(
-            blackbox_model.transformer.wte, freeze=sae_cfg.freeze_decoder
-        )
+        model.attach_embedding(emb, freeze=sae_cfg.freeze_decoder)
 
     # train
-    logitlens = LogitLens(blackbox_model.lm_head)
+    logitlens = LogitLens(unemb)
     logitlens_acc = LogitLensAccuracy()
 
     metrics = MetricComposer([LogitLensMetric(logitlens, logitlens_acc)])

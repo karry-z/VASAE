@@ -1,3 +1,7 @@
+from dataclasses import dataclass
+from pathlib import Path
+
+import torch
 import torch.nn as nn
 from transformers import model_addition_debugger_context
 
@@ -43,3 +47,17 @@ def get_blackbox_model(model_name, device):
     model = GPT2LMHeadModel.from_pretrained(model_name)
     model.to(device).eval()
     return model, tokenizer
+
+
+@dataclass
+class BlackBoxModelConfig:
+    name: str = "gpt2"
+    dir: Path | None = None
+
+
+def load_unembeding_layer(cfg: BlackBoxModelConfig) -> nn.Linear:
+    return torch.load(cfg.dir / "unemb.pth", weights_only=False)
+
+
+def load_embeding_layer(cfg: BlackBoxModelConfig) -> nn.Embedding:
+    return torch.load(cfg.dir / "emb.pth", weights_only=False)

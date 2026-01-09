@@ -71,5 +71,7 @@ class LogitLensMetric:
             "logitlens_acc": self.logitlens_acc.compute(
                 data_ids.flatten().tolist(),
                 recons_ids.flatten().tolist(),
-            )
+            ),
+            "data_ids": data_ids.flatten().tolist(),
+            "recons_ids": recons_ids.flatten().tolist(),
         }

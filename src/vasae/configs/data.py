@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from pathlib import Path
 
 
 @dataclass
@@ -9,4 +10,4 @@ class DataConfig:
     use_centralize: bool = True
     meta_path: str = ""
     layer_name: str = ""
-    data_dir: str = ""
+    data_dir: Path = None

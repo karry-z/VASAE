@@ -1,3 +1,5 @@
+from pathlib import Path
+
 from vasae.models.sae_hf import SAEConfig
 
 sae_cfg = SAEConfig(
@@ -5,7 +7,7 @@ sae_cfg = SAEConfig(
     sparsity_type="batch_topk",
     k=8,
     per_item_in_eval=False,
-    nonneg_latents=True,
+    nonneg_latents=False,
     l1_coeff=0,
-    tied_decoder=False,
+    tied_decoder=True,
 )

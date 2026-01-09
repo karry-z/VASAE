@@ -35,10 +35,10 @@ class GPT2LayerActivations(Dataset):
 
     def __init__(self, data_cfg: DataConfig):
         self.layer_name = data_cfg.layer_name
-        self.meta_path = data_cfg.meta_path
+        self.meta_path = data_cfg.data_dir / "meta.json"
         self.use_centralize = data_cfg.use_centralize
 
-        data_folder = Path(self.meta_path).parent
+        data_folder = data_cfg.data_dir
         # load meta
         meta = load_meta(Path(self.meta_path))
 
@@ -83,11 +83,7 @@ class GPT2LayerActivations(Dataset):
 
 def get_dataloader(data_cfg, seed):
     generator = torch.Generator().manual_seed(seed)
-    dataset = GPT2LayerActivations(
-        data_cfg.meta_path,
-        data_cfg.layer_name,
-        data_cfg.use_centralize,
-    )
+    dataset = GPT2LayerActivations(data_cfg=data_cfg)
 
     # split into train, valid, test 7:2:1
     train_size = int(0.7 * len(dataset))

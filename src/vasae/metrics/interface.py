@@ -38,5 +38,25 @@ class MetricComposer:
         preds = eval_pred  # TODO
         results = {}
         for metric in self.metrics:
-            results.update(metric(preds))
+            results.update(metric.compute(preds))
         return results
+
+
+class Aggregator:
+    def __init__(self):
+        self.sums = {}
+        self.counts = {}
+
+    def add(self, batch_metrics: Dict[str, float], batch_size: int):
+        for k, v in batch_metrics.items():
+            if v is None:
+                continue
+            if hasattr(v, "detach"):
+                v = v.detach()
+            if hasattr(v, "item"):
+                v = v.item()
+            self.sums[k] = self.sums.get(k, 0.0) + v * batch_size
+            self.counts[k] = self.counts.get(k, 0) + batch_size
+
+    def compute(self):
+        return {k: self.sums[k] / self.counts[k] for k in self.sums}
