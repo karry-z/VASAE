@@ -11,7 +11,6 @@ from vasae.data.dataset import get_dataloader
 from vasae.metrics.logitlens import LogitLens, LogitLensAccuracy
 from vasae.models.factory import VASAE, get_blackbox_model, get_sae_model
 from vasae.utils.log import get_logger
-from vasae.utils.path import prepare_paths
 from vasae.utils.seed import set_seed
 
 

@@ -28,7 +28,6 @@ class LogitLens:
         return {
             "token_ids": token_ids,
             "token_probs": token_probs,
-            "token_probs": token_probs,
             "probs": probs,
         }
 
@@ -38,7 +37,7 @@ class LogitLensAccuracy:
         reconstruct_tokens = np.array(reconstruct_tokens)
         tokens = np.array(tokens)
         correct = reconstruct_tokens == tokens
-        return np.mean(correct)
+        return np.mean(correct).item()
 
 
 class LogitLensMetric:

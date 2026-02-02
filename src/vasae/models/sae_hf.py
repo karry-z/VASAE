@@ -272,9 +272,11 @@ class SAEModel(PreTrainedModel):
 
         l1_loss = None
         total_loss = recon_loss
+        recon_loss = recon_loss.detach().cpu().item()
         if self.config.l1_coeff > 0:
             l1_loss = z.abs().mean()
             total_loss = total_loss + self.config.l1_coeff * l1_loss
+            l1_loss = l1_loss.detach().cpu().item()
 
         if not return_dict:
             outs = (recon, z)
