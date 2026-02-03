@@ -122,6 +122,8 @@ class SAEConfig(PretrainedConfig):
         mse_reduction: str = "mean",  # "mean" or "none" (we still provide loss_per_sample)
         sae_save_path: Path | None = None,
         freeze_decoder: bool = True,
+        use_lowrank: bool = True,
+        lowrank_coeff: float = 0.1,
         **kwargs,
     ):
         super().__init__(**kwargs)
@@ -137,6 +139,8 @@ class SAEConfig(PretrainedConfig):
         self.mse_reduction = mse_reduction
         self.sae_save_path = sae_save_path
         self.freeze_decoder = freeze_decoder
+        self.use_lowrank = use_lowrank
+        self.lowrank_coeff = lowrank_coeff
 
         self._validate()
 
@@ -190,6 +194,11 @@ class SAEModel(PreTrainedModel):
             config.dim_sparse, config.dim_input, bias=(not config.tied_decoder)
         )
 
+        self.decoder_lowrank = nn.Sequential(
+            nn.Linear(config.dim_sparse, config.dim_sparse // 2),
+            nn.Linear(config.dim_sparse // 2, config.dim_input),
+        )
+
         self._tied_embedding: Optional[nn.Embedding] = None
         if config.tied_decoder:
             # We'll freeze decoder weight by default; actual tying via attach_embedding() TODO
@@ -240,7 +249,10 @@ class SAEModel(PreTrainedModel):
         return pre, z
 
     def decode(self, z: torch.Tensor) -> torch.Tensor:
-        return self.decoder(z)
+        out = self.decoder(z)
+        if self.config.use_lowrank:
+            out += self.config.lowrank_coeff * self.decoder_lowrank(z)
+        return out
 
     def forward(
         self,
