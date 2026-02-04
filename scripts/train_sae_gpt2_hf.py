@@ -19,59 +19,6 @@ from vasae.utils.log import get_logger
 from vasae.utils.seed import set_seed
 
 
-def run_epoch(
-    *,
-    model: SAEModel,
-    loader,
-    optimizer: optim.Optimizer,
-    metrics: MetricComposer,
-    device,
-    logger: Logger,
-    train: bool,
-    epoch: int,
-    split: str,
-    train_cfg: TrainConfig,
-):
-    model.train() if train else model.eval()
-
-    for batch_i, data in enumerate(loader):
-        activations = data["activations"]
-        activations = activations.to(device)
-
-        if train:
-            optimizer.zero_grad()
-
-        with torch.set_grad_enabled(train):
-            output: SAEOutput = model(activations)
-            decoded = output.hidden_states_recon
-            eval_outcomes = metrics.compute({"data": activations, "decoded": decoded})
-
-            if train:
-                output.loss.backward()
-                optimizer.step()
-
-        logger.info(
-            f"[{split}] Epoch {epoch+1}/{train_cfg.num_epochs} "
-            f"batch {batch_i+1}/{len(loader)} "
-            f"loss {output.loss.item():.4f} "
-            f"acc: {eval_outcomes['logitlens_acc']*100:.2f}%"
-        )
-
-        wandb.log(
-            {
-                f"{split}/loss": output.loss.item(),
-                f"{split}/loss_recons": output.recon_loss.item(),
-                f"{split}/loss_l1": output.l1_loss.item(),
-                f"{split}/acc": eval_outcomes["logitlens_acc"],
-                f"{split}/loss_lowrank": output.loss_lowrank,
-            },
-            step=epoch * len(loader) + batch_i,
-        )
-
-        if train_cfg.max_batchsize > 0 and batch_i >= train_cfg.max_batchsize:
-            break
-
-
 def train_model(
     model: SAEModel,
     *,
