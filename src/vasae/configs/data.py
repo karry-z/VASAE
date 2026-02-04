@@ -13,4 +13,5 @@ class DataConfig:
     data_dir: str | Path | None = None
 
     def __post_init__(self):
-        self.data_dir = Path(self.data_dir)
+        if self.data_dir is not None:
+            self.data_dir = Path(self.data_dir)

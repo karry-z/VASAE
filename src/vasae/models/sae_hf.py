@@ -100,6 +100,7 @@ class SAEOutput(ModelOutput):
     sparse_activations: Optional[torch.Tensor] = None
     pre_activations: Optional[torch.Tensor] = None
     loss_per_sample: Optional[torch.Tensor] = None
+    loss_lowrank: Optional[float] = None
 
 
 # -------------------------
@@ -206,6 +207,8 @@ class SAEModel(PreTrainedModel):
             if self.decoder.bias is not None:
                 self.decoder.bias.requires_grad_(False)  # TODO：fix or not
 
+        self.learnable_lowrank_coeff = nn.Parameter(torch.randn(config.dim_input))
+
         self.post_init()
 
     @torch.no_grad()
@@ -251,7 +254,7 @@ class SAEModel(PreTrainedModel):
     def decode(self, z: torch.Tensor) -> torch.Tensor:
         out = self.decoder(z)
         if self.config.use_lowrank:
-            out += self.config.lowrank_coeff * self.decoder_lowrank(z)
+            out += self.learnable_lowrank_coeff * self.decoder_lowrank(z)
         return out
 
     def forward(
@@ -290,6 +293,11 @@ class SAEModel(PreTrainedModel):
             total_loss = total_loss + self.config.l1_coeff * l1_loss
             l1_loss = l1_loss.detach().cpu().item()
 
+        # low rank loss
+        if self.config.use_lowrank:
+            loss_lowrank = 0.01 * torch.sum(self.learnable_lowrank_coeff**2)
+            total_loss += loss_lowrank
+
         if not return_dict:
             outs = (recon, z)
             if output_pre_activations:
@@ -304,6 +312,9 @@ class SAEModel(PreTrainedModel):
             sparse_activations=z,
             pre_activations=(pre if output_pre_activations else None),
             loss_per_sample=(mse_per if output_loss_per_sample else None),
+            loss_lowrank=(
+                loss_lowrank.detach().cpu().item() if self.config.use_lowrank else None
+            ),
         )
 
 

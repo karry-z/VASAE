@@ -63,6 +63,7 @@ def run_epoch(
                 f"{split}/loss_recons": output.recon_loss.item(),
                 f"{split}/loss_l1": output.l1_loss.item(),
                 f"{split}/acc": eval_outcomes["logitlens_acc"],
+                f"{split}/loss_lowrank": output.loss_lowrank,
             },
             step=epoch * len(loader) + batch_i,
         )

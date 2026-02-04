@@ -37,6 +37,7 @@ def evaluate(model, data_loader, metrics: MetricComposer, device, logger):
                 "loss_reconst": output.recon_loss,
                 "loss_l1": output.l1_loss,
                 "logitlens_acc": eval_outcomes["logitlens_acc"],
+                "loss_lowrank": output.loss_lowrank,
             },
             batchsize,
         )
@@ -50,4 +51,4 @@ def evaluate(model, data_loader, metrics: MetricComposer, device, logger):
     }
     if loss_l1:
         res["loss_l1"] = np.array(loss_l1).mean().item()
-    return res
+    return aggregator.compute()
