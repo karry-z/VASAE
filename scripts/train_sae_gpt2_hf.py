@@ -263,16 +263,16 @@ def main():
 
     logger.info(
         f"[Test] "
-        f"loss {outcome["loss_reconst"]:.4f} ± {outcome["loss_reconst_std"]:.4f} "
-        f"acc: {outcome["acc"] * 100:.2f}% "
+        f"loss {outcome["loss"]:.4f}"
+        f"loss_reconst {outcome["loss_reconst"]:.4f}"
+        f"acc: {outcome["logitlens_acc"] * 100:.2f}% "
+        f"loss_lowrank {outcome["loss_lowrank"]:.4f}"
     )
 
     wandb.log(
         {
-            "test/loss_recons": outcome["loss_reconst"],
-            "test/loss_recons_std": outcome["loss_reconst_std"],
-            "test/acc": outcome["acc"],
-        }
+            **{f"test/{k}": v for k, v in outcome.items()},
+        },
     )
 
     wandb.finish()
