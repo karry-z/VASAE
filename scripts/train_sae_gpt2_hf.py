@@ -53,6 +53,7 @@ def train_model(
             metrics=metrics,
             device=device,
             logger=logger,
+            max_batchsize=train_cfg.max_batchsize,
         )
 
         wandb.log(
@@ -259,6 +260,7 @@ def main():
         metrics=metrics,
         device=system_cfg["device"],
         logger=logger,
+        max_batchsize=train_cfg.max_batchsize,
     )
 
     logger.info(

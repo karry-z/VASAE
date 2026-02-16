@@ -53,4 +53,7 @@ def train_one_epoch(
                 f"acc: {eval_outcomes['logitlens_acc']*100:.2f}%"
             )
 
+        if train_cfg.max_batchsize > 0 and batch_i > train_cfg.max_batchsize:
+            break
+
     return aggregator.compute()
