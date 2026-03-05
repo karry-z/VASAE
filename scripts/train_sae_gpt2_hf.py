@@ -1,5 +1,4 @@
 import argparse
-from logging import Logger
 from pathlib import Path
 
 import torch
@@ -17,7 +16,7 @@ from vasae.models.factory import (
     load_embeding_layer,
     load_unembeding_layer,
 )
-from vasae.models.sae_hf import SAEConfig, SAEModel, SAEOutput
+from vasae.models.sae_hf import SAEConfig, SAEModel
 from vasae.utils.log import get_logger
 from vasae.utils.seed import set_seed
 
@@ -71,7 +70,7 @@ def parse_args():
     parser.add_argument("--train-batchsize", type=int, default=128)
     parser.add_argument("--valid-batchsize", type=int, default=128)
     parser.add_argument("--test-batchsize", type=int, default=128)
-    parser.add_argument("--use-centralize", type=bool, default=True)
+    parser.add_argument("--use-centralize", action="store_true")
     parser.add_argument(
         "--layer-name",
         type=str,
@@ -89,19 +88,20 @@ def parse_args():
     parser.add_argument("--encoder-type", type=str, default="linear")
     parser.add_argument("--sparsity-type", type=str, default="topk")
     parser.add_argument("--k", type=int, default=8)
-    parser.add_argument("--per-item-in-eval", type=bool, default=False)
-    parser.add_argument("--nonneg-latents", type=bool, default=True)
+    parser.add_argument("--per-item-in-eval", action="store_true")
+    parser.add_argument("--nonneg-latents", action="store_true")
     parser.add_argument("--l1-coeff", type=float, default=0.0)
-    parser.add_argument("--tied-decoder", type=bool, default=True)
+    parser.add_argument("--no-tied-decoder", action="store_true")
     parser.add_argument("--mse-reduction", type=str, default="mean")
     parser.add_argument(
         "--sae-save-path",
         type=str,
         default=r"/scratch/b5bq/pu22650.b5bq/VASAE_out/sae.pth",
     )
-    parser.add_argument("--freeze-decoder", type=bool, default=True)
-    parser.add_argument("--use-lowrank", type=bool, default=True)
+    parser.add_argument("--no-freeze-decoder", action="store_true")
+    parser.add_argument("--use-lowrank", action="store_true")
     parser.add_argument("--lowrank-coeff", type=float, default=0.1)
+    parser.add_argument("--use-abs-topk", action="store_true")
 
     # train config
     parser.add_argument("--num-epochs", type=int, default=20)
@@ -111,7 +111,7 @@ def parse_args():
     # system config
     parser.add_argument("--device", type=str, default="cuda")
     parser.add_argument("--seed", type=int, default=42)
-    parser.add_argument("--wandb", type=bool, default=True)
+    parser.add_argument("--no-wandb", action="store_true")
     parser.add_argument("--wandb-group", type=str, default="test")
 
     # blackbox model config
@@ -149,12 +149,13 @@ def parse_sae_cfg(args) -> SAEConfig:
         per_item_in_eval=args.per_item_in_eval,
         nonneg_latents=args.nonneg_latents,
         l1_coeff=args.l1_coeff,
-        tied_decoder=args.tied_decoder,
+        tied_decoder=not args.no_tied_decoder,
         mse_reduction=args.mse_reduction,
         sae_save_path=args.sae_save_path,
-        freeze_decoder=args.freeze_decoder,
+        freeze_decoder=not args.no_freeze_decoder,
         use_lowrank=args.use_lowrank,
         lowrank_coeff=args.lowrank_coeff,
+        use_abs_topk=args.use_abs_topk,
     )
 
 
@@ -170,7 +171,7 @@ def parse_system_cfg(args) -> dict:
     return {
         "device": args.device,
         "seed": args.seed,
-        "wandb": args.wandb,
+        "wandb": not args.no_wandb,
         "wandb_group": args.wandb_group,
     }
 
@@ -268,7 +269,7 @@ def main():
         f"loss {outcome["loss"]:.4f}"
         f"loss_reconst {outcome["loss_reconst"]:.4f}"
         f"acc: {outcome["logitlens_acc"] * 100:.2f}% "
-        f"loss_lowrank {outcome["loss_lowrank"]:.4f}"
+        f"loss_lowrank {outcome.get("loss_lowrank", 0):.4f}"
     )
 
     wandb.log(

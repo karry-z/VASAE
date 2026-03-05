@@ -13,13 +13,17 @@ from transformers.utils import ModelOutput
 # Sparsity modules
 # -------------------------
 class TopKSparse(nn.Module):
-    def __init__(self, k: int):
+    def __init__(self, k: int, use_abs: bool = False):
         super().__init__()
         self.k = int(k)
+        self.use_abs = bool(use_abs)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         k = min(self.k, x.size(-1))
-        _, idx = torch.topk(x, k, dim=-1)
+        if self.use_abs:
+            _, idx = torch.topk(torch.abs(x), k, dim=-1)
+        else:
+            _, idx = torch.topk(x, k, dim=-1)
         mask = torch.zeros_like(x)
         mask.scatter_(-1, idx, 1.0)
         return x * mask
@@ -33,15 +37,19 @@ class BatchTopKSparse(nn.Module):
     If per_item_in_eval=True, uses per-item topk during eval to avoid cross-sample coupling.
     """
 
-    def __init__(self, k: int, per_item_in_eval: bool = False):
+    def __init__(self, k: int, per_item_in_eval: bool = False, use_abs: bool = False):
         super().__init__()
         self.k = int(k)
         self.per_item_in_eval = bool(per_item_in_eval)
+        self.use_abs = bool(use_abs)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         if (not self.training) and self.per_item_in_eval:
             k = min(self.k, x.size(-1))
-            _, idx = torch.topk(x, k, dim=-1)
+            if self.use_abs:
+                _, idx = torch.topk(torch.abs(x), k, dim=-1)
+            else:
+                _, idx = torch.topk(x, k, dim=-1)
             mask = torch.zeros_like(x)
             mask.scatter_(-1, idx, 1.0)
             return x * mask
@@ -52,7 +60,10 @@ class BatchTopKSparse(nn.Module):
         k_total = min(k_total, x.numel())  # safety
 
         flat = x.reshape(-1)
-        _, idx = torch.topk(flat, k_total, sorted=False)
+        if self.use_abs:
+            _, idx = torch.topk(torch.abs(flat), k_total, sorted=False)
+        else:
+            _, idx = torch.topk(flat, k_total, sorted=False)
         mask = torch.zeros_like(flat)
         mask[idx] = 1.0
         return (flat * mask).reshape_as(x)
@@ -125,6 +136,7 @@ class SAEConfig(PretrainedConfig):
         freeze_decoder: bool = True,
         use_lowrank: bool = True,
         lowrank_coeff: float = 0.1,
+        use_abs_topk: bool = False,  # use absolute value for topk selection
         **kwargs,
     ):
         super().__init__(**kwargs)
@@ -142,6 +154,7 @@ class SAEConfig(PretrainedConfig):
         self.freeze_decoder = freeze_decoder
         self.use_lowrank = use_lowrank
         self.lowrank_coeff = lowrank_coeff
+        self.use_abs_topk = bool(use_abs_topk)
 
         self._validate()
 
@@ -183,10 +196,10 @@ class SAEModel(PreTrainedModel):
             self.sparsity = IdentitySparsity()
             # relu
         elif config.sparsity_type == "topk":
-            self.sparsity = TopKSparse(config.k)
+            self.sparsity = TopKSparse(config.k, use_abs=config.use_abs_topk)
         else:
             self.sparsity = BatchTopKSparse(
-                config.k, per_item_in_eval=config.per_item_in_eval
+                config.k, per_item_in_eval=config.per_item_in_eval, use_abs=config.use_abs_topk
             )
 
         # decoder

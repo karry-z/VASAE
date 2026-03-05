@@ -1,0 +1,37 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/home/zkr/work/test/.claude/hooks/block-pip.sh"
+          },
+          {
+            "type": "command",
+            "command": "/home/zkr/work/test/.claude/hooks/block-venv.sh"
+          }
+        ]
+      },
+      {
+        "matcher": "Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/home/zkr/work/test/.claude/hooks/block-pyproject-deps.sh"
+          }
+        ]
+      },
+      {
+        "matcher": "Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/home/zkr/work/test/.claude/hooks/block-pyproject-deps.sh"
+          }
+        ]
+      }
+    ]
+  }
+}

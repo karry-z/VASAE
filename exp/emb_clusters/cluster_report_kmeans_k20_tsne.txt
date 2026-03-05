@@ -1,0 +1,60 @@
+=== Cluster 0  (3508 tokens) ===
+' sec', ' supp', ' diff', ' prov', ' eff', ' differe', ' produ', ' requ', ' det', ' ext', ' exper', ' gener', ' offic', ' prog', ' poss', ' expl', ' develop', ' resp', ' comple', ' contro', ' belie', ' incre', ' contin', ' opp', ' commun', ' invest', ' appro', ' partic', ' adv', ' beh', ' ide', ' rece', ' oper', ' aff', ' ann', ' est', ' rese', ' occ', ' vers', ' econom', ' desc', ' elect', ' sever', ' activ', ' orig', ' creat', ' understand', ' ident', ' prob', ' employ'  ... and 3458 more
+
+=== Cluster 1  (2673 tokens) ===
+'Th', 'It', 'We', 'Wh', 'This', 'St', 'If', 'But', 'He', 'You', 'There', 'And', 'For', 'An', 'What', 'On', 'When', 'Al', 'So', 'How', 'Sh', 'That', 'To', 'Cl', 'Ph', 'Ad', 'Tr', 'No', 'At', 'Pro', 'They', 'Re', 'Con', 'Ex', 'Un', 'Le', 'With', 'Ar', 'One', 'All', 'After', 'She', 'Sc', 'Im', 'Bl', 'While', 'Pl', 'My', 'Not', 'New'  ... and 2623 more
+
+=== Cluster 2  (2240 tokens) ===
+' unt', ' meas', ' indust', ' significant', ' quite', ' difficult', ' easy', ' serious', ' opportun', ' langu', ' candid', ' wond', ' completely', ' extreme', ' obvious', ' interesting', ' easily', ' particularly', ' nice', ' powerful', ' unf', ' certainly', ' slight', ' perhaps', ' aware', ' highly', ' effective', ' rare', ' clearly', ' apparent', ' supposed', ' extremely', ' useful', ' easier', ' unc', ' slightly', ' mostly', ' willing', ' definitely', ' worse', ' sudden', ' massive', ' incred', ' dangerous', ' valid', ' weak', ' beautiful', ' truly', ' amazing', ' entirely'  ... and 2190 more
+
+=== Cluster 3  (3342 tokens) ===
+'her', 'rom', 'nt', 'pe', 'ment', 'red', 'ear', 'rou', 'ther', 'ber', 'act', 'cc', 'very', 'cl', 'so', 'ign', 'ven', 'ord', 'own', 'ru', 'vel', 'port', 'du', 'mer', 'lic', 'form', 'vers', 'amp', 'hed', 'ident', 'rough', 'sel', 'round', 'ject', 'fore', 'ced', 'ng', 'rit', 'row', 'day', 'rib', 'hen', 'other', 'arg', 'ram', 'ting', 'its', 'ble', 'ward', 'ms'  ... and 3292 more
+
+=== Cluster 4  (2001 tokens) ===
+' told', ' got', ' didn', ' came', ' took', ' seen', ' went', ' sent', ' asked', ' started', ' taken', ' added', ' reported', ' wanted', ' cannot', ' seems', ' wasn', ' saw', ' began', ' lost', ' became', ' wrote', ' sold', ' held', ' released', ' received', ' created', ' provided', ' played', ' turned', ' gave', ' killed', ' felt', ' involved', ' led', ' heard', ' knew', ' included', ' happened', ' decided', ' tried', ' worked', ' looked', ' allowed', ' built', ' considered', ' brought', ' published', ' fell', ' increased'  ... and 1951 more
+
+=== Cluster 5  (678 tokens) ===
+' 201', ' 19', ' 200', ' 18', ' 15', ' 11', ' 16', ' 14', ' 13', ' 30', ' 199', ' 17', ' 25', ' 24', ' 50', ' 23', ' 21', ' 40', ' 22', ' 28', ' 26', ' 27', ' 198', ' 29', ' 60', ' 31', ' 35', ' 2008', ' 2009', ' 32', ' 80', ' 90', ' 45', ' 70', ' 2007', ' 38', ' 36', ' 33', ' 2000', ' 48', ' 2006', ' 34', ' 39', ' 2005', ' 49', ' nine', ' 37', ' 500', ' 42', ' 75'  ... and 628 more
+
+=== Cluster 6  (1219 tokens) ===
+'ating', ' using', 'ending', ' making', ' having', ' doing', ' getting', ' looking', ' trying', 'ashing', ' taking', ' saying', ' playing', 'izing', ' talking', 'using', ' giving', ' reading', ' writing', ' thinking', ' increasing', ' leading', ' moving', ' growing', 'ifying', ' feeling', ' leaving', ' fighting', ' adding', ' seeing', ' shooting', ' creating', ' showing', ' understanding', ' spending', ' calling', ' setting', ' learning', ' asking', ' holding', ' hearing', ' testing', ' finding', ' waiting', ' providing', ' watching', ' becoming', ' standing', ' driving', ' allowing'  ... and 1169 more
+
+=== Cluster 7  (3234 tokens) ===
+' That', ' Rep', ' Comm', ' When', ' Pres', ' States', ' Ob', ' What', ' Res', ' Sec', ' Eng', ' With', ' However', ' Dep', ' Act', ' Ass', ' Inst', ' After', ' These', ' Cont', ' His', ' Intern', ' Spe', ' Now', ' Count', ' Some', ' While', ' Def', ' Gener', ' News', ' Add', ' Court', ' Comp', ' More', ' Dis', ' Up', ' Of', ' Off', ' Then', ' Rec', ' Center', ' Yes', ' Mod', ' Your', ' Even', ' Here', ' Inc', ' Att', ' Get', ' Lab'  ... and 3184 more
+
+=== Cluster 8  (3860 tokens) ===
+' wor', ' whe', ' kn', ' tw', ' spe', ' fe', ' bet', ' pol', ' bu', ' sy', ' ke', ' bel', ' gu', ' hel', ' stud', ' col', ' sim', ' num', ' ear', ' mem', ' cour', ' serv', ' wom', ' che', ' cre', ' grou', ' fam', ' char', ' loc', ' cle', ' fil', ' prot', ' ty', ' ca', ' tra', ' pri', ' hum', ' wr', ' bus', ' bro', ' eas', ' mov', ' bre', ' dri', ' pat', ' mil', ' chang', ' vis', ' prom', ' dr'  ... and 3810 more
+
+=== Cluster 9  (2079 tokens) ===
+'^', '`', '{', '}', '~', '�', '�', '�', '�', '�', '�', '�', '�', '�', '�', '�', '�', '�', '�', '�', '�', '�', '�', '�', '�', '�', '�', '�', '�', '�', '�', '�', '�', '�', '�', '�', '�', '�', '�', '�', '�', '�', '�', '�', '�', '�', '�', '�', '�', '�'  ... and 2029 more
+
+=== Cluster 10  (966 tokens) ===
+'01', '000', '12', '50', '19', '11', '20', '201', '30', '15', '14', '16', '13', '25', '18', '17', '24', '80', '40', '22', '60', '23', '29', '27', '26', '28', '99', '33', '70', '200', '45', '35', '0000', '64', '75', '21', '38', '44', '36', '32', '39', '34', '05', '37', '48', '66', '55', '47', '08', '49'  ... and 916 more
+
+=== Cluster 11  (1921 tokens) ===
+' govern', ' soc', ' polit', ' techn', ' fund', ' polic', ' president', ' political', ' President', ' investig', ' milit', ' Republic', ' benef', ' coun', ' relations', ' Democr', ' Obama', ' educ', ' federal', ' Department', ' particip', ' billion', ' civil', ' economic', ' election', ' Congress', ' financial', ' population', ' nation', ' Republican', ' County', ' director', ' legisl', ' society', ' investigation', ' administration', ' violence', ' education', ' income', ' prison', ' economy', ' officer', ' Senate', ' Govern', ' corpor', ' crime', ' agency', ' Minister', ' religious', ' regist'  ... and 1871 more
+
+=== Cluster 12  (2880 tokens) ===
+'ists', ' games', ' players', ' issues', ' students', ' friends', ' charg', ' groups', ' cases', ' countries', ' questions', ' companies', ' weeks', ' problems', ' leaders', ' officials', ' levels', ' users', ' areas', ' effects', ' reports', ' lives', ' products', ' workers', ' fans', ' systems', ' plans', ' forces', ' ones', ' parents', ' conditions', ' attacks', ' characters', ' teams', ' costs', ' feet', ' studies', ' comments', ' laws', ' claims', ' options', ' files', ' items', ' guys', ' weapons', ' officers', ' values', ' books', ' reasons', ' calls'  ... and 2830 more
+
+=== Cluster 13  (2386 tokens) ===
+'ER', 'IN', 'ON', 'AT', 'AR', 'ES', 'AN', 'OR', 'EN', 'IS', 'AL', 'AS', 'ED', 'IT', 'IC', 'RE', 'AC', 'ST', ' TH', 'ID', 'AM', 'OT', 'LE', 'OU', 'OS', 'OM', 'BC', 'ING', 'ET', 'ION', 'AD', 'US', 'EC', 'AP', ' AM', 'LL', ' PM', ' IS', 'OP', ' IN', ' THE', 'CH', 'BI', ' AP', 'ENT', 'IG', 'OL', ' AN', 'IA', ' ST'  ... and 2336 more
+
+=== Cluster 14  (1590 tokens) ===
+' Americ', ' Euro', ' York', ' Europe', ' America', ' Canad', ' Brit', ' Aust', ' German', ' Israel', ' China', ' Japan', ' Syri', ' Austral', ' Calif', ' Russia', ' Afric', ' Canada', ' Russian', ' Americans', ' European', ' California', ' Islam', ' UK', ' British', ' Tex', ' London', ' Muslim', ' India', ' Iraq', ' Texas', ' Indian', ' Chinese', ' Iran', ' French', ' £', ' Syria', ' Mex', ' Germany', ' England', ' Arab', ' Australia', ' EU', ' Florida', ' Chicago', ' France', ' USA', ' Japanese', ' Korea', ' NFL'  ... and 1540 more
+
+=== Cluster 15  (6313 tokens) ===
+'ith', 'igh', 'ity', 'ort', 'ould', 'ight', 'ust', 'ack', 'ally', 'our', 'ome', 'ect', 'ame', 'ial', 'ice', 'ions', 'ated', 'ous', 'ike', 'ime', 'ake', 'ire', 'ace', 'ary', 'ook', 'ere', 'ile', 'ose', 'orm', 'ult', 'ance', 'ays', 'ence', 'ction', 'ress', 'ations', 'ail', 'ical', 'ount', 'ough', 'ond', 'reat', 'ree', 'ound', 'fter', 'ople', 'ory', 'ition', 'ents', 'ove'  ... and 6263 more
+
+=== Cluster 16  (1328 tokens) ===
+' hist', ' organ', ' anal', ' phys', ' drug', 'sych', ' scient', ' sexual', ' medical', ' dise', ' brain', ' psych', ' patients', ' mechan', ' disease', ' hospital', ' eth', ' chem', 'cohol', ' cancer', ' drugs', ' animal', ' injury', ' mental', ' clot', ' clin', ' hyp', ' diet', ' alcohol', ' scientific', ' marijuana', ' Medic', ' patient', ' prote', ' chemical', ' pregn', ' doctor', ' cann', ' flu', ' phen', ' sympt', ' diagn', ' cere', ' medic', ' therap', ' vacc', ' stim', ' rape', ' femin', ' suicide'  ... and 1278 more
+
+=== Cluster 17  (2055 tokens) ===
+' John', ' Russ', ' Christ', ' Mc', ' Clinton', ' David', ' Paul', ' Jack', ' James', ' Donald', ' Rob', ' Michael', ' Ben', ' William', ' Rich', ' Rober', ' Smith', ' Thom', ' Brown', ' Alex', ' George', ' Phil', ' Matt', ' Scott', ' Lou', ' Mike', ' Johnson', ' Hillary', ' Carol', ' McC', ' Chris', ' Wil', ' Robert', ' Jose', ' Frank', ' Jo', ' Mary', ' Jim', ' Jones', ' Jeff', ' Bush', ' Louis', ' Peter', ' Thomas', ' Joe', ' Lee', ' Martin', ' Jesus', ' Bob', ' Sanders'  ... and 2005 more
+
+=== Cluster 18  (2304 tokens) ===
+'!', '"', '#', '$', '%', '&', "'", '(', ')', '*', '+', ',', '-', '.', '/', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', ':', ';', '<', '=', '>', '?', '@', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R'  ... and 2254 more
+
+=== Cluster 19  (3680 tokens) ===
+' Fr', ' Sy', ' Tw', ' Cent', ' Med', ' Har', ' Pol', ' Sen', ' Sept', ' Sm', ' Ste', ' Aug', ' Af', ' Dav', ' Oct', ' Mus', ' Pe', ' Gl', ' Cour', ' Apr', ' Bro', ' Mich', ' Dragon', ' Ang', ' Ear', ' Cong', ' Ser', ' Mag', ' Wind', ' Serv', ' Feb', ' Pal', ' Char', ' Sim', ' Val', ' Wed', ' Sund', ' Hill', ' Soc', ' Jew', ' Kore', ' Mor', ' Leg', ' Rom', ' Sk', ' Bre', ' Cle', ' Ter', ' Tur', ' Sand'  ... and 3630 more
+
