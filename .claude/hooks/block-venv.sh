@@ -1,15 +1,8 @@
 #!/bin/bash
+# Block venv creation — uv manages the virtualenv
 INPUT=$(cat)
-COMMAND=$(echo "$INPUT" | jq -r '.tool_input.command')
-
-if echo "$COMMAND" | grep -qE '(^|[;&|]\s*)python3?\s+-m\s+venv\b'; then
-    echo "Blocked: use 'uv venv --python <version>' instead of 'python -m venv'" >&2
-    exit 2
+COMMAND=$(echo "$INPUT" | jq -r '.tool_input.command // empty')
+if echo "$COMMAND" | grep -qE 'python -m venv|python3 -m venv|virtualenv'; then
+  echo "BLOCKED: Use 'uv' to manage virtual environments" >&2
+  exit 2
 fi
-
-if echo "$COMMAND" | grep -qE '(^|[;&|]\s*)virtualenv\b'; then
-    echo "Blocked: use 'uv venv --python <version>' instead of 'virtualenv'" >&2
-    exit 2
-fi
-
-exit 0

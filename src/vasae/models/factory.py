@@ -5,15 +5,18 @@ import torch
 import torch.nn as nn
 from transformers import model_addition_debugger_context
 
-from .sae import (
-    VASAE,
-    BatchTopKSAE,
-    KSparse,
-    TopKSAE,
-    VanillaSAE,
-    VASAE_LearnedDecoder,
-    VASAE_ReLU,
-)
+try:
+    from .sae import (
+        VASAE,
+        BatchTopKSAE,
+        KSparse,
+        TopKSAE,
+        VanillaSAE,
+        VASAE_LearnedDecoder,
+        VASAE_ReLU,
+    )
+except ImportError:
+    pass  # Legacy models not available in new layout
 
 
 def get_sae_model(model_name: str, **args) -> nn.Module:
@@ -47,6 +50,17 @@ def get_blackbox_model(model_name, device):
     model = GPT2LMHeadModel.from_pretrained(model_name)
     model.to(device).eval()
     return model, tokenizer
+
+
+def get_llava_model(model_name, device):
+    from transformers import LlavaForConditionalGeneration, AutoProcessor
+
+    processor = AutoProcessor.from_pretrained(model_name)
+    model = LlavaForConditionalGeneration.from_pretrained(
+        model_name, torch_dtype=torch.float16, device_map="auto"
+    )
+    model.eval()
+    return model, processor
 
 
 @dataclass

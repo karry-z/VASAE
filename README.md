@@ -1,0 +1,1 @@
+我们关注一个基础问题：LLM 的中间层 activation 是否可以由少量 token embedding 稀疏重构。基于这一问题，我们提出假设：若中间表示与 token 语义基底对齐，则存在低稀疏度的 embedding 组合，在保持 token 偏好的同时近似重构 activation。为检验该假设，本文采用 SAE 对 activation 进行分解，并将 decoder 约束为 embedding 基底。我们在多个模型与不同层上进行系统实验，使用重构误差、稀疏度以及与原模型输出的 logit/token 一致性作为评估指标。结果将揭示该重构能力在不同层深和模型规模下的变化规律，并给出该解释机制的适用边界。

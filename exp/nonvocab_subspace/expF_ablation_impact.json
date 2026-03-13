@@ -1,0 +1,602 @@
+{
+  "layer_0": {
+    "k=1": {
+      "nonsparse_pcs": {
+        "prediction_change_rate": 0.142578125,
+        "entropy_change": 0.09024243801832199,
+        "kl_divergence": 0.3252950608730316
+      },
+      "activation_pcs": {
+        "prediction_change_rate": 0.0546875,
+        "entropy_change": -0.03955995664000511,
+        "kl_divergence": 0.07218616455793381
+      }
+    },
+    "k=2": {
+      "nonsparse_pcs": {
+        "prediction_change_rate": 0.1875,
+        "entropy_change": 0.03653361275792122,
+        "kl_divergence": 0.5130100250244141
+      },
+      "activation_pcs": {
+        "prediction_change_rate": 0.271484375,
+        "entropy_change": 0.00886834878474474,
+        "kl_divergence": 0.8106879591941833
+      }
+    },
+    "k=4": {
+      "nonsparse_pcs": {
+        "prediction_change_rate": 0.583984375,
+        "entropy_change": 0.1434209793806076,
+        "kl_divergence": 3.0716371536254883
+      },
+      "activation_pcs": {
+        "prediction_change_rate": 0.544921875,
+        "entropy_change": 0.11289830505847931,
+        "kl_divergence": 2.342578887939453
+      }
+    },
+    "k=8": {
+      "nonsparse_pcs": {
+        "prediction_change_rate": 0.6328125,
+        "entropy_change": 0.19403135776519775,
+        "kl_divergence": 3.109025001525879
+      },
+      "activation_pcs": {
+        "prediction_change_rate": 0.646484375,
+        "entropy_change": 0.23427742719650269,
+        "kl_divergence": 3.0993175506591797
+      }
+    }
+  },
+  "layer_1": {
+    "k=1": {
+      "nonsparse_pcs": {
+        "prediction_change_rate": 0.109375,
+        "entropy_change": 0.0410408079624176,
+        "kl_divergence": 0.5757218599319458
+      },
+      "activation_pcs": {
+        "prediction_change_rate": 0.03125,
+        "entropy_change": 0.021528955549001694,
+        "kl_divergence": 0.018364038318395615
+      }
+    },
+    "k=2": {
+      "nonsparse_pcs": {
+        "prediction_change_rate": 0.47265625,
+        "entropy_change": 0.15974977612495422,
+        "kl_divergence": 1.88908052444458
+      },
+      "activation_pcs": {
+        "prediction_change_rate": 0.380859375,
+        "entropy_change": 0.15153171122074127,
+        "kl_divergence": 0.9601962566375732
+      }
+    },
+    "k=4": {
+      "nonsparse_pcs": {
+        "prediction_change_rate": 0.40625,
+        "entropy_change": 0.11829927563667297,
+        "kl_divergence": 2.078587532043457
+      },
+      "activation_pcs": {
+        "prediction_change_rate": 0.48046875,
+        "entropy_change": 0.16879433393478394,
+        "kl_divergence": 1.427706241607666
+      }
+    },
+    "k=8": {
+      "nonsparse_pcs": {
+        "prediction_change_rate": 0.66015625,
+        "entropy_change": 0.21271702647209167,
+        "kl_divergence": 3.1872024536132812
+      },
+      "activation_pcs": {
+        "prediction_change_rate": 0.80078125,
+        "entropy_change": 0.2899065613746643,
+        "kl_divergence": 3.8582470417022705
+      }
+    }
+  },
+  "layer_2": {
+    "k=1": {
+      "nonsparse_pcs": {
+        "prediction_change_rate": 0.109375,
+        "entropy_change": -0.019574899226427078,
+        "kl_divergence": 0.4233782887458801
+      },
+      "activation_pcs": {
+        "prediction_change_rate": 0.505859375,
+        "entropy_change": 0.35891446471214294,
+        "kl_divergence": 2.5973994731903076
+      }
+    },
+    "k=2": {
+      "nonsparse_pcs": {
+        "prediction_change_rate": 0.40234375,
+        "entropy_change": -0.006072412244975567,
+        "kl_divergence": 1.902827262878418
+      },
+      "activation_pcs": {
+        "prediction_change_rate": 0.681640625,
+        "entropy_change": 0.4020119309425354,
+        "kl_divergence": 4.840088367462158
+      }
+    },
+    "k=4": {
+      "nonsparse_pcs": {
+        "prediction_change_rate": 0.423828125,
+        "entropy_change": -0.048020217567682266,
+        "kl_divergence": 2.0232858657836914
+      },
+      "activation_pcs": {
+        "prediction_change_rate": 0.70703125,
+        "entropy_change": 0.4567829966545105,
+        "kl_divergence": 4.709366321563721
+      }
+    },
+    "k=8": {
+      "nonsparse_pcs": {
+        "prediction_change_rate": 0.48046875,
+        "entropy_change": 0.14652544260025024,
+        "kl_divergence": 2.1037588119506836
+      },
+      "activation_pcs": {
+        "prediction_change_rate": 0.666015625,
+        "entropy_change": 0.4988826811313629,
+        "kl_divergence": 3.8648929595947266
+      }
+    }
+  },
+  "layer_3": {
+    "k=1": {
+      "nonsparse_pcs": {
+        "prediction_change_rate": 0.126953125,
+        "entropy_change": -0.018793262541294098,
+        "kl_divergence": 0.8101180195808411
+      },
+      "activation_pcs": {
+        "prediction_change_rate": 0.556640625,
+        "entropy_change": 0.2528485059738159,
+        "kl_divergence": 3.0474953651428223
+      }
+    },
+    "k=2": {
+      "nonsparse_pcs": {
+        "prediction_change_rate": 0.470703125,
+        "entropy_change": -0.03670382499694824,
+        "kl_divergence": 2.913112163543701
+      },
+      "activation_pcs": {
+        "prediction_change_rate": 0.6796875,
+        "entropy_change": 0.2672637104988098,
+        "kl_divergence": 5.730419158935547
+      }
+    },
+    "k=4": {
+      "nonsparse_pcs": {
+        "prediction_change_rate": 0.484375,
+        "entropy_change": -0.043524231761693954,
+        "kl_divergence": 2.8949129581451416
+      },
+      "activation_pcs": {
+        "prediction_change_rate": 0.73046875,
+        "entropy_change": 0.35132163763046265,
+        "kl_divergence": 5.636055946350098
+      }
+    },
+    "k=8": {
+      "nonsparse_pcs": {
+        "prediction_change_rate": 0.48828125,
+        "entropy_change": 0.11623816937208176,
+        "kl_divergence": 2.443922996520996
+      },
+      "activation_pcs": {
+        "prediction_change_rate": 0.751953125,
+        "entropy_change": 0.4944498538970947,
+        "kl_divergence": 5.242743968963623
+      }
+    }
+  },
+  "layer_4": {
+    "k=1": {
+      "nonsparse_pcs": {
+        "prediction_change_rate": 0.11328125,
+        "entropy_change": -0.018736304715275764,
+        "kl_divergence": 1.2713725566864014
+      },
+      "activation_pcs": {
+        "prediction_change_rate": 0.53125,
+        "entropy_change": 0.25375235080718994,
+        "kl_divergence": 3.0907251834869385
+      }
+    },
+    "k=2": {
+      "nonsparse_pcs": {
+        "prediction_change_rate": 0.41015625,
+        "entropy_change": -0.04185104742646217,
+        "kl_divergence": 3.6461758613586426
+      },
+      "activation_pcs": {
+        "prediction_change_rate": 0.685546875,
+        "entropy_change": 0.2718212306499481,
+        "kl_divergence": 6.148536682128906
+      }
+    },
+    "k=4": {
+      "nonsparse_pcs": {
+        "prediction_change_rate": 0.419921875,
+        "entropy_change": 0.043056339025497437,
+        "kl_divergence": 2.9298224449157715
+      },
+      "activation_pcs": {
+        "prediction_change_rate": 0.681640625,
+        "entropy_change": 0.32414156198501587,
+        "kl_divergence": 5.055932521820068
+      }
+    },
+    "k=8": {
+      "nonsparse_pcs": {
+        "prediction_change_rate": 0.466796875,
+        "entropy_change": 0.10962560772895813,
+        "kl_divergence": 2.7186131477355957
+      },
+      "activation_pcs": {
+        "prediction_change_rate": 0.69140625,
+        "entropy_change": 0.46217578649520874,
+        "kl_divergence": 4.870760917663574
+      }
+    }
+  },
+  "layer_5": {
+    "k=1": {
+      "nonsparse_pcs": {
+        "prediction_change_rate": 0.087890625,
+        "entropy_change": -0.012599697336554527,
+        "kl_divergence": 2.48830509185791
+      },
+      "activation_pcs": {
+        "prediction_change_rate": 0.49609375,
+        "entropy_change": 0.24353623390197754,
+        "kl_divergence": 3.056520938873291
+      }
+    },
+    "k=2": {
+      "nonsparse_pcs": {
+        "prediction_change_rate": 0.416015625,
+        "entropy_change": -0.007047629915177822,
+        "kl_divergence": 5.069527626037598
+      },
+      "activation_pcs": {
+        "prediction_change_rate": 0.65625,
+        "entropy_change": 0.27656689286231995,
+        "kl_divergence": 7.329904556274414
+      }
+    },
+    "k=4": {
+      "nonsparse_pcs": {
+        "prediction_change_rate": 0.462890625,
+        "entropy_change": 0.12910117208957672,
+        "kl_divergence": 3.908123016357422
+      },
+      "activation_pcs": {
+        "prediction_change_rate": 0.763671875,
+        "entropy_change": 0.3764929473400116,
+        "kl_divergence": 8.575383186340332
+      }
+    },
+    "k=8": {
+      "nonsparse_pcs": {
+        "prediction_change_rate": 0.509765625,
+        "entropy_change": 0.1370215266942978,
+        "kl_divergence": 4.638699531555176
+      },
+      "activation_pcs": {
+        "prediction_change_rate": 0.728515625,
+        "entropy_change": 0.4008404016494751,
+        "kl_divergence": 6.667359352111816
+      }
+    }
+  },
+  "layer_6": {
+    "k=1": {
+      "nonsparse_pcs": {
+        "prediction_change_rate": 0.095703125,
+        "entropy_change": -0.01619296707212925,
+        "kl_divergence": 2.1535167694091797
+      },
+      "activation_pcs": {
+        "prediction_change_rate": 0.466796875,
+        "entropy_change": 0.16712981462478638,
+        "kl_divergence": 3.1221256256103516
+      }
+    },
+    "k=2": {
+      "nonsparse_pcs": {
+        "prediction_change_rate": 0.380859375,
+        "entropy_change": -0.03130920231342316,
+        "kl_divergence": 5.145175933837891
+      },
+      "activation_pcs": {
+        "prediction_change_rate": 0.626953125,
+        "entropy_change": 0.19422787427902222,
+        "kl_divergence": 8.456707000732422
+      }
+    },
+    "k=4": {
+      "nonsparse_pcs": {
+        "prediction_change_rate": 0.380859375,
+        "entropy_change": 0.017695123329758644,
+        "kl_divergence": 4.1671857833862305
+      },
+      "activation_pcs": {
+        "prediction_change_rate": 0.79296875,
+        "entropy_change": 0.3170023560523987,
+        "kl_divergence": 11.33808422088623
+      }
+    },
+    "k=8": {
+      "nonsparse_pcs": {
+        "prediction_change_rate": 0.447265625,
+        "entropy_change": 0.10115405917167664,
+        "kl_divergence": 4.3062896728515625
+      },
+      "activation_pcs": {
+        "prediction_change_rate": 0.69921875,
+        "entropy_change": 0.29100316762924194,
+        "kl_divergence": 6.876428604125977
+      }
+    }
+  },
+  "layer_7": {
+    "k=1": {
+      "nonsparse_pcs": {
+        "prediction_change_rate": 0.1015625,
+        "entropy_change": -0.007784341461956501,
+        "kl_divergence": 1.723799228668213
+      },
+      "activation_pcs": {
+        "prediction_change_rate": 0.427734375,
+        "entropy_change": 0.1141832023859024,
+        "kl_divergence": 3.2116222381591797
+      }
+    },
+    "k=2": {
+      "nonsparse_pcs": {
+        "prediction_change_rate": 0.154296875,
+        "entropy_change": 0.0031405058689415455,
+        "kl_divergence": 2.0504870414733887
+      },
+      "activation_pcs": {
+        "prediction_change_rate": 0.755859375,
+        "entropy_change": 0.2012399137020111,
+        "kl_divergence": 12.492555618286133
+      }
+    },
+    "k=4": {
+      "nonsparse_pcs": {
+        "prediction_change_rate": 0.4609375,
+        "entropy_change": 0.04050346463918686,
+        "kl_divergence": 4.956357955932617
+      },
+      "activation_pcs": {
+        "prediction_change_rate": 0.79296875,
+        "entropy_change": 0.2611353397369385,
+        "kl_divergence": 15.052473068237305
+      }
+    },
+    "k=8": {
+      "nonsparse_pcs": {
+        "prediction_change_rate": 0.4921875,
+        "entropy_change": 0.08240693807601929,
+        "kl_divergence": 5.267426490783691
+      },
+      "activation_pcs": {
+        "prediction_change_rate": 0.787109375,
+        "entropy_change": 0.254790723323822,
+        "kl_divergence": 12.187675476074219
+      }
+    }
+  },
+  "layer_8": {
+    "k=1": {
+      "nonsparse_pcs": {
+        "prediction_change_rate": 0.103515625,
+        "entropy_change": 0.006413395516574383,
+        "kl_divergence": 0.8349226713180542
+      },
+      "activation_pcs": {
+        "prediction_change_rate": 0.4453125,
+        "entropy_change": 0.03807225823402405,
+        "kl_divergence": 4.072631359100342
+      }
+    },
+    "k=2": {
+      "nonsparse_pcs": {
+        "prediction_change_rate": 0.392578125,
+        "entropy_change": 0.018279749900102615,
+        "kl_divergence": 4.663055419921875
+      },
+      "activation_pcs": {
+        "prediction_change_rate": 0.63671875,
+        "entropy_change": 0.07428248226642609,
+        "kl_divergence": 10.838082313537598
+      }
+    },
+    "k=4": {
+      "nonsparse_pcs": {
+        "prediction_change_rate": 0.45703125,
+        "entropy_change": 0.04034527391195297,
+        "kl_divergence": 4.183771133422852
+      },
+      "activation_pcs": {
+        "prediction_change_rate": 0.78125,
+        "entropy_change": 0.11550983041524887,
+        "kl_divergence": 15.575922012329102
+      }
+    },
+    "k=8": {
+      "nonsparse_pcs": {
+        "prediction_change_rate": 0.490234375,
+        "entropy_change": 0.11259496212005615,
+        "kl_divergence": 4.174018859863281
+      },
+      "activation_pcs": {
+        "prediction_change_rate": 0.814453125,
+        "entropy_change": 0.181780144572258,
+        "kl_divergence": 14.842159271240234
+      }
+    }
+  },
+  "layer_9": {
+    "k=1": {
+      "nonsparse_pcs": {
+        "prediction_change_rate": 0.076171875,
+        "entropy_change": -0.007875189185142517,
+        "kl_divergence": 3.0301198959350586
+      },
+      "activation_pcs": {
+        "prediction_change_rate": 0.375,
+        "entropy_change": 0.024013090878725052,
+        "kl_divergence": 3.8661389350891113
+      }
+    },
+    "k=2": {
+      "nonsparse_pcs": {
+        "prediction_change_rate": 0.404296875,
+        "entropy_change": -0.009714895859360695,
+        "kl_divergence": 10.711463928222656
+      },
+      "activation_pcs": {
+        "prediction_change_rate": 0.61328125,
+        "entropy_change": 0.07202224433422089,
+        "kl_divergence": 16.706157684326172
+      }
+    },
+    "k=4": {
+      "nonsparse_pcs": {
+        "prediction_change_rate": 0.443359375,
+        "entropy_change": 0.0026337564922869205,
+        "kl_divergence": 11.57305908203125
+      },
+      "activation_pcs": {
+        "prediction_change_rate": 0.7578125,
+        "entropy_change": 0.10541804134845734,
+        "kl_divergence": 18.295684814453125
+      }
+    },
+    "k=8": {
+      "nonsparse_pcs": {
+        "prediction_change_rate": 0.498046875,
+        "entropy_change": 0.07595717161893845,
+        "kl_divergence": 6.341550827026367
+      },
+      "activation_pcs": {
+        "prediction_change_rate": 0.763671875,
+        "entropy_change": 0.13367098569869995,
+        "kl_divergence": 16.30906867980957
+      }
+    }
+  },
+  "layer_10": {
+    "k=1": {
+      "nonsparse_pcs": {
+        "prediction_change_rate": 0.083984375,
+        "entropy_change": -0.010488388128578663,
+        "kl_divergence": 1.7187678813934326
+      },
+      "activation_pcs": {
+        "prediction_change_rate": 0.3125,
+        "entropy_change": 0.04861075058579445,
+        "kl_divergence": 3.164255142211914
+      }
+    },
+    "k=2": {
+      "nonsparse_pcs": {
+        "prediction_change_rate": 0.478515625,
+        "entropy_change": -0.056193284690380096,
+        "kl_divergence": 22.003847122192383
+      },
+      "activation_pcs": {
+        "prediction_change_rate": 0.630859375,
+        "entropy_change": 0.05579235404729843,
+        "kl_divergence": 28.44794464111328
+      }
+    },
+    "k=4": {
+      "nonsparse_pcs": {
+        "prediction_change_rate": 0.4921875,
+        "entropy_change": -0.047418851405382156,
+        "kl_divergence": 22.191526412963867
+      },
+      "activation_pcs": {
+        "prediction_change_rate": 0.626953125,
+        "entropy_change": 0.049375079572200775,
+        "kl_divergence": 28.267192840576172
+      }
+    },
+    "k=8": {
+      "nonsparse_pcs": {
+        "prediction_change_rate": 0.49609375,
+        "entropy_change": -0.042322710156440735,
+        "kl_divergence": 24.28357696533203
+      },
+      "activation_pcs": {
+        "prediction_change_rate": 0.734375,
+        "entropy_change": 0.10507316887378693,
+        "kl_divergence": 26.153528213500977
+      }
+    }
+  },
+  "layer_11": {
+    "k=1": {
+      "nonsparse_pcs": {
+        "prediction_change_rate": 0.859375,
+        "entropy_change": -3.1028881072998047,
+        "kl_divergence": 29.448402404785156
+      },
+      "activation_pcs": {
+        "prediction_change_rate": 0.2578125,
+        "entropy_change": 0.3144192099571228,
+        "kl_divergence": 0.18722477555274963
+      }
+    },
+    "k=2": {
+      "nonsparse_pcs": {
+        "prediction_change_rate": 0.8203125,
+        "entropy_change": -3.018965244293213,
+        "kl_divergence": 21.16250991821289
+      },
+      "activation_pcs": {
+        "prediction_change_rate": 0.44140625,
+        "entropy_change": -0.6230332851409912,
+        "kl_divergence": 0.7909879684448242
+      }
+    },
+    "k=4": {
+      "nonsparse_pcs": {
+        "prediction_change_rate": 0.8359375,
+        "entropy_change": -3.0161831378936768,
+        "kl_divergence": 22.742521286010742
+      },
+      "activation_pcs": {
+        "prediction_change_rate": 0.388671875,
+        "entropy_change": -0.2258944809436798,
+        "kl_divergence": 0.5928667783737183
+      }
+    },
+    "k=8": {
+      "nonsparse_pcs": {
+        "prediction_change_rate": 0.8515625,
+        "entropy_change": -3.02087140083313,
+        "kl_divergence": 24.651033401489258
+      },
+      "activation_pcs": {
+        "prediction_change_rate": 0.47265625,
+        "entropy_change": 0.14746418595314026,
+        "kl_divergence": 0.8602138161659241
+      }
+    }
+  }
+}

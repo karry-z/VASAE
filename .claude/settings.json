@@ -6,11 +6,11 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/home/zkr/work/test/.claude/hooks/block-pip.sh"
+            "command": ".claude/hooks/block-pip.sh"
           },
           {
             "type": "command",
-            "command": "/home/zkr/work/test/.claude/hooks/block-venv.sh"
+            "command": ".claude/hooks/block-venv.sh"
           }
         ]
       },
@@ -19,7 +19,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/home/zkr/work/test/.claude/hooks/block-pyproject-deps.sh"
+            "command": ".claude/hooks/block-pyproject-deps.sh"
           }
         ]
       },
@@ -28,7 +28,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/home/zkr/work/test/.claude/hooks/block-pyproject-deps.sh"
+            "command": ".claude/hooks/block-pyproject-deps.sh"
           }
         ]
       }

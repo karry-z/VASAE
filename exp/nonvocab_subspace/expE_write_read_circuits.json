@@ -1,0 +1,4298 @@
+{
+  "layer_0": {
+    "circuits": {
+      "PC0": {
+        "top_writers": [
+          {
+            "component": "L0_MLP",
+            "projection": 0.46794551610946655
+          },
+          {
+            "component": "L0_H6_OV",
+            "projection": 0.036274250596761703
+          },
+          {
+            "component": "L0_H8_OV",
+            "projection": 0.034359872341156006
+          },
+          {
+            "component": "L0_H5_OV",
+            "projection": 0.025501448661088943
+          },
+          {
+            "component": "L0_H3_OV",
+            "projection": 0.015144770964980125
+          }
+        ],
+        "top_readers": [
+          {
+            "component": "L4_H11_QK",
+            "readout": 3893.6678466796875
+          },
+          {
+            "component": "L2_H2_QK",
+            "readout": 1199.41845703125
+          },
+          {
+            "component": "L2_H1_QK",
+            "readout": 679.4297637939453
+          },
+          {
+            "component": "L1_H9_QK",
+            "readout": 650.1090393066406
+          },
+          {
+            "component": "L1_H0_QK",
+            "readout": 638.1532516479492
+          }
+        ]
+      },
+      "PC1": {
+        "top_writers": [
+          {
+            "component": "L0_MLP",
+            "projection": 0.4096028804779053
+          },
+          {
+            "component": "L0_H3_OV",
+            "projection": 0.036345236003398895
+          },
+          {
+            "component": "L0_H1_OV",
+            "projection": 0.03161148726940155
+          },
+          {
+            "component": "L0_H6_OV",
+            "projection": 0.011740244925022125
+          },
+          {
+            "component": "L0_H10_OV",
+            "projection": 0.010716773569583893
+          }
+        ],
+        "top_readers": [
+          {
+            "component": "L4_H11_QK",
+            "readout": 2406.2091064453125
+          },
+          {
+            "component": "L2_H2_QK",
+            "readout": 878.4315795898438
+          },
+          {
+            "component": "L1_H9_QK",
+            "readout": 749.4244842529297
+          },
+          {
+            "component": "L1_H0_QK",
+            "readout": 468.4985046386719
+          },
+          {
+            "component": "L2_H1_QK",
+            "readout": 358.2603225708008
+          }
+        ]
+      },
+      "PC2": {
+        "top_writers": [
+          {
+            "component": "L0_MLP",
+            "projection": 0.20999744534492493
+          },
+          {
+            "component": "L0_H11_OV",
+            "projection": 0.027642231434583664
+          },
+          {
+            "component": "L0_H3_OV",
+            "projection": 0.023129405453801155
+          },
+          {
+            "component": "L0_H10_OV",
+            "projection": 0.021158646792173386
+          },
+          {
+            "component": "L0_H9_OV",
+            "projection": 0.020506909117102623
+          }
+        ],
+        "top_readers": [
+          {
+            "component": "L4_H11_QK",
+            "readout": 4252.1854248046875
+          },
+          {
+            "component": "L1_H9_QK",
+            "readout": 681.2240905761719
+          },
+          {
+            "component": "L2_H2_QK",
+            "readout": 495.5148010253906
+          },
+          {
+            "component": "L2_H1_QK",
+            "readout": 458.9235382080078
+          },
+          {
+            "component": "L1_H6_QK",
+            "readout": 441.5450744628906
+          }
+        ]
+      },
+      "PC3": {
+        "top_writers": [
+          {
+            "component": "L0_MLP",
+            "projection": 0.044745445251464844
+          },
+          {
+            "component": "L0_H5_OV",
+            "projection": 0.025576606392860413
+          },
+          {
+            "component": "L0_H10_OV",
+            "projection": 0.021791353821754456
+          },
+          {
+            "component": "L0_H9_OV",
+            "projection": 0.01962994784116745
+          },
+          {
+            "component": "L0_H1_OV",
+            "projection": 0.01879614219069481
+          }
+        ],
+        "top_readers": [
+          {
+            "component": "L4_H11_QK",
+            "readout": 2938.0922241210938
+          },
+          {
+            "component": "L1_H9_QK",
+            "readout": 698.3096389770508
+          },
+          {
+            "component": "L2_H1_QK",
+            "readout": 674.1552124023438
+          },
+          {
+            "component": "L1_H6_QK",
+            "readout": 637.9941101074219
+          },
+          {
+            "component": "L1_H0_QK",
+            "readout": 636.968017578125
+          }
+        ]
+      },
+      "PC4": {
+        "top_writers": [
+          {
+            "component": "L0_MLP",
+            "projection": 0.161776602268219
+          },
+          {
+            "component": "L0_H10_OV",
+            "projection": 0.05120662972331047
+          },
+          {
+            "component": "L0_H4_OV",
+            "projection": 0.030034132301807404
+          },
+          {
+            "component": "L0_H9_OV",
+            "projection": 0.026154233142733574
+          },
+          {
+            "component": "L0_H8_OV",
+            "projection": 0.01662425696849823
+          }
+        ],
+        "top_readers": [
+          {
+            "component": "L4_H11_QK",
+            "readout": 3844.6790771484375
+          },
+          {
+            "component": "L2_H2_QK",
+            "readout": 932.0218200683594
+          },
+          {
+            "component": "L1_H9_QK",
+            "readout": 845.6707229614258
+          },
+          {
+            "component": "L2_H8_QK",
+            "readout": 663.4437255859375
+          },
+          {
+            "component": "L2_H4_QK",
+            "readout": 657.5677795410156
+          }
+        ]
+      },
+      "PC5": {
+        "top_writers": [
+          {
+            "component": "L0_MLP",
+            "projection": 0.25117331743240356
+          },
+          {
+            "component": "L0_H11_OV",
+            "projection": 0.034434154629707336
+          },
+          {
+            "component": "L0_H10_OV",
+            "projection": 0.024165289476513863
+          },
+          {
+            "component": "L0_H3_OV",
+            "projection": 0.02169136330485344
+          },
+          {
+            "component": "L0_H8_OV",
+            "projection": 0.016293048858642578
+          }
+        ],
+        "top_readers": [
+          {
+            "component": "L4_H11_QK",
+            "readout": 3684.72265625
+          },
+          {
+            "component": "L2_H2_QK",
+            "readout": 1844.414306640625
+          },
+          {
+            "component": "L1_H0_QK",
+            "readout": 826.2182006835938
+          },
+          {
+            "component": "L2_H9_QK",
+            "readout": 638.1610107421875
+          },
+          {
+            "component": "L2_H5_QK",
+            "readout": 564.7861633300781
+          }
+        ]
+      },
+      "PC6": {
+        "top_writers": [
+          {
+            "component": "L0_MLP",
+            "projection": 0.0651540607213974
+          },
+          {
+            "component": "L0_H6_OV",
+            "projection": 0.04265095293521881
+          },
+          {
+            "component": "L0_H1_OV",
+            "projection": 0.036911170929670334
+          },
+          {
+            "component": "L0_H10_OV",
+            "projection": 0.03281158208847046
+          },
+          {
+            "component": "L0_H3_OV",
+            "projection": 0.03003346547484398
+          }
+        ],
+        "top_readers": [
+          {
+            "component": "L4_H11_QK",
+            "readout": 2224.2584228515625
+          },
+          {
+            "component": "L1_H0_QK",
+            "readout": 678.8292388916016
+          },
+          {
+            "component": "L2_H2_QK",
+            "readout": 667.8615570068359
+          },
+          {
+            "component": "L1_H11_QK",
+            "readout": 584.1082153320312
+          },
+          {
+            "component": "L1_H6_QK",
+            "readout": 512.2329254150391
+          }
+        ]
+      },
+      "PC7": {
+        "top_writers": [
+          {
+            "component": "L0_MLP",
+            "projection": 0.06032509729266167
+          },
+          {
+            "component": "L0_H1_OV",
+            "projection": 0.04026660695672035
+          },
+          {
+            "component": "L0_H11_OV",
+            "projection": 0.03197823464870453
+          },
+          {
+            "component": "L0_H8_OV",
+            "projection": 0.023852838203310966
+          },
+          {
+            "component": "L0_H6_OV",
+            "projection": 0.015066629275679588
+          }
+        ],
+        "top_readers": [
+          {
+            "component": "L4_H11_QK",
+            "readout": 2163.6152954101562
+          },
+          {
+            "component": "L2_H4_QK",
+            "readout": 488.2293395996094
+          },
+          {
+            "component": "L1_H5_QK",
+            "readout": 473.0961151123047
+          },
+          {
+            "component": "L1_H6_QK",
+            "readout": 470.8628845214844
+          },
+          {
+            "component": "L1_H0_QK",
+            "readout": 459.6536865234375
+          }
+        ]
+      }
+    }
+  },
+  "layer_1": {
+    "circuits": {
+      "PC0": {
+        "top_writers": [
+          {
+            "component": "L1_MLP",
+            "projection": 0.8650234937667847
+          },
+          {
+            "component": "L0_MLP",
+            "projection": 0.2484632283449173
+          },
+          {
+            "component": "L0_H6_OV",
+            "projection": 0.06387965381145477
+          },
+          {
+            "component": "L0_H8_OV",
+            "projection": 0.03847142681479454
+          },
+          {
+            "component": "L0_H5_OV",
+            "projection": 0.017893832176923752
+          }
+        ],
+        "top_readers": [
+          {
+            "component": "L4_H11_QK",
+            "readout": 6131.7039794921875
+          },
+          {
+            "component": "L2_H2_QK",
+            "readout": 925.19140625
+          },
+          {
+            "component": "L2_H1_QK",
+            "readout": 689.8347244262695
+          },
+          {
+            "component": "L2_H9_QK",
+            "readout": 448.28106689453125
+          },
+          {
+            "component": "L2_H4_QK",
+            "readout": 406.6253204345703
+          }
+        ]
+      },
+      "PC1": {
+        "top_writers": [
+          {
+            "component": "L0_MLP",
+            "projection": 0.18217243254184723
+          },
+          {
+            "component": "L1_MLP",
+            "projection": 0.11601322144269943
+          },
+          {
+            "component": "L0_H10_OV",
+            "projection": 0.04673346132040024
+          },
+          {
+            "component": "L0_H3_OV",
+            "projection": 0.04573039337992668
+          },
+          {
+            "component": "L1_H1_OV",
+            "projection": 0.03781250864267349
+          }
+        ],
+        "top_readers": [
+          {
+            "component": "L4_H11_QK",
+            "readout": 5417.264831542969
+          },
+          {
+            "component": "L2_H1_QK",
+            "readout": 659.13525390625
+          },
+          {
+            "component": "L2_H4_QK",
+            "readout": 578.5031433105469
+          },
+          {
+            "component": "L2_H2_QK",
+            "readout": 527.2244873046875
+          },
+          {
+            "component": "L2_H8_QK",
+            "readout": 305.5541229248047
+          }
+        ]
+      },
+      "PC2": {
+        "top_writers": [
+          {
+            "component": "L0_MLP",
+            "projection": 0.41649389266967773
+          },
+          {
+            "component": "L1_MLP",
+            "projection": 0.4007605016231537
+          },
+          {
+            "component": "L1_H3_OV",
+            "projection": 0.10026190429925919
+          },
+          {
+            "component": "L1_H10_OV",
+            "projection": 0.061156656593084335
+          },
+          {
+            "component": "L1_H2_OV",
+            "projection": 0.03729815036058426
+          }
+        ],
+        "top_readers": [
+          {
+            "component": "L4_H11_QK",
+            "readout": 1801.4017333984375
+          },
+          {
+            "component": "L2_H2_QK",
+            "readout": 1113.13037109375
+          },
+          {
+            "component": "L2_H9_QK",
+            "readout": 379.99342346191406
+          },
+          {
+            "component": "L2_H5_QK",
+            "readout": 365.68963623046875
+          },
+          {
+            "component": "L2_H4_QK",
+            "readout": 322.8838348388672
+          }
+        ]
+      },
+      "PC3": {
+        "top_writers": [
+          {
+            "component": "L0_MLP",
+            "projection": 0.1489000916481018
+          },
+          {
+            "component": "L1_MLP",
+            "projection": 0.14469663798809052
+          },
+          {
+            "component": "L1_H10_OV",
+            "projection": 0.042819567024707794
+          },
+          {
+            "component": "L0_H8_OV",
+            "projection": 0.04278703033924103
+          },
+          {
+            "component": "L0_H5_OV",
+            "projection": 0.03599696233868599
+          }
+        ],
+        "top_readers": [
+          {
+            "component": "L4_H11_QK",
+            "readout": 1839.3187866210938
+          },
+          {
+            "component": "L2_H2_QK",
+            "readout": 577.474365234375
+          },
+          {
+            "component": "L2_H4_QK",
+            "readout": 371.82420349121094
+          },
+          {
+            "component": "L2_H1_QK",
+            "readout": 277.58856201171875
+          },
+          {
+            "component": "L2_H9_QK",
+            "readout": 261.10499572753906
+          }
+        ]
+      },
+      "PC4": {
+        "top_writers": [
+          {
+            "component": "L1_MLP",
+            "projection": 0.0914633572101593
+          },
+          {
+            "component": "L0_MLP",
+            "projection": 0.08237054944038391
+          },
+          {
+            "component": "L0_H10_OV",
+            "projection": 0.07383520156145096
+          },
+          {
+            "component": "L1_H4_OV",
+            "projection": 0.037462882697582245
+          },
+          {
+            "component": "L1_H1_OV",
+            "projection": 0.03411728888750076
+          }
+        ],
+        "top_readers": [
+          {
+            "component": "L4_H11_QK",
+            "readout": 2910.197021484375
+          },
+          {
+            "component": "L2_H2_QK",
+            "readout": 602.861328125
+          },
+          {
+            "component": "L2_H1_QK",
+            "readout": 567.2894287109375
+          },
+          {
+            "component": "L2_H4_QK",
+            "readout": 486.69488525390625
+          },
+          {
+            "component": "L2_H8_QK",
+            "readout": 304.60868072509766
+          }
+        ]
+      },
+      "PC5": {
+        "top_writers": [
+          {
+            "component": "L1_H4_OV",
+            "projection": 0.0887669026851654
+          },
+          {
+            "component": "L1_H1_OV",
+            "projection": 0.07372264564037323
+          },
+          {
+            "component": "L0_MLP",
+            "projection": 0.06529891490936279
+          },
+          {
+            "component": "L1_MLP",
+            "projection": 0.05623314157128334
+          },
+          {
+            "component": "L1_H8_OV",
+            "projection": 0.04276920109987259
+          }
+        ],
+        "top_readers": [
+          {
+            "component": "L4_H11_QK",
+            "readout": 4479.57861328125
+          },
+          {
+            "component": "L2_H8_QK",
+            "readout": 937.2409973144531
+          },
+          {
+            "component": "L2_H4_QK",
+            "readout": 911.5435180664062
+          },
+          {
+            "component": "L2_H1_QK",
+            "readout": 847.3575744628906
+          },
+          {
+            "component": "L2_H2_QK",
+            "readout": 600.7250061035156
+          }
+        ]
+      },
+      "PC6": {
+        "top_writers": [
+          {
+            "component": "L0_H3_OV",
+            "projection": 0.028429871425032616
+          },
+          {
+            "component": "L1_MLP",
+            "projection": 0.027595635503530502
+          },
+          {
+            "component": "L0_MLP",
+            "projection": 0.025912683457136154
+          },
+          {
+            "component": "L1_H9_OV",
+            "projection": 0.024939194321632385
+          },
+          {
+            "component": "L1_H4_OV",
+            "projection": 0.02228132262825966
+          }
+        ],
+        "top_readers": [
+          {
+            "component": "L4_H11_QK",
+            "readout": 1830.1875610351562
+          },
+          {
+            "component": "L2_H4_QK",
+            "readout": 398.39768981933594
+          },
+          {
+            "component": "L2_H2_QK",
+            "readout": 328.5658874511719
+          },
+          {
+            "component": "L2_H1_QK",
+            "readout": 228.60841369628906
+          },
+          {
+            "component": "L3_H3_QK",
+            "readout": 187.23746490478516
+          }
+        ]
+      },
+      "PC7": {
+        "top_writers": [
+          {
+            "component": "L1_MLP",
+            "projection": 0.39491772651672363
+          },
+          {
+            "component": "L0_MLP",
+            "projection": 0.3807385563850403
+          },
+          {
+            "component": "L0_H8_OV",
+            "projection": 0.05090644210577011
+          },
+          {
+            "component": "L0_H6_OV",
+            "projection": 0.04511500522494316
+          },
+          {
+            "component": "L1_H1_OV",
+            "projection": 0.044608887284994125
+          }
+        ],
+        "top_readers": [
+          {
+            "component": "L4_H11_QK",
+            "readout": 1699.4010009765625
+          },
+          {
+            "component": "L2_H2_QK",
+            "readout": 553.4192810058594
+          },
+          {
+            "component": "L2_H4_QK",
+            "readout": 422.967529296875
+          },
+          {
+            "component": "L2_H1_QK",
+            "readout": 358.6031799316406
+          },
+          {
+            "component": "L3_H0_QK",
+            "readout": 245.2640838623047
+          }
+        ]
+      }
+    }
+  },
+  "layer_2": {
+    "circuits": {
+      "PC0": {
+        "top_writers": [
+          {
+            "component": "L1_MLP",
+            "projection": 0.9010240435600281
+          },
+          {
+            "component": "L0_MLP",
+            "projection": 0.8765403032302856
+          },
+          {
+            "component": "L2_MLP",
+            "projection": 0.8475854396820068
+          },
+          {
+            "component": "L0_H8_OV",
+            "projection": 0.012888929806649685
+          },
+          {
+            "component": "L1_H11_OV",
+            "projection": 0.012765487655997276
+          }
+        ],
+        "top_readers": [
+          {
+            "component": "L4_H11_QK",
+            "readout": 1697.3543090820312
+          },
+          {
+            "component": "L7_H2_QK",
+            "readout": 218.6072130203247
+          },
+          {
+            "component": "L7_H10_QK",
+            "readout": 205.9607982635498
+          },
+          {
+            "component": "L3_H0_QK",
+            "readout": 185.49137496948242
+          },
+          {
+            "component": "L8_H1_QK",
+            "readout": 180.30094051361084
+          }
+        ]
+      },
+      "PC1": {
+        "top_writers": [
+          {
+            "component": "L0_MLP",
+            "projection": 0.1129319816827774
+          },
+          {
+            "component": "L2_MLP",
+            "projection": 0.08233679085969925
+          },
+          {
+            "component": "L1_MLP",
+            "projection": 0.06700222939252853
+          },
+          {
+            "component": "L2_H9_OV",
+            "projection": 0.05539918318390846
+          },
+          {
+            "component": "L2_H0_OV",
+            "projection": 0.05419328436255455
+          }
+        ],
+        "top_readers": [
+          {
+            "component": "L4_H11_QK",
+            "readout": 5106.7939453125
+          },
+          {
+            "component": "L3_H3_QK",
+            "readout": 312.2738037109375
+          },
+          {
+            "component": "L3_H0_QK",
+            "readout": 288.3302764892578
+          },
+          {
+            "component": "L4_H0_QK",
+            "readout": 180.08538055419922
+          },
+          {
+            "component": "L3_H7_QK",
+            "readout": 179.32518005371094
+          }
+        ]
+      },
+      "PC2": {
+        "top_writers": [
+          {
+            "component": "L2_MLP",
+            "projection": 0.03898198902606964
+          },
+          {
+            "component": "L0_H8_OV",
+            "projection": 0.027560822665691376
+          },
+          {
+            "component": "L1_H6_OV",
+            "projection": 0.02591751515865326
+          },
+          {
+            "component": "L0_H7_OV",
+            "projection": 0.02456153929233551
+          },
+          {
+            "component": "L0_MLP",
+            "projection": 0.019213227555155754
+          }
+        ],
+        "top_readers": [
+          {
+            "component": "L4_H11_QK",
+            "readout": 1490.9203186035156
+          },
+          {
+            "component": "L3_H3_QK",
+            "readout": 121.47712326049805
+          },
+          {
+            "component": "L3_H9_QK",
+            "readout": 120.29981231689453
+          },
+          {
+            "component": "L5_H1_QK",
+            "readout": 112.17741012573242
+          },
+          {
+            "component": "L3_H0_QK",
+            "readout": 107.46398162841797
+          }
+        ]
+      },
+      "PC3": {
+        "top_writers": [
+          {
+            "component": "L0_MLP",
+            "projection": 0.5437890291213989
+          },
+          {
+            "component": "L1_MLP",
+            "projection": 0.5047640800476074
+          },
+          {
+            "component": "L2_MLP",
+            "projection": 0.11212164163589478
+          },
+          {
+            "component": "L1_H3_OV",
+            "projection": 0.08427233248949051
+          },
+          {
+            "component": "L1_H10_OV",
+            "projection": 0.04934847354888916
+          }
+        ],
+        "top_readers": [
+          {
+            "component": "L4_H11_QK",
+            "readout": 2101.203125
+          },
+          {
+            "component": "L3_H0_QK",
+            "readout": 205.7885284423828
+          },
+          {
+            "component": "L3_H7_QK",
+            "readout": 187.64093017578125
+          },
+          {
+            "component": "L3_H2_QK",
+            "readout": 186.42864227294922
+          },
+          {
+            "component": "L3_H3_QK",
+            "readout": 155.39805603027344
+          }
+        ]
+      },
+      "PC4": {
+        "top_writers": [
+          {
+            "component": "L2_H0_OV",
+            "projection": 0.07398106157779694
+          },
+          {
+            "component": "L0_MLP",
+            "projection": 0.07252760231494904
+          },
+          {
+            "component": "L1_MLP",
+            "projection": 0.07206173986196518
+          },
+          {
+            "component": "L2_MLP",
+            "projection": 0.0644751712679863
+          },
+          {
+            "component": "L0_H10_OV",
+            "projection": 0.05774662271142006
+          }
+        ],
+        "top_readers": [
+          {
+            "component": "L4_H11_QK",
+            "readout": 3882.7542724609375
+          },
+          {
+            "component": "L3_H2_QK",
+            "readout": 345.10211181640625
+          },
+          {
+            "component": "L3_H9_QK",
+            "readout": 329.42701721191406
+          },
+          {
+            "component": "L4_H0_QK",
+            "readout": 298.41507720947266
+          },
+          {
+            "component": "L3_H3_QK",
+            "readout": 277.8917694091797
+          }
+        ]
+      },
+      "PC5": {
+        "top_writers": [
+          {
+            "component": "L1_H1_OV",
+            "projection": 0.09559269994497299
+          },
+          {
+            "component": "L2_MLP",
+            "projection": 0.07836085557937622
+          },
+          {
+            "component": "L1_H4_OV",
+            "projection": 0.05803830176591873
+          },
+          {
+            "component": "L2_H0_OV",
+            "projection": 0.057724300771951675
+          },
+          {
+            "component": "L0_H10_OV",
+            "projection": 0.04936563968658447
+          }
+        ],
+        "top_readers": [
+          {
+            "component": "L4_H11_QK",
+            "readout": 4538.272918701172
+          },
+          {
+            "component": "L3_H3_QK",
+            "readout": 444.1025390625
+          },
+          {
+            "component": "L3_H9_QK",
+            "readout": 351.341064453125
+          },
+          {
+            "component": "L3_H7_QK",
+            "readout": 296.91896057128906
+          },
+          {
+            "component": "L4_H0_QK",
+            "readout": 292.7254333496094
+          }
+        ]
+      },
+      "PC6": {
+        "top_writers": [
+          {
+            "component": "L2_H0_OV",
+            "projection": 0.05129021406173706
+          },
+          {
+            "component": "L2_MLP",
+            "projection": 0.04964376240968704
+          },
+          {
+            "component": "L2_H5_OV",
+            "projection": 0.049504682421684265
+          },
+          {
+            "component": "L0_MLP",
+            "projection": 0.03757571429014206
+          },
+          {
+            "component": "L1_H4_OV",
+            "projection": 0.03432834520936012
+          }
+        ],
+        "top_readers": [
+          {
+            "component": "L4_H11_QK",
+            "readout": 3777.5123291015625
+          },
+          {
+            "component": "L3_H3_QK",
+            "readout": 289.1037483215332
+          },
+          {
+            "component": "L3_H0_QK",
+            "readout": 199.23133087158203
+          },
+          {
+            "component": "L3_H9_QK",
+            "readout": 169.50836944580078
+          },
+          {
+            "component": "L6_H9_QK",
+            "readout": 166.88470077514648
+          }
+        ]
+      },
+      "PC7": {
+        "top_writers": [
+          {
+            "component": "L0_MLP",
+            "projection": 0.07402107119560242
+          },
+          {
+            "component": "L1_MLP",
+            "projection": 0.07346993684768677
+          },
+          {
+            "component": "L2_MLP",
+            "projection": 0.056223250925540924
+          },
+          {
+            "component": "L1_H5_OV",
+            "projection": 0.049169644713401794
+          },
+          {
+            "component": "L2_H0_OV",
+            "projection": 0.04453165829181671
+          }
+        ],
+        "top_readers": [
+          {
+            "component": "L4_H11_QK",
+            "readout": 4359.476318359375
+          },
+          {
+            "component": "L3_H3_QK",
+            "readout": 422.2038803100586
+          },
+          {
+            "component": "L3_H7_QK",
+            "readout": 306.6002655029297
+          },
+          {
+            "component": "L3_H0_QK",
+            "readout": 264.44258880615234
+          },
+          {
+            "component": "L3_H11_QK",
+            "readout": 227.12577438354492
+          }
+        ]
+      }
+    }
+  },
+  "layer_3": {
+    "circuits": {
+      "PC0": {
+        "top_writers": [
+          {
+            "component": "L1_MLP",
+            "projection": 0.9020833969116211
+          },
+          {
+            "component": "L0_MLP",
+            "projection": 0.8769040107727051
+          },
+          {
+            "component": "L2_MLP",
+            "projection": 0.846774160861969
+          },
+          {
+            "component": "L3_MLP",
+            "projection": 0.8319113850593567
+          },
+          {
+            "component": "L3_H2_OV",
+            "projection": 0.016597282141447067
+          }
+        ],
+        "top_readers": [
+          {
+            "component": "L4_H11_QK",
+            "readout": 1722.208740234375
+          },
+          {
+            "component": "L7_H2_QK",
+            "readout": 220.3790798187256
+          },
+          {
+            "component": "L7_H10_QK",
+            "readout": 208.45979690551758
+          },
+          {
+            "component": "L8_H1_QK",
+            "readout": 181.81194019317627
+          },
+          {
+            "component": "L6_H9_QK",
+            "readout": 159.8930959701538
+          }
+        ]
+      },
+      "PC1": {
+        "top_writers": [
+          {
+            "component": "L2_MLP",
+            "projection": 0.11605550348758698
+          },
+          {
+            "component": "L0_MLP",
+            "projection": 0.11534338444471359
+          },
+          {
+            "component": "L3_MLP",
+            "projection": 0.08662973344326019
+          },
+          {
+            "component": "L2_H9_OV",
+            "projection": 0.06938432902097702
+          },
+          {
+            "component": "L0_H10_OV",
+            "projection": 0.06876474618911743
+          }
+        ],
+        "top_readers": [
+          {
+            "component": "L4_H11_QK",
+            "readout": 6716.939270019531
+          },
+          {
+            "component": "L4_H0_QK",
+            "readout": 243.96434020996094
+          },
+          {
+            "component": "L4_H3_QK",
+            "readout": 162.09988403320312
+          },
+          {
+            "component": "L4_H1_QK",
+            "readout": 135.19355964660645
+          },
+          {
+            "component": "L5_H6_QK",
+            "readout": 134.35066986083984
+          }
+        ]
+      },
+      "PC2": {
+        "top_writers": [
+          {
+            "component": "L0_H8_OV",
+            "projection": 0.03694327175617218
+          },
+          {
+            "component": "L0_H0_OV",
+            "projection": 0.032634347677230835
+          },
+          {
+            "component": "L2_H6_OV",
+            "projection": 0.02080104500055313
+          },
+          {
+            "component": "L0_H7_OV",
+            "projection": 0.02040601521730423
+          },
+          {
+            "component": "L0_H9_OV",
+            "projection": 0.020384039729833603
+          }
+        ],
+        "top_readers": [
+          {
+            "component": "L4_H11_QK",
+            "readout": 1068.7541809082031
+          },
+          {
+            "component": "L5_H1_QK",
+            "readout": 132.1149024963379
+          },
+          {
+            "component": "L6_H9_QK",
+            "readout": 104.6807746887207
+          },
+          {
+            "component": "L5_H0_QK",
+            "readout": 87.08584213256836
+          },
+          {
+            "component": "L7_H2_QK",
+            "readout": 85.7658462524414
+          }
+        ]
+      },
+      "PC3": {
+        "top_writers": [
+          {
+            "component": "L0_MLP",
+            "projection": 0.576399564743042
+          },
+          {
+            "component": "L1_MLP",
+            "projection": 0.5453311800956726
+          },
+          {
+            "component": "L2_MLP",
+            "projection": 0.09955587983131409
+          },
+          {
+            "component": "L1_H3_OV",
+            "projection": 0.09376202523708344
+          },
+          {
+            "component": "L0_H8_OV",
+            "projection": 0.0410810224711895
+          }
+        ],
+        "top_readers": [
+          {
+            "component": "L4_H11_QK",
+            "readout": 1985.00244140625
+          },
+          {
+            "component": "L10_H9_QK",
+            "readout": 127.15356063842773
+          },
+          {
+            "component": "L4_H0_QK",
+            "readout": 95.64616775512695
+          },
+          {
+            "component": "L10_H5_QK",
+            "readout": 83.62637710571289
+          },
+          {
+            "component": "L9_H3_QK",
+            "readout": 81.5675048828125
+          }
+        ]
+      },
+      "PC4": {
+        "top_writers": [
+          {
+            "component": "L2_MLP",
+            "projection": 0.17033404111862183
+          },
+          {
+            "component": "L3_MLP",
+            "projection": 0.15054577589035034
+          },
+          {
+            "component": "L0_MLP",
+            "projection": 0.1253131628036499
+          },
+          {
+            "component": "L1_MLP",
+            "projection": 0.1150425374507904
+          },
+          {
+            "component": "L2_H0_OV",
+            "projection": 0.06508654356002808
+          }
+        ],
+        "top_readers": [
+          {
+            "component": "L4_H11_QK",
+            "readout": 6398.912536621094
+          },
+          {
+            "component": "L4_H0_QK",
+            "readout": 411.3575439453125
+          },
+          {
+            "component": "L4_H1_QK",
+            "readout": 332.16976165771484
+          },
+          {
+            "component": "L4_H3_QK",
+            "readout": 307.51166915893555
+          },
+          {
+            "component": "L4_H5_QK",
+            "readout": 249.16073608398438
+          }
+        ]
+      },
+      "PC5": {
+        "top_writers": [
+          {
+            "component": "L2_H0_OV",
+            "projection": 0.17139053344726562
+          },
+          {
+            "component": "L3_MLP",
+            "projection": 0.11284234374761581
+          },
+          {
+            "component": "L3_H6_OV",
+            "projection": 0.09822867810726166
+          },
+          {
+            "component": "L0_H10_OV",
+            "projection": 0.08290672302246094
+          },
+          {
+            "component": "L1_H4_OV",
+            "projection": 0.0807579830288887
+          }
+        ],
+        "top_readers": [
+          {
+            "component": "L4_H11_QK",
+            "readout": 6700.57373046875
+          },
+          {
+            "component": "L6_H9_QK",
+            "readout": 210.61500549316406
+          },
+          {
+            "component": "L4_H0_QK",
+            "readout": 187.93399047851562
+          },
+          {
+            "component": "L4_H3_QK",
+            "readout": 151.2122459411621
+          },
+          {
+            "component": "L4_H5_QK",
+            "readout": 150.10157775878906
+          }
+        ]
+      },
+      "PC6": {
+        "top_writers": [
+          {
+            "component": "L1_H7_OV",
+            "projection": 0.06717194616794586
+          },
+          {
+            "component": "L1_H5_OV",
+            "projection": 0.06501796841621399
+          },
+          {
+            "component": "L1_H1_OV",
+            "projection": 0.057546526193618774
+          },
+          {
+            "component": "L3_MLP",
+            "projection": 0.05641423165798187
+          },
+          {
+            "component": "L2_H0_OV",
+            "projection": 0.056099046021699905
+          }
+        ],
+        "top_readers": [
+          {
+            "component": "L4_H11_QK",
+            "readout": 3110.3133544921875
+          },
+          {
+            "component": "L4_H0_QK",
+            "readout": 221.34044647216797
+          },
+          {
+            "component": "L6_H9_QK",
+            "readout": 178.52344512939453
+          },
+          {
+            "component": "L5_H1_QK",
+            "readout": 176.48969650268555
+          },
+          {
+            "component": "L4_H5_QK",
+            "readout": 162.73966217041016
+          }
+        ]
+      },
+      "PC7": {
+        "top_writers": [
+          {
+            "component": "L3_MLP",
+            "projection": 0.07822421938180923
+          },
+          {
+            "component": "L2_H3_OV",
+            "projection": 0.05556560307741165
+          },
+          {
+            "component": "L3_H0_OV",
+            "projection": 0.05395040288567543
+          },
+          {
+            "component": "L0_MLP",
+            "projection": 0.05358346551656723
+          },
+          {
+            "component": "L1_MLP",
+            "projection": 0.04769740253686905
+          }
+        ],
+        "top_readers": [
+          {
+            "component": "L4_H11_QK",
+            "readout": 9319.749877929688
+          },
+          {
+            "component": "L4_H0_QK",
+            "readout": 541.5565490722656
+          },
+          {
+            "component": "L4_H3_QK",
+            "readout": 536.0603103637695
+          },
+          {
+            "component": "L4_H5_QK",
+            "readout": 322.29917907714844
+          },
+          {
+            "component": "L4_H1_QK",
+            "readout": 305.44403076171875
+          }
+        ]
+      }
+    }
+  },
+  "layer_4": {
+    "circuits": {
+      "PC0": {
+        "top_writers": [
+          {
+            "component": "L1_MLP",
+            "projection": 0.9018155932426453
+          },
+          {
+            "component": "L0_MLP",
+            "projection": 0.8755084276199341
+          },
+          {
+            "component": "L2_MLP",
+            "projection": 0.84772789478302
+          },
+          {
+            "component": "L3_MLP",
+            "projection": 0.8336064219474792
+          },
+          {
+            "component": "L4_MLP",
+            "projection": 0.8238601088523865
+          }
+        ],
+        "top_readers": [
+          {
+            "component": "L7_H2_QK",
+            "readout": 219.1335620880127
+          },
+          {
+            "component": "L7_H10_QK",
+            "readout": 206.39372062683105
+          },
+          {
+            "component": "L8_H1_QK",
+            "readout": 180.6588840484619
+          },
+          {
+            "component": "L6_H9_QK",
+            "readout": 157.73610401153564
+          },
+          {
+            "component": "L7_H1_QK",
+            "readout": 126.79067707061768
+          }
+        ]
+      },
+      "PC1": {
+        "top_writers": [
+          {
+            "component": "L0_MLP",
+            "projection": 0.14091192185878754
+          },
+          {
+            "component": "L2_MLP",
+            "projection": 0.12297675013542175
+          },
+          {
+            "component": "L3_MLP",
+            "projection": 0.08601067960262299
+          },
+          {
+            "component": "L1_MLP",
+            "projection": 0.08149451017379761
+          },
+          {
+            "component": "L2_H0_OV",
+            "projection": 0.06503304839134216
+          }
+        ],
+        "top_readers": [
+          {
+            "component": "L5_H6_QK",
+            "readout": 118.11880302429199
+          },
+          {
+            "component": "L6_H9_QK",
+            "readout": 103.25165939331055
+          },
+          {
+            "component": "L6_H11_QK",
+            "readout": 96.50982666015625
+          },
+          {
+            "component": "L6_H0_QK",
+            "readout": 87.70132446289062
+          },
+          {
+            "component": "L8_H4_QK",
+            "readout": 87.43756866455078
+          }
+        ]
+      },
+      "PC2": {
+        "top_writers": [
+          {
+            "component": "L0_H7_OV",
+            "projection": 0.03428081050515175
+          },
+          {
+            "component": "L0_H8_OV",
+            "projection": 0.031034357845783234
+          },
+          {
+            "component": "L4_H10_OV",
+            "projection": 0.02471746876835823
+          },
+          {
+            "component": "L3_MLP",
+            "projection": 0.02409602515399456
+          },
+          {
+            "component": "L1_H6_OV",
+            "projection": 0.023276176303625107
+          }
+        ],
+        "top_readers": [
+          {
+            "component": "L5_H1_QK",
+            "readout": 119.80413055419922
+          },
+          {
+            "component": "L6_H9_QK",
+            "readout": 106.4403305053711
+          },
+          {
+            "component": "L7_H10_QK",
+            "readout": 74.27060317993164
+          },
+          {
+            "component": "L7_H2_QK",
+            "readout": 71.33059310913086
+          },
+          {
+            "component": "L5_H0_QK",
+            "readout": 68.03779411315918
+          }
+        ]
+      },
+      "PC3": {
+        "top_writers": [
+          {
+            "component": "L2_MLP",
+            "projection": 0.17391325533390045
+          },
+          {
+            "component": "L3_MLP",
+            "projection": 0.1491985023021698
+          },
+          {
+            "component": "L0_MLP",
+            "projection": 0.11313100159168243
+          },
+          {
+            "component": "L1_MLP",
+            "projection": 0.11103503406047821
+          },
+          {
+            "component": "L0_H10_OV",
+            "projection": 0.0802111029624939
+          }
+        ],
+        "top_readers": [
+          {
+            "component": "L6_H9_QK",
+            "readout": 153.24496841430664
+          },
+          {
+            "component": "L5_H1_QK",
+            "readout": 142.70208740234375
+          },
+          {
+            "component": "L6_H1_QK",
+            "readout": 118.49601745605469
+          },
+          {
+            "component": "L6_H11_QK",
+            "readout": 105.17176818847656
+          },
+          {
+            "component": "L5_H7_QK",
+            "readout": 101.24788093566895
+          }
+        ]
+      },
+      "PC4": {
+        "top_writers": [
+          {
+            "component": "L0_MLP",
+            "projection": 0.4907817840576172
+          },
+          {
+            "component": "L1_MLP",
+            "projection": 0.4824317991733551
+          },
+          {
+            "component": "L1_H3_OV",
+            "projection": 0.0800604298710823
+          },
+          {
+            "component": "L2_MLP",
+            "projection": 0.07429996877908707
+          },
+          {
+            "component": "L0_H6_OV",
+            "projection": 0.053272806107997894
+          }
+        ],
+        "top_readers": [
+          {
+            "component": "L10_H9_QK",
+            "readout": 123.73947525024414
+          },
+          {
+            "component": "L5_H1_QK",
+            "readout": 96.36368560791016
+          },
+          {
+            "component": "L9_H3_QK",
+            "readout": 84.17606735229492
+          },
+          {
+            "component": "L6_H9_QK",
+            "readout": 81.91204643249512
+          },
+          {
+            "component": "L10_H5_QK",
+            "readout": 81.38528442382812
+          }
+        ]
+      },
+      "PC5": {
+        "top_writers": [
+          {
+            "component": "L3_MLP",
+            "projection": 0.1694384217262268
+          },
+          {
+            "component": "L2_MLP",
+            "projection": 0.10824313759803772
+          },
+          {
+            "component": "L4_MLP",
+            "projection": 0.09283897280693054
+          },
+          {
+            "component": "L0_H10_OV",
+            "projection": 0.08757510036230087
+          },
+          {
+            "component": "L0_MLP",
+            "projection": 0.08422406017780304
+          }
+        ],
+        "top_readers": [
+          {
+            "component": "L6_H9_QK",
+            "readout": 274.8694152832031
+          },
+          {
+            "component": "L5_H1_QK",
+            "readout": 189.8825798034668
+          },
+          {
+            "component": "L7_H10_QK",
+            "readout": 154.05416107177734
+          },
+          {
+            "component": "L5_H6_QK",
+            "readout": 143.06904220581055
+          },
+          {
+            "component": "L5_H5_QK",
+            "readout": 130.0105743408203
+          }
+        ]
+      },
+      "PC6": {
+        "top_writers": [
+          {
+            "component": "L3_MLP",
+            "projection": 0.14746037125587463
+          },
+          {
+            "component": "L4_MLP",
+            "projection": 0.0916995108127594
+          },
+          {
+            "component": "L2_H0_OV",
+            "projection": 0.07239949703216553
+          },
+          {
+            "component": "L4_H11_OV",
+            "projection": 0.06707443296909332
+          },
+          {
+            "component": "L2_H9_OV",
+            "projection": 0.06345940381288528
+          }
+        ],
+        "top_readers": [
+          {
+            "component": "L6_H9_QK",
+            "readout": 307.3730163574219
+          },
+          {
+            "component": "L5_H1_QK",
+            "readout": 272.13086700439453
+          },
+          {
+            "component": "L5_H6_QK",
+            "readout": 168.67139434814453
+          },
+          {
+            "component": "L7_H10_QK",
+            "readout": 144.55716705322266
+          },
+          {
+            "component": "L7_H2_QK",
+            "readout": 143.87615966796875
+          }
+        ]
+      },
+      "PC7": {
+        "top_writers": [
+          {
+            "component": "L3_MLP",
+            "projection": 0.08711934834718704
+          },
+          {
+            "component": "L4_MLP",
+            "projection": 0.06685053557157516
+          },
+          {
+            "component": "L2_MLP",
+            "projection": 0.058218397200107574
+          },
+          {
+            "component": "L1_MLP",
+            "projection": 0.05507867783308029
+          },
+          {
+            "component": "L2_H0_OV",
+            "projection": 0.0547243170440197
+          }
+        ],
+        "top_readers": [
+          {
+            "component": "L5_H1_QK",
+            "readout": 199.36058807373047
+          },
+          {
+            "component": "L6_H9_QK",
+            "readout": 195.08898162841797
+          },
+          {
+            "component": "L5_H6_QK",
+            "readout": 129.20191192626953
+          },
+          {
+            "component": "L5_H5_QK",
+            "readout": 104.7306137084961
+          },
+          {
+            "component": "L7_H10_QK",
+            "readout": 96.83232498168945
+          }
+        ]
+      }
+    }
+  },
+  "layer_5": {
+    "circuits": {
+      "PC0": {
+        "top_writers": [
+          {
+            "component": "L1_MLP",
+            "projection": 0.9004635810852051
+          },
+          {
+            "component": "L0_MLP",
+            "projection": 0.8735169172286987
+          },
+          {
+            "component": "L2_MLP",
+            "projection": 0.8482497930526733
+          },
+          {
+            "component": "L3_MLP",
+            "projection": 0.8353898525238037
+          },
+          {
+            "component": "L4_MLP",
+            "projection": 0.825691282749176
+          }
+        ],
+        "top_readers": [
+          {
+            "component": "L7_H2_QK",
+            "readout": 216.53607082366943
+          },
+          {
+            "component": "L7_H10_QK",
+            "readout": 203.2833251953125
+          },
+          {
+            "component": "L8_H1_QK",
+            "readout": 179.22425746917725
+          },
+          {
+            "component": "L6_H9_QK",
+            "readout": 155.19076538085938
+          },
+          {
+            "component": "L7_H1_QK",
+            "readout": 125.51021575927734
+          }
+        ]
+      },
+      "PC1": {
+        "top_writers": [
+          {
+            "component": "L2_MLP",
+            "projection": 0.14962373673915863
+          },
+          {
+            "component": "L3_MLP",
+            "projection": 0.12050718069076538
+          },
+          {
+            "component": "L0_MLP",
+            "projection": 0.1019039899110794
+          },
+          {
+            "component": "L0_H10_OV",
+            "projection": 0.08605456352233887
+          },
+          {
+            "component": "L4_MLP",
+            "projection": 0.07617837190628052
+          }
+        ],
+        "top_readers": [
+          {
+            "component": "L6_H9_QK",
+            "readout": 119.09573364257812
+          },
+          {
+            "component": "L6_H11_QK",
+            "readout": 114.76235580444336
+          },
+          {
+            "component": "L10_H10_QK",
+            "readout": 111.65550994873047
+          },
+          {
+            "component": "L8_H6_QK",
+            "readout": 102.17663192749023
+          },
+          {
+            "component": "L8_H4_QK",
+            "readout": 100.02025604248047
+          }
+        ]
+      },
+      "PC2": {
+        "top_writers": [
+          {
+            "component": "L0_MLP",
+            "projection": 0.2058723270893097
+          },
+          {
+            "component": "L1_MLP",
+            "projection": 0.2025901973247528
+          },
+          {
+            "component": "L5_MLP",
+            "projection": 0.1120225042104721
+          },
+          {
+            "component": "L3_MLP",
+            "projection": 0.10062816739082336
+          },
+          {
+            "component": "L4_MLP",
+            "projection": 0.08661223948001862
+          }
+        ],
+        "top_readers": [
+          {
+            "component": "L6_H9_QK",
+            "readout": 194.30099487304688
+          },
+          {
+            "component": "L6_H0_QK",
+            "readout": 118.07959175109863
+          },
+          {
+            "component": "L7_H10_QK",
+            "readout": 117.35639953613281
+          },
+          {
+            "component": "L6_H4_QK",
+            "readout": 117.26250457763672
+          },
+          {
+            "component": "L6_H1_QK",
+            "readout": 111.7613296508789
+          }
+        ]
+      },
+      "PC3": {
+        "top_writers": [
+          {
+            "component": "L3_MLP",
+            "projection": 0.2098042517900467
+          },
+          {
+            "component": "L0_H10_OV",
+            "projection": 0.1649489551782608
+          },
+          {
+            "component": "L4_H11_OV",
+            "projection": 0.11518595367670059
+          },
+          {
+            "component": "L4_MLP",
+            "projection": 0.10481618344783783
+          },
+          {
+            "component": "L5_MLP",
+            "projection": 0.10246824473142624
+          }
+        ],
+        "top_readers": [
+          {
+            "component": "L6_H9_QK",
+            "readout": 192.32190322875977
+          },
+          {
+            "component": "L6_H0_QK",
+            "readout": 156.44732666015625
+          },
+          {
+            "component": "L6_H11_QK",
+            "readout": 142.8546905517578
+          },
+          {
+            "component": "L8_H7_QK",
+            "readout": 128.9131565093994
+          },
+          {
+            "component": "L9_H3_QK",
+            "readout": 122.73047637939453
+          }
+        ]
+      },
+      "PC4": {
+        "top_writers": [
+          {
+            "component": "L1_MLP",
+            "projection": 0.23551243543624878
+          },
+          {
+            "component": "L0_MLP",
+            "projection": 0.23387068510055542
+          },
+          {
+            "component": "L2_MLP",
+            "projection": 0.1493798792362213
+          },
+          {
+            "component": "L3_MLP",
+            "projection": 0.10745923221111298
+          },
+          {
+            "component": "L5_MLP",
+            "projection": 0.06579206138849258
+          }
+        ],
+        "top_readers": [
+          {
+            "component": "L6_H9_QK",
+            "readout": 180.37349700927734
+          },
+          {
+            "component": "L7_H2_QK",
+            "readout": 117.01394271850586
+          },
+          {
+            "component": "L7_H10_QK",
+            "readout": 100.4112548828125
+          },
+          {
+            "component": "L6_H1_QK",
+            "readout": 90.89192581176758
+          },
+          {
+            "component": "L8_H7_QK",
+            "readout": 84.08985900878906
+          }
+        ]
+      },
+      "PC5": {
+        "top_writers": [
+          {
+            "component": "L5_MLP",
+            "projection": 0.1853422224521637
+          },
+          {
+            "component": "L3_MLP",
+            "projection": 0.1211361289024353
+          },
+          {
+            "component": "L0_MLP",
+            "projection": 0.11637565493583679
+          },
+          {
+            "component": "L4_MLP",
+            "projection": 0.10505703091621399
+          },
+          {
+            "component": "L1_MLP",
+            "projection": 0.10032236576080322
+          }
+        ],
+        "top_readers": [
+          {
+            "component": "L6_H9_QK",
+            "readout": 216.30335998535156
+          },
+          {
+            "component": "L7_H10_QK",
+            "readout": 114.76488876342773
+          },
+          {
+            "component": "L7_H2_QK",
+            "readout": 103.37139511108398
+          },
+          {
+            "component": "L8_H1_QK",
+            "readout": 101.50955200195312
+          },
+          {
+            "component": "L6_H1_QK",
+            "readout": 89.03992080688477
+          }
+        ]
+      },
+      "PC6": {
+        "top_writers": [
+          {
+            "component": "L2_H0_OV",
+            "projection": 0.12776564061641693
+          },
+          {
+            "component": "L2_H10_OV",
+            "projection": 0.07475084066390991
+          },
+          {
+            "component": "L0_MLP",
+            "projection": 0.07439015060663223
+          },
+          {
+            "component": "L3_H0_OV",
+            "projection": 0.07000788301229477
+          },
+          {
+            "component": "L5_MLP",
+            "projection": 0.06765861809253693
+          }
+        ],
+        "top_readers": [
+          {
+            "component": "L6_H9_QK",
+            "readout": 200.90901565551758
+          },
+          {
+            "component": "L6_H0_QK",
+            "readout": 146.09339141845703
+          },
+          {
+            "component": "L8_H1_QK",
+            "readout": 124.14832305908203
+          },
+          {
+            "component": "L7_H10_QK",
+            "readout": 123.87395477294922
+          },
+          {
+            "component": "L7_H8_QK",
+            "readout": 117.10506820678711
+          }
+        ]
+      },
+      "PC7": {
+        "top_writers": [
+          {
+            "component": "L3_MLP",
+            "projection": 0.07781136780977249
+          },
+          {
+            "component": "L2_H9_OV",
+            "projection": 0.04314226657152176
+          },
+          {
+            "component": "L2_MLP",
+            "projection": 0.042838260531425476
+          },
+          {
+            "component": "L5_MLP",
+            "projection": 0.0421927347779274
+          },
+          {
+            "component": "L4_MLP",
+            "projection": 0.037583500146865845
+          }
+        ],
+        "top_readers": [
+          {
+            "component": "L6_H9_QK",
+            "readout": 286.21629333496094
+          },
+          {
+            "component": "L7_H10_QK",
+            "readout": 129.47950744628906
+          },
+          {
+            "component": "L7_H2_QK",
+            "readout": 117.64435577392578
+          },
+          {
+            "component": "L6_H1_QK",
+            "readout": 81.91247177124023
+          },
+          {
+            "component": "L10_H11_QK",
+            "readout": 79.84410858154297
+          }
+        ]
+      }
+    }
+  },
+  "layer_6": {
+    "circuits": {
+      "PC0": {
+        "top_writers": [
+          {
+            "component": "L1_MLP",
+            "projection": 0.9018806219100952
+          },
+          {
+            "component": "L0_MLP",
+            "projection": 0.873832643032074
+          },
+          {
+            "component": "L2_MLP",
+            "projection": 0.8504952788352966
+          },
+          {
+            "component": "L3_MLP",
+            "projection": 0.8383181095123291
+          },
+          {
+            "component": "L4_MLP",
+            "projection": 0.8286316394805908
+          }
+        ],
+        "top_readers": [
+          {
+            "component": "L7_H2_QK",
+            "readout": 216.25357055664062
+          },
+          {
+            "component": "L7_H10_QK",
+            "readout": 202.81026077270508
+          },
+          {
+            "component": "L8_H1_QK",
+            "readout": 178.0259599685669
+          },
+          {
+            "component": "L7_H1_QK",
+            "readout": 125.67156648635864
+          },
+          {
+            "component": "L10_H11_QK",
+            "readout": 115.4052939414978
+          }
+        ]
+      },
+      "PC1": {
+        "top_writers": [
+          {
+            "component": "L3_MLP",
+            "projection": 0.0541013702750206
+          },
+          {
+            "component": "L6_MLP",
+            "projection": 0.052082933485507965
+          },
+          {
+            "component": "L2_MLP",
+            "projection": 0.049399249255657196
+          },
+          {
+            "component": "L2_H9_OV",
+            "projection": 0.046551235020160675
+          },
+          {
+            "component": "L1_MLP",
+            "projection": 0.04189714789390564
+          }
+        ],
+        "top_readers": [
+          {
+            "component": "L7_H2_QK",
+            "readout": 75.87336349487305
+          },
+          {
+            "component": "L7_H10_QK",
+            "readout": 67.6124496459961
+          },
+          {
+            "component": "L8_H1_QK",
+            "readout": 64.84969520568848
+          },
+          {
+            "component": "L8_H0_QK",
+            "readout": 63.300249099731445
+          },
+          {
+            "component": "L7_H1_QK",
+            "readout": 60.2457218170166
+          }
+        ]
+      },
+      "PC2": {
+        "top_writers": [
+          {
+            "component": "L3_MLP",
+            "projection": 0.11911952495574951
+          },
+          {
+            "component": "L0_H10_OV",
+            "projection": 0.11243186891078949
+          },
+          {
+            "component": "L2_MLP",
+            "projection": 0.0989573523402214
+          },
+          {
+            "component": "L4_MLP",
+            "projection": 0.08547250926494598
+          },
+          {
+            "component": "L5_MLP",
+            "projection": 0.07092508673667908
+          }
+        ],
+        "top_readers": [
+          {
+            "component": "L10_H10_QK",
+            "readout": 103.15030860900879
+          },
+          {
+            "component": "L8_H6_QK",
+            "readout": 91.6119499206543
+          },
+          {
+            "component": "L7_H2_QK",
+            "readout": 87.58753204345703
+          },
+          {
+            "component": "L8_H7_QK",
+            "readout": 87.4542007446289
+          },
+          {
+            "component": "L7_H0_QK",
+            "readout": 86.50568962097168
+          }
+        ]
+      },
+      "PC3": {
+        "top_writers": [
+          {
+            "component": "L5_MLP",
+            "projection": 0.3079201579093933
+          },
+          {
+            "component": "L6_MLP",
+            "projection": 0.30160796642303467
+          },
+          {
+            "component": "L4_MLP",
+            "projection": 0.24326109886169434
+          },
+          {
+            "component": "L3_MLP",
+            "projection": 0.23517975211143494
+          },
+          {
+            "component": "L2_MLP",
+            "projection": 0.1897069662809372
+          }
+        ],
+        "top_readers": [
+          {
+            "component": "L7_H10_QK",
+            "readout": 151.85670471191406
+          },
+          {
+            "component": "L8_H6_QK",
+            "readout": 123.09850692749023
+          },
+          {
+            "component": "L8_H1_QK",
+            "readout": 120.68783569335938
+          },
+          {
+            "component": "L7_H1_QK",
+            "readout": 116.4949893951416
+          },
+          {
+            "component": "L7_H2_QK",
+            "readout": 115.51863861083984
+          }
+        ]
+      },
+      "PC4": {
+        "top_writers": [
+          {
+            "component": "L5_MLP",
+            "projection": 0.18776066601276398
+          },
+          {
+            "component": "L6_MLP",
+            "projection": 0.18005380034446716
+          },
+          {
+            "component": "L3_MLP",
+            "projection": 0.11679263412952423
+          },
+          {
+            "component": "L4_MLP",
+            "projection": 0.09053260833024979
+          },
+          {
+            "component": "L0_MLP",
+            "projection": 0.07485197484493256
+          }
+        ],
+        "top_readers": [
+          {
+            "component": "L7_H2_QK",
+            "readout": 123.6814193725586
+          },
+          {
+            "component": "L7_H7_QK",
+            "readout": 119.10494995117188
+          },
+          {
+            "component": "L8_H6_QK",
+            "readout": 115.96136856079102
+          },
+          {
+            "component": "L7_H10_QK",
+            "readout": 109.3552360534668
+          },
+          {
+            "component": "L7_H8_QK",
+            "readout": 105.93998527526855
+          }
+        ]
+      },
+      "PC5": {
+        "top_writers": [
+          {
+            "component": "L3_MLP",
+            "projection": 0.2001173347234726
+          },
+          {
+            "component": "L0_H10_OV",
+            "projection": 0.14380933344364166
+          },
+          {
+            "component": "L6_MLP",
+            "projection": 0.12857496738433838
+          },
+          {
+            "component": "L4_MLP",
+            "projection": 0.108867347240448
+          },
+          {
+            "component": "L2_MLP",
+            "projection": 0.10028049349784851
+          }
+        ],
+        "top_readers": [
+          {
+            "component": "L10_H11_QK",
+            "readout": 129.31026077270508
+          },
+          {
+            "component": "L8_H7_QK",
+            "readout": 111.25518035888672
+          },
+          {
+            "component": "L7_H0_QK",
+            "readout": 108.35792922973633
+          },
+          {
+            "component": "L7_H10_QK",
+            "readout": 95.37736511230469
+          },
+          {
+            "component": "L8_H1_QK",
+            "readout": 94.82218551635742
+          }
+        ]
+      },
+      "PC6": {
+        "top_writers": [
+          {
+            "component": "L1_MLP",
+            "projection": 0.34165793657302856
+          },
+          {
+            "component": "L0_MLP",
+            "projection": 0.33030200004577637
+          },
+          {
+            "component": "L1_H3_OV",
+            "projection": 0.08018793165683746
+          },
+          {
+            "component": "L2_MLP",
+            "projection": 0.06936810910701752
+          },
+          {
+            "component": "L3_MLP",
+            "projection": 0.05851643532514572
+          }
+        ],
+        "top_readers": [
+          {
+            "component": "L7_H2_QK",
+            "readout": 105.29821395874023
+          },
+          {
+            "component": "L10_H9_QK",
+            "readout": 95.24471664428711
+          },
+          {
+            "component": "L7_H10_QK",
+            "readout": 88.634765625
+          },
+          {
+            "component": "L8_H1_QK",
+            "readout": 82.64282989501953
+          },
+          {
+            "component": "L8_H7_QK",
+            "readout": 76.82735061645508
+          }
+        ]
+      },
+      "PC7": {
+        "top_writers": [
+          {
+            "component": "L0_H8_OV",
+            "projection": 0.03737796097993851
+          },
+          {
+            "component": "L3_MLP",
+            "projection": 0.035836830735206604
+          },
+          {
+            "component": "L1_H5_OV",
+            "projection": 0.03343365341424942
+          },
+          {
+            "component": "L0_H0_OV",
+            "projection": 0.03211960196495056
+          },
+          {
+            "component": "L1_MLP",
+            "projection": 0.028883062303066254
+          }
+        ],
+        "top_readers": [
+          {
+            "component": "L7_H2_QK",
+            "readout": 83.05476760864258
+          },
+          {
+            "component": "L7_H10_QK",
+            "readout": 80.26538848876953
+          },
+          {
+            "component": "L8_H1_QK",
+            "readout": 67.40908813476562
+          },
+          {
+            "component": "L7_H1_QK",
+            "readout": 51.940269470214844
+          },
+          {
+            "component": "L7_H7_QK",
+            "readout": 51.58773422241211
+          }
+        ]
+      }
+    }
+  },
+  "layer_7": {
+    "circuits": {
+      "PC0": {
+        "top_writers": [
+          {
+            "component": "L1_MLP",
+            "projection": 0.9001033306121826
+          },
+          {
+            "component": "L0_MLP",
+            "projection": 0.8725095391273499
+          },
+          {
+            "component": "L2_MLP",
+            "projection": 0.8497776389122009
+          },
+          {
+            "component": "L3_MLP",
+            "projection": 0.8369311690330505
+          },
+          {
+            "component": "L4_MLP",
+            "projection": 0.8265246748924255
+          }
+        ],
+        "top_readers": [
+          {
+            "component": "L8_H1_QK",
+            "readout": 177.39536333084106
+          },
+          {
+            "component": "L10_H11_QK",
+            "readout": 115.14565825462341
+          },
+          {
+            "component": "L9_H9_QK",
+            "readout": 111.26972770690918
+          },
+          {
+            "component": "L8_H7_QK",
+            "readout": 92.92257690429688
+          },
+          {
+            "component": "L8_H6_QK",
+            "readout": 91.66377973556519
+          }
+        ]
+      },
+      "PC1": {
+        "top_writers": [
+          {
+            "component": "L6_MLP",
+            "projection": 0.3265628516674042
+          },
+          {
+            "component": "L7_MLP",
+            "projection": 0.3026278614997864
+          },
+          {
+            "component": "L5_MLP",
+            "projection": 0.2993606925010681
+          },
+          {
+            "component": "L4_MLP",
+            "projection": 0.23091307282447815
+          },
+          {
+            "component": "L3_MLP",
+            "projection": 0.21081078052520752
+          }
+        ],
+        "top_readers": [
+          {
+            "component": "L8_H6_QK",
+            "readout": 104.16230773925781
+          },
+          {
+            "component": "L9_H2_QK",
+            "readout": 86.4540662765503
+          },
+          {
+            "component": "L8_H0_QK",
+            "readout": 85.15153503417969
+          },
+          {
+            "component": "L8_H7_QK",
+            "readout": 82.2427749633789
+          },
+          {
+            "component": "L9_H0_QK",
+            "readout": 79.18503379821777
+          }
+        ]
+      },
+      "PC2": {
+        "top_writers": [
+          {
+            "component": "L5_MLP",
+            "projection": 0.33176302909851074
+          },
+          {
+            "component": "L6_MLP",
+            "projection": 0.3304276168346405
+          },
+          {
+            "component": "L7_MLP",
+            "projection": 0.3095385730266571
+          },
+          {
+            "component": "L4_MLP",
+            "projection": 0.22592976689338684
+          },
+          {
+            "component": "L3_MLP",
+            "projection": 0.16594436764717102
+          }
+        ],
+        "top_readers": [
+          {
+            "component": "L8_H4_QK",
+            "readout": 130.29967880249023
+          },
+          {
+            "component": "L8_H7_QK",
+            "readout": 115.57898330688477
+          },
+          {
+            "component": "L8_H6_QK",
+            "readout": 99.4388427734375
+          },
+          {
+            "component": "L8_H8_QK",
+            "readout": 94.91070938110352
+          },
+          {
+            "component": "L8_H1_QK",
+            "readout": 93.0676383972168
+          }
+        ]
+      },
+      "PC3": {
+        "top_writers": [
+          {
+            "component": "L3_MLP",
+            "projection": 0.12901180982589722
+          },
+          {
+            "component": "L6_MLP",
+            "projection": 0.10219943523406982
+          },
+          {
+            "component": "L2_MLP",
+            "projection": 0.09481118619441986
+          },
+          {
+            "component": "L5_MLP",
+            "projection": 0.0756300762295723
+          },
+          {
+            "component": "L0_H10_OV",
+            "projection": 0.07503800094127655
+          }
+        ],
+        "top_readers": [
+          {
+            "component": "L11_H11_QK",
+            "readout": 111.5634880065918
+          },
+          {
+            "component": "L8_H6_QK",
+            "readout": 103.19810485839844
+          },
+          {
+            "component": "L8_H4_QK",
+            "readout": 94.9188346862793
+          },
+          {
+            "component": "L10_H11_QK",
+            "readout": 91.19140625
+          },
+          {
+            "component": "L8_H5_QK",
+            "readout": 86.70133972167969
+          }
+        ]
+      },
+      "PC4": {
+        "top_writers": [
+          {
+            "component": "L3_MLP",
+            "projection": 0.02944519743323326
+          },
+          {
+            "component": "L3_H1_OV",
+            "projection": 0.027302220463752747
+          },
+          {
+            "component": "L4_MLP",
+            "projection": 0.026365965604782104
+          },
+          {
+            "component": "L0_H3_OV",
+            "projection": 0.024116575717926025
+          },
+          {
+            "component": "L2_MLP",
+            "projection": 0.023942112922668457
+          }
+        ],
+        "top_readers": [
+          {
+            "component": "L8_H1_QK",
+            "readout": 73.89738845825195
+          },
+          {
+            "component": "L8_H6_QK",
+            "readout": 43.28034019470215
+          },
+          {
+            "component": "L8_H0_QK",
+            "readout": 43.146830558776855
+          },
+          {
+            "component": "L9_H11_QK",
+            "readout": 41.94540786743164
+          },
+          {
+            "component": "L8_H3_QK",
+            "readout": 41.660316467285156
+          }
+        ]
+      },
+      "PC5": {
+        "top_writers": [
+          {
+            "component": "L3_MLP",
+            "projection": 0.1511484831571579
+          },
+          {
+            "component": "L5_MLP",
+            "projection": 0.13449978828430176
+          },
+          {
+            "component": "L7_MLP",
+            "projection": 0.12811072170734406
+          },
+          {
+            "component": "L6_MLP",
+            "projection": 0.12768900394439697
+          },
+          {
+            "component": "L2_MLP",
+            "projection": 0.11584340035915375
+          }
+        ],
+        "top_readers": [
+          {
+            "component": "L8_H1_QK",
+            "readout": 86.53386688232422
+          },
+          {
+            "component": "L8_H6_QK",
+            "readout": 85.06851196289062
+          },
+          {
+            "component": "L9_H0_QK",
+            "readout": 78.35123825073242
+          },
+          {
+            "component": "L9_H2_QK",
+            "readout": 74.77669525146484
+          },
+          {
+            "component": "L8_H7_QK",
+            "readout": 74.20392990112305
+          }
+        ]
+      },
+      "PC6": {
+        "top_writers": [
+          {
+            "component": "L3_MLP",
+            "projection": 0.13219504058361053
+          },
+          {
+            "component": "L0_H10_OV",
+            "projection": 0.08739753812551498
+          },
+          {
+            "component": "L5_MLP",
+            "projection": 0.06775043904781342
+          },
+          {
+            "component": "L2_H0_OV",
+            "projection": 0.062334105372428894
+          },
+          {
+            "component": "L3_H6_OV",
+            "projection": 0.05991614609956741
+          }
+        ],
+        "top_readers": [
+          {
+            "component": "L8_H0_QK",
+            "readout": 128.0468349456787
+          },
+          {
+            "component": "L10_H11_QK",
+            "readout": 104.9777946472168
+          },
+          {
+            "component": "L8_H1_QK",
+            "readout": 95.54128646850586
+          },
+          {
+            "component": "L8_H6_QK",
+            "readout": 95.01774597167969
+          },
+          {
+            "component": "L8_H7_QK",
+            "readout": 91.86834716796875
+          }
+        ]
+      },
+      "PC7": {
+        "top_writers": [
+          {
+            "component": "L7_MLP",
+            "projection": 0.09514014422893524
+          },
+          {
+            "component": "L6_MLP",
+            "projection": 0.0896226018667221
+          },
+          {
+            "component": "L3_MLP",
+            "projection": 0.0884041041135788
+          },
+          {
+            "component": "L5_MLP",
+            "projection": 0.08573239296674728
+          },
+          {
+            "component": "L4_MLP",
+            "projection": 0.05282352492213249
+          }
+        ],
+        "top_readers": [
+          {
+            "component": "L8_H1_QK",
+            "readout": 116.95102310180664
+          },
+          {
+            "component": "L8_H7_QK",
+            "readout": 106.31292152404785
+          },
+          {
+            "component": "L8_H6_QK",
+            "readout": 98.8010025024414
+          },
+          {
+            "component": "L8_H4_QK",
+            "readout": 74.71393585205078
+          },
+          {
+            "component": "L10_H11_QK",
+            "readout": 74.38817977905273
+          }
+        ]
+      }
+    }
+  },
+  "layer_8": {
+    "circuits": {
+      "PC0": {
+        "top_writers": [
+          {
+            "component": "L1_MLP",
+            "projection": 0.9021413326263428
+          },
+          {
+            "component": "L0_MLP",
+            "projection": 0.8723772764205933
+          },
+          {
+            "component": "L2_MLP",
+            "projection": 0.8515767455101013
+          },
+          {
+            "component": "L3_MLP",
+            "projection": 0.8399491310119629
+          },
+          {
+            "component": "L4_MLP",
+            "projection": 0.8301868438720703
+          }
+        ],
+        "top_readers": [
+          {
+            "component": "L10_H11_QK",
+            "readout": 113.97178173065186
+          },
+          {
+            "component": "L9_H9_QK",
+            "readout": 110.93224239349365
+          },
+          {
+            "component": "L9_H1_QK",
+            "readout": 76.27939414978027
+          },
+          {
+            "component": "L9_H11_QK",
+            "readout": 69.25909423828125
+          },
+          {
+            "component": "L9_H6_QK",
+            "readout": 60.81950569152832
+          }
+        ]
+      },
+      "PC1": {
+        "top_writers": [
+          {
+            "component": "L8_MLP",
+            "projection": 0.4500289857387543
+          },
+          {
+            "component": "L7_MLP",
+            "projection": 0.4450036287307739
+          },
+          {
+            "component": "L6_MLP",
+            "projection": 0.44030624628067017
+          },
+          {
+            "component": "L5_MLP",
+            "projection": 0.43205899000167847
+          },
+          {
+            "component": "L4_MLP",
+            "projection": 0.30430808663368225
+          }
+        ],
+        "top_readers": [
+          {
+            "component": "L11_H8_QK",
+            "readout": 83.32839584350586
+          },
+          {
+            "component": "L9_H2_QK",
+            "readout": 73.30282592773438
+          },
+          {
+            "component": "L10_H10_QK",
+            "readout": 72.11405372619629
+          },
+          {
+            "component": "L10_H9_QK",
+            "readout": 72.01037216186523
+          },
+          {
+            "component": "L10_H11_QK",
+            "readout": 70.98385429382324
+          }
+        ]
+      },
+      "PC2": {
+        "top_writers": [
+          {
+            "component": "L3_MLP",
+            "projection": 0.16009601950645447
+          },
+          {
+            "component": "L2_MLP",
+            "projection": 0.16006077826023102
+          },
+          {
+            "component": "L4_MLP",
+            "projection": 0.13279667496681213
+          },
+          {
+            "component": "L6_MLP",
+            "projection": 0.12827973067760468
+          },
+          {
+            "component": "L5_MLP",
+            "projection": 0.11964045464992523
+          }
+        ],
+        "top_readers": [
+          {
+            "component": "L11_H11_QK",
+            "readout": 79.19397163391113
+          },
+          {
+            "component": "L10_H9_QK",
+            "readout": 75.60466766357422
+          },
+          {
+            "component": "L10_H11_QK",
+            "readout": 75.0854377746582
+          },
+          {
+            "component": "L9_H3_QK",
+            "readout": 74.15544128417969
+          },
+          {
+            "component": "L9_H2_QK",
+            "readout": 69.77829360961914
+          }
+        ]
+      },
+      "PC3": {
+        "top_writers": [
+          {
+            "component": "L6_MLP",
+            "projection": 0.2175786793231964
+          },
+          {
+            "component": "L5_MLP",
+            "projection": 0.17355048656463623
+          },
+          {
+            "component": "L7_MLP",
+            "projection": 0.1646377444267273
+          },
+          {
+            "component": "L3_MLP",
+            "projection": 0.1376306265592575
+          },
+          {
+            "component": "L4_MLP",
+            "projection": 0.13111388683319092
+          }
+        ],
+        "top_readers": [
+          {
+            "component": "L10_H11_QK",
+            "readout": 77.1814079284668
+          },
+          {
+            "component": "L11_H11_QK",
+            "readout": 64.49238777160645
+          },
+          {
+            "component": "L9_H2_QK",
+            "readout": 64.44718551635742
+          },
+          {
+            "component": "L9_H11_QK",
+            "readout": 63.91176795959473
+          },
+          {
+            "component": "L9_H0_QK",
+            "readout": 63.89613723754883
+          }
+        ]
+      },
+      "PC4": {
+        "top_writers": [
+          {
+            "component": "L0_H3_OV",
+            "projection": 0.028661975637078285
+          },
+          {
+            "component": "L5_H2_OV",
+            "projection": 0.02648349665105343
+          },
+          {
+            "component": "L3_H1_OV",
+            "projection": 0.02380915731191635
+          },
+          {
+            "component": "L5_MLP",
+            "projection": 0.02257399633526802
+          },
+          {
+            "component": "L0_H5_OV",
+            "projection": 0.02116628922522068
+          }
+        ],
+        "top_readers": [
+          {
+            "component": "L9_H11_QK",
+            "readout": 39.241859436035156
+          },
+          {
+            "component": "L10_H11_QK",
+            "readout": 37.78070640563965
+          },
+          {
+            "component": "L9_H4_QK",
+            "readout": 33.75607681274414
+          },
+          {
+            "component": "L9_H9_QK",
+            "readout": 31.89827537536621
+          },
+          {
+            "component": "L9_H0_QK",
+            "readout": 29.523807525634766
+          }
+        ]
+      },
+      "PC5": {
+        "top_writers": [
+          {
+            "component": "L8_MLP",
+            "projection": 0.25090184807777405
+          },
+          {
+            "component": "L3_MLP",
+            "projection": 0.24028964340686798
+          },
+          {
+            "component": "L6_MLP",
+            "projection": 0.20596161484718323
+          },
+          {
+            "component": "L7_MLP",
+            "projection": 0.19579201936721802
+          },
+          {
+            "component": "L0_H10_OV",
+            "projection": 0.16304171085357666
+          }
+        ],
+        "top_readers": [
+          {
+            "component": "L9_H3_QK",
+            "readout": 83.59249877929688
+          },
+          {
+            "component": "L10_H11_QK",
+            "readout": 82.20279312133789
+          },
+          {
+            "component": "L10_H9_QK",
+            "readout": 65.4496078491211
+          },
+          {
+            "component": "L11_H8_QK",
+            "readout": 57.62696075439453
+          },
+          {
+            "component": "L9_H11_QK",
+            "readout": 57.24730968475342
+          }
+        ]
+      },
+      "PC6": {
+        "top_writers": [
+          {
+            "component": "L8_MLP",
+            "projection": 0.11753511428833008
+          },
+          {
+            "component": "L3_MLP",
+            "projection": 0.10529419779777527
+          },
+          {
+            "component": "L7_MLP",
+            "projection": 0.1040913462638855
+          },
+          {
+            "component": "L6_MLP",
+            "projection": 0.09478882700204849
+          },
+          {
+            "component": "L5_MLP",
+            "projection": 0.08598406612873077
+          }
+        ],
+        "top_readers": [
+          {
+            "component": "L10_H11_QK",
+            "readout": 89.87048721313477
+          },
+          {
+            "component": "L9_H2_QK",
+            "readout": 64.20305252075195
+          },
+          {
+            "component": "L9_H4_QK",
+            "readout": 63.84450149536133
+          },
+          {
+            "component": "L9_H0_QK",
+            "readout": 61.44143867492676
+          },
+          {
+            "component": "L9_H9_QK",
+            "readout": 53.94821548461914
+          }
+        ]
+      },
+      "PC7": {
+        "top_writers": [
+          {
+            "component": "L3_MLP",
+            "projection": 0.13169722259044647
+          },
+          {
+            "component": "L7_MLP",
+            "projection": 0.12796452641487122
+          },
+          {
+            "component": "L4_MLP",
+            "projection": 0.11015897989273071
+          },
+          {
+            "component": "L8_MLP",
+            "projection": 0.0976155698299408
+          },
+          {
+            "component": "L5_MLP",
+            "projection": 0.09330761432647705
+          }
+        ],
+        "top_readers": [
+          {
+            "component": "L9_H11_QK",
+            "readout": 69.28654098510742
+          },
+          {
+            "component": "L10_H11_QK",
+            "readout": 68.84465408325195
+          },
+          {
+            "component": "L10_H9_QK",
+            "readout": 51.51060676574707
+          },
+          {
+            "component": "L11_H8_QK",
+            "readout": 48.06245040893555
+          },
+          {
+            "component": "L9_H4_QK",
+            "readout": 46.745317459106445
+          }
+        ]
+      }
+    }
+  },
+  "layer_9": {
+    "circuits": {
+      "PC0": {
+        "top_writers": [
+          {
+            "component": "L1_MLP",
+            "projection": 0.9019243717193604
+          },
+          {
+            "component": "L0_MLP",
+            "projection": 0.8710715770721436
+          },
+          {
+            "component": "L2_MLP",
+            "projection": 0.8504340648651123
+          },
+          {
+            "component": "L3_MLP",
+            "projection": 0.8387641310691833
+          },
+          {
+            "component": "L4_MLP",
+            "projection": 0.82948899269104
+          }
+        ],
+        "top_readers": [
+          {
+            "component": "L10_H11_QK",
+            "readout": 113.45110130310059
+          },
+          {
+            "component": "L10_H1_QK",
+            "readout": 56.31463623046875
+          },
+          {
+            "component": "L10_H9_QK",
+            "readout": 50.522836685180664
+          },
+          {
+            "component": "L10_H2_QK",
+            "readout": 40.81941318511963
+          },
+          {
+            "component": "L10_H0_QK",
+            "readout": 40.1070442199707
+          }
+        ]
+      },
+      "PC1": {
+        "top_writers": [
+          {
+            "component": "L8_MLP",
+            "projection": 0.4973287582397461
+          },
+          {
+            "component": "L9_MLP",
+            "projection": 0.45947420597076416
+          },
+          {
+            "component": "L7_MLP",
+            "projection": 0.42088842391967773
+          },
+          {
+            "component": "L6_MLP",
+            "projection": 0.4189278483390808
+          },
+          {
+            "component": "L5_MLP",
+            "projection": 0.3742069602012634
+          }
+        ],
+        "top_readers": [
+          {
+            "component": "L10_H10_QK",
+            "readout": 75.61125183105469
+          },
+          {
+            "component": "L11_H8_QK",
+            "readout": 73.54762554168701
+          },
+          {
+            "component": "L10_H11_QK",
+            "readout": 67.37497901916504
+          },
+          {
+            "component": "L10_H9_QK",
+            "readout": 58.45130920410156
+          },
+          {
+            "component": "L10_H4_QK",
+            "readout": 57.50957489013672
+          }
+        ]
+      },
+      "PC2": {
+        "top_writers": [
+          {
+            "component": "L6_MLP",
+            "projection": 0.10110670328140259
+          },
+          {
+            "component": "L5_MLP",
+            "projection": 0.07968336343765259
+          },
+          {
+            "component": "L7_MLP",
+            "projection": 0.07284660637378693
+          },
+          {
+            "component": "L2_H0_OV",
+            "projection": 0.06342798471450806
+          },
+          {
+            "component": "L2_H10_OV",
+            "projection": 0.06250526756048203
+          }
+        ],
+        "top_readers": [
+          {
+            "component": "L11_H11_QK",
+            "readout": 108.42969703674316
+          },
+          {
+            "component": "L10_H11_QK",
+            "readout": 82.25115203857422
+          },
+          {
+            "component": "L10_H9_QK",
+            "readout": 60.675636291503906
+          },
+          {
+            "component": "L10_H4_QK",
+            "readout": 51.75283622741699
+          },
+          {
+            "component": "L10_H5_QK",
+            "readout": 48.70853805541992
+          }
+        ]
+      },
+      "PC3": {
+        "top_writers": [
+          {
+            "component": "L7_MLP",
+            "projection": 0.18457578122615814
+          },
+          {
+            "component": "L3_MLP",
+            "projection": 0.1748771071434021
+          },
+          {
+            "component": "L4_MLP",
+            "projection": 0.16766241192817688
+          },
+          {
+            "component": "L5_MLP",
+            "projection": 0.15742401778697968
+          },
+          {
+            "component": "L6_MLP",
+            "projection": 0.1528080850839615
+          }
+        ],
+        "top_readers": [
+          {
+            "component": "L10_H11_QK",
+            "readout": 74.31074523925781
+          },
+          {
+            "component": "L11_H11_QK",
+            "readout": 55.144081115722656
+          },
+          {
+            "component": "L10_H4_QK",
+            "readout": 46.352617263793945
+          },
+          {
+            "component": "L10_H9_QK",
+            "readout": 44.5106315612793
+          },
+          {
+            "component": "L10_H10_QK",
+            "readout": 43.33864212036133
+          }
+        ]
+      },
+      "PC4": {
+        "top_writers": [
+          {
+            "component": "L8_MLP",
+            "projection": 0.21609336137771606
+          },
+          {
+            "component": "L3_MLP",
+            "projection": 0.21152837574481964
+          },
+          {
+            "component": "L9_MLP",
+            "projection": 0.19001799821853638
+          },
+          {
+            "component": "L6_MLP",
+            "projection": 0.18077419698238373
+          },
+          {
+            "component": "L7_MLP",
+            "projection": 0.15023183822631836
+          }
+        ],
+        "top_readers": [
+          {
+            "component": "L10_H11_QK",
+            "readout": 89.82422637939453
+          },
+          {
+            "component": "L10_H9_QK",
+            "readout": 71.59769439697266
+          },
+          {
+            "component": "L11_H8_QK",
+            "readout": 51.84969139099121
+          },
+          {
+            "component": "L10_H5_QK",
+            "readout": 49.32173538208008
+          },
+          {
+            "component": "L10_H4_QK",
+            "readout": 44.1252555847168
+          }
+        ]
+      },
+      "PC5": {
+        "top_writers": [
+          {
+            "component": "L6_MLP",
+            "projection": 0.09597191214561462
+          },
+          {
+            "component": "L5_MLP",
+            "projection": 0.07573999464511871
+          },
+          {
+            "component": "L4_MLP",
+            "projection": 0.06159196048974991
+          },
+          {
+            "component": "L7_MLP",
+            "projection": 0.060032933950424194
+          },
+          {
+            "component": "L8_MLP",
+            "projection": 0.052318867295980453
+          }
+        ],
+        "top_readers": [
+          {
+            "component": "L10_H11_QK",
+            "readout": 77.08609008789062
+          },
+          {
+            "component": "L10_H1_QK",
+            "readout": 41.3089599609375
+          },
+          {
+            "component": "L10_H3_QK",
+            "readout": 39.34073448181152
+          },
+          {
+            "component": "L10_H4_QK",
+            "readout": 38.915931701660156
+          },
+          {
+            "component": "L10_H9_QK",
+            "readout": 38.19875144958496
+          }
+        ]
+      },
+      "PC6": {
+        "top_writers": [
+          {
+            "component": "L7_MLP",
+            "projection": 0.1264115273952484
+          },
+          {
+            "component": "L8_MLP",
+            "projection": 0.09500984847545624
+          },
+          {
+            "component": "L7_H0_OV",
+            "projection": 0.09208933264017105
+          },
+          {
+            "component": "L9_MLP",
+            "projection": 0.06656529754400253
+          },
+          {
+            "component": "L6_MLP",
+            "projection": 0.06019438058137894
+          }
+        ],
+        "top_readers": [
+          {
+            "component": "L10_H11_QK",
+            "readout": 54.50331687927246
+          },
+          {
+            "component": "L10_H4_QK",
+            "readout": 40.174015045166016
+          },
+          {
+            "component": "L10_H8_QK",
+            "readout": 38.08321475982666
+          },
+          {
+            "component": "L10_H1_QK",
+            "readout": 37.227081298828125
+          },
+          {
+            "component": "L10_H2_QK",
+            "readout": 36.88789749145508
+          }
+        ]
+      },
+      "PC7": {
+        "top_writers": [
+          {
+            "component": "L8_MLP",
+            "projection": 0.1594790369272232
+          },
+          {
+            "component": "L7_MLP",
+            "projection": 0.1287449300289154
+          },
+          {
+            "component": "L9_MLP",
+            "projection": 0.11151333153247833
+          },
+          {
+            "component": "L6_MLP",
+            "projection": 0.10600557178258896
+          },
+          {
+            "component": "L3_MLP",
+            "projection": 0.08293716609477997
+          }
+        ],
+        "top_readers": [
+          {
+            "component": "L10_H11_QK",
+            "readout": 68.44292068481445
+          },
+          {
+            "component": "L10_H10_QK",
+            "readout": 47.63344383239746
+          },
+          {
+            "component": "L10_H9_QK",
+            "readout": 41.79770088195801
+          },
+          {
+            "component": "L11_H8_QK",
+            "readout": 41.51832675933838
+          },
+          {
+            "component": "L10_H4_QK",
+            "readout": 39.60598182678223
+          }
+        ]
+      }
+    }
+  },
+  "layer_10": {
+    "circuits": {
+      "PC0": {
+        "top_writers": [
+          {
+            "component": "L1_MLP",
+            "projection": 0.9015712141990662
+          },
+          {
+            "component": "L0_MLP",
+            "projection": 0.8695528507232666
+          },
+          {
+            "component": "L2_MLP",
+            "projection": 0.8495050668716431
+          },
+          {
+            "component": "L3_MLP",
+            "projection": 0.836861789226532
+          },
+          {
+            "component": "L4_MLP",
+            "projection": 0.8279021382331848
+          }
+        ],
+        "top_readers": [
+          {
+            "component": "L11_H8_QK",
+            "readout": 35.295209884643555
+          },
+          {
+            "component": "L11_H11_QK",
+            "readout": 20.27132225036621
+          },
+          {
+            "component": "L11_H10_QK",
+            "readout": 17.64981198310852
+          },
+          {
+            "component": "L11_H3_QK",
+            "readout": 16.583112239837646
+          },
+          {
+            "component": "L11_H4_QK",
+            "readout": 15.746931076049805
+          }
+        ]
+      },
+      "PC1": {
+        "top_writers": [
+          {
+            "component": "L10_MLP",
+            "projection": 0.4009549915790558
+          },
+          {
+            "component": "L8_MLP",
+            "projection": 0.38093534111976624
+          },
+          {
+            "component": "L9_MLP",
+            "projection": 0.36696290969848633
+          },
+          {
+            "component": "L7_MLP",
+            "projection": 0.32495632767677307
+          },
+          {
+            "component": "L6_MLP",
+            "projection": 0.31921452283859253
+          }
+        ],
+        "top_readers": [
+          {
+            "component": "L11_H8_QK",
+            "readout": 61.225019454956055
+          },
+          {
+            "component": "L11_H11_QK",
+            "readout": 45.4876823425293
+          },
+          {
+            "component": "L11_H3_QK",
+            "readout": 33.60591125488281
+          },
+          {
+            "component": "L11_H10_QK",
+            "readout": 31.243218421936035
+          },
+          {
+            "component": "L11_H0_QK",
+            "readout": 31.090805053710938
+          }
+        ]
+      },
+      "PC2": {
+        "top_writers": [
+          {
+            "component": "L10_MLP",
+            "projection": 0.5229153633117676
+          },
+          {
+            "component": "L8_MLP",
+            "projection": 0.11296334117650986
+          },
+          {
+            "component": "L9_MLP",
+            "projection": 0.10209166258573532
+          },
+          {
+            "component": "L6_MLP",
+            "projection": 0.09807077050209045
+          },
+          {
+            "component": "L4_MLP",
+            "projection": 0.0847899317741394
+          }
+        ],
+        "top_readers": [
+          {
+            "component": "L11_H11_QK",
+            "readout": 41.91674613952637
+          },
+          {
+            "component": "L11_H8_QK",
+            "readout": 34.959577560424805
+          },
+          {
+            "component": "L11_H9_QK",
+            "readout": 14.55126667022705
+          },
+          {
+            "component": "L11_H3_QK",
+            "readout": 13.705719947814941
+          },
+          {
+            "component": "L11_H10_QK",
+            "readout": 12.3792085647583
+          }
+        ]
+      },
+      "PC3": {
+        "top_writers": [
+          {
+            "component": "L8_MLP",
+            "projection": 0.14455446600914001
+          },
+          {
+            "component": "L10_MLP",
+            "projection": 0.1377137303352356
+          },
+          {
+            "component": "L9_MLP",
+            "projection": 0.11818725615739822
+          },
+          {
+            "component": "L3_MLP",
+            "projection": 0.10736852884292603
+          },
+          {
+            "component": "L7_MLP",
+            "projection": 0.10591332614421844
+          }
+        ],
+        "top_readers": [
+          {
+            "component": "L11_H11_QK",
+            "readout": 80.93204879760742
+          },
+          {
+            "component": "L11_H8_QK",
+            "readout": 35.80525302886963
+          },
+          {
+            "component": "L11_H3_QK",
+            "readout": 21.580018997192383
+          },
+          {
+            "component": "L11_H5_QK",
+            "readout": 20.328421115875244
+          },
+          {
+            "component": "L11_H10_QK",
+            "readout": 20.08747100830078
+          }
+        ]
+      },
+      "PC4": {
+        "top_writers": [
+          {
+            "component": "L8_MLP",
+            "projection": 0.15646712481975555
+          },
+          {
+            "component": "L2_MLP",
+            "projection": 0.13654004037380219
+          },
+          {
+            "component": "L3_MLP",
+            "projection": 0.13237982988357544
+          },
+          {
+            "component": "L7_MLP",
+            "projection": 0.12490907311439514
+          },
+          {
+            "component": "L4_MLP",
+            "projection": 0.10490681231021881
+          }
+        ],
+        "top_readers": [
+          {
+            "component": "L11_H8_QK",
+            "readout": 41.39836883544922
+          },
+          {
+            "component": "L11_H9_QK",
+            "readout": 32.494140625
+          },
+          {
+            "component": "L11_H5_QK",
+            "readout": 30.411968231201172
+          },
+          {
+            "component": "L11_H7_QK",
+            "readout": 30.02355194091797
+          },
+          {
+            "component": "L11_H11_QK",
+            "readout": 29.072429656982422
+          }
+        ]
+      },
+      "PC5": {
+        "top_writers": [
+          {
+            "component": "L6_MLP",
+            "projection": 0.09020053595304489
+          },
+          {
+            "component": "L3_MLP",
+            "projection": 0.06564213335514069
+          },
+          {
+            "component": "L4_H11_OV",
+            "projection": 0.06235386058688164
+          },
+          {
+            "component": "L8_MLP",
+            "projection": 0.05750419944524765
+          },
+          {
+            "component": "L0_H10_OV",
+            "projection": 0.05469653755426407
+          }
+        ],
+        "top_readers": [
+          {
+            "component": "L11_H11_QK",
+            "readout": 72.88302803039551
+          },
+          {
+            "component": "L11_H8_QK",
+            "readout": 31.695292472839355
+          },
+          {
+            "component": "L11_H3_QK",
+            "readout": 25.846184730529785
+          },
+          {
+            "component": "L11_H10_QK",
+            "readout": 22.328221321105957
+          },
+          {
+            "component": "L11_H9_QK",
+            "readout": 21.46589756011963
+          }
+        ]
+      },
+      "PC6": {
+        "top_writers": [
+          {
+            "component": "L10_MLP",
+            "projection": 0.052307479083538055
+          },
+          {
+            "component": "L3_MLP",
+            "projection": 0.03894032537937164
+          },
+          {
+            "component": "L9_MLP",
+            "projection": 0.03601972386240959
+          },
+          {
+            "component": "L7_MLP",
+            "projection": 0.03136654943227768
+          },
+          {
+            "component": "L4_MLP",
+            "projection": 0.03086639754474163
+          }
+        ],
+        "top_readers": [
+          {
+            "component": "L11_H11_QK",
+            "readout": 26.326108932495117
+          },
+          {
+            "component": "L11_H8_QK",
+            "readout": 20.140260696411133
+          },
+          {
+            "component": "L11_H3_QK",
+            "readout": 18.296168327331543
+          },
+          {
+            "component": "L11_H2_QK",
+            "readout": 17.85020923614502
+          },
+          {
+            "component": "L11_H10_QK",
+            "readout": 16.740176677703857
+          }
+        ]
+      },
+      "PC7": {
+        "top_writers": [
+          {
+            "component": "L5_MLP",
+            "projection": 0.1429387331008911
+          },
+          {
+            "component": "L6_MLP",
+            "projection": 0.14195384085178375
+          },
+          {
+            "component": "L7_MLP",
+            "projection": 0.12959307432174683
+          },
+          {
+            "component": "L9_MLP",
+            "projection": 0.11156164109706879
+          },
+          {
+            "component": "L10_MLP",
+            "projection": 0.10174201428890228
+          }
+        ],
+        "top_readers": [
+          {
+            "component": "L11_H8_QK",
+            "readout": 31.741722106933594
+          },
+          {
+            "component": "L11_H2_QK",
+            "readout": 30.551395416259766
+          },
+          {
+            "component": "L11_H11_QK",
+            "readout": 30.148509979248047
+          },
+          {
+            "component": "L11_H10_QK",
+            "readout": 29.912531852722168
+          },
+          {
+            "component": "L11_H9_QK",
+            "readout": 28.783174514770508
+          }
+        ]
+      }
+    }
+  },
+  "layer_11": {
+    "circuits": {
+      "PC0": {
+        "top_writers": [
+          {
+            "component": "L11_MLP",
+            "projection": 0.7412270903587341
+          },
+          {
+            "component": "L10_MLP",
+            "projection": 0.5883184671401978
+          },
+          {
+            "component": "L9_MLP",
+            "projection": 0.12599730491638184
+          },
+          {
+            "component": "L11_H8_OV",
+            "projection": 0.12508957087993622
+          },
+          {
+            "component": "L0_MLP",
+            "projection": 0.09527672082185745
+          }
+        ],
+        "top_readers": []
+      },
+      "PC1": {
+        "top_writers": [
+          {
+            "component": "L11_MLP",
+            "projection": 0.5805991888046265
+          },
+          {
+            "component": "L1_MLP",
+            "projection": 0.3885549008846283
+          },
+          {
+            "component": "L0_MLP",
+            "projection": 0.36734244227409363
+          },
+          {
+            "component": "L10_MLP",
+            "projection": 0.3025558292865753
+          },
+          {
+            "component": "L0_H6_OV",
+            "projection": 0.14556878805160522
+          }
+        ],
+        "top_readers": []
+      },
+      "PC2": {
+        "top_writers": [
+          {
+            "component": "L1_MLP",
+            "projection": 0.5163958668708801
+          },
+          {
+            "component": "L2_MLP",
+            "projection": 0.5142404437065125
+          },
+          {
+            "component": "L3_MLP",
+            "projection": 0.5130326747894287
+          },
+          {
+            "component": "L4_MLP",
+            "projection": 0.5001809000968933
+          },
+          {
+            "component": "L5_MLP",
+            "projection": 0.49642303586006165
+          }
+        ],
+        "top_readers": []
+      },
+      "PC3": {
+        "top_writers": [
+          {
+            "component": "L1_MLP",
+            "projection": 0.3363811671733856
+          },
+          {
+            "component": "L0_MLP",
+            "projection": 0.3309600353240967
+          },
+          {
+            "component": "L5_MLP",
+            "projection": 0.3151117265224457
+          },
+          {
+            "component": "L6_MLP",
+            "projection": 0.31196698546409607
+          },
+          {
+            "component": "L4_MLP",
+            "projection": 0.3038431406021118
+          }
+        ],
+        "top_readers": []
+      },
+      "PC4": {
+        "top_writers": [
+          {
+            "component": "L11_H11_OV",
+            "projection": 0.14852458238601685
+          },
+          {
+            "component": "L0_H8_OV",
+            "projection": 0.07690254598855972
+          },
+          {
+            "component": "L0_H10_OV",
+            "projection": 0.06754262745380402
+          },
+          {
+            "component": "L0_H9_OV",
+            "projection": 0.06124339997768402
+          },
+          {
+            "component": "L6_MLP",
+            "projection": 0.058955125510692596
+          }
+        ],
+        "top_readers": []
+      },
+      "PC5": {
+        "top_writers": [
+          {
+            "component": "L1_MLP",
+            "projection": 0.292405366897583
+          },
+          {
+            "component": "L11_MLP",
+            "projection": 0.2841295897960663
+          },
+          {
+            "component": "L11_H8_OV",
+            "projection": 0.17069359123706818
+          },
+          {
+            "component": "L3_MLP",
+            "projection": 0.10875304788351059
+          },
+          {
+            "component": "L6_MLP",
+            "projection": 0.1076054573059082
+          }
+        ],
+        "top_readers": []
+      },
+      "PC6": {
+        "top_writers": [
+          {
+            "component": "L0_H10_OV",
+            "projection": 0.17129884660243988
+          },
+          {
+            "component": "L9_MLP",
+            "projection": 0.13914945721626282
+          },
+          {
+            "component": "L8_MLP",
+            "projection": 0.1272849440574646
+          },
+          {
+            "component": "L11_MLP",
+            "projection": 0.11988871544599533
+          },
+          {
+            "component": "L6_MLP",
+            "projection": 0.11891363561153412
+          }
+        ],
+        "top_readers": []
+      },
+      "PC7": {
+        "top_writers": [
+          {
+            "component": "L0_H10_OV",
+            "projection": 0.10807918757200241
+          },
+          {
+            "component": "L3_MLP",
+            "projection": 0.08620151877403259
+          },
+          {
+            "component": "L8_MLP",
+            "projection": 0.08539015054702759
+          },
+          {
+            "component": "L7_MLP",
+            "projection": 0.08168445527553558
+          },
+          {
+            "component": "L6_MLP",
+            "projection": 0.08091650158166885
+          }
+        ],
+        "top_readers": []
+      }
+    }
+  }
+}

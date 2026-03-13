@@ -102,6 +102,20 @@ def parse_args():
     parser.add_argument("--use-lowrank", action="store_true")
     parser.add_argument("--lowrank-coeff", type=float, default=0.1)
     parser.add_argument("--use-abs-topk", action="store_true")
+    parser.add_argument("--anchor-coeff", type=float, default=0.0)
+    parser.add_argument(
+        "--anchor-mode",
+        type=str,
+        default="hard",
+        choices=["hard", "logsumexp", "softmax"],
+    )
+    parser.add_argument("--anchor-topk", type=int, default=10)
+    parser.add_argument(
+        "--random-anchor",
+        type=str,
+        default="none",
+        choices=["none", "shuffle", "gaussian"],
+    )
 
     # train config
     parser.add_argument("--num-epochs", type=int, default=20)
@@ -156,6 +170,9 @@ def parse_sae_cfg(args) -> SAEConfig:
         use_lowrank=args.use_lowrank,
         lowrank_coeff=args.lowrank_coeff,
         use_abs_topk=args.use_abs_topk,
+        anchor_coeff=args.anchor_coeff,
+        anchor_mode=args.anchor_mode,
+        anchor_topk=args.anchor_topk,
     )
 
 
@@ -218,6 +235,23 @@ def main():
     model = SAEModel(sae_cfg).to(device)
     if sae_cfg.tied_decoder:
         model.attach_embedding(emb, freeze=sae_cfg.freeze_decoder)
+
+    if sae_cfg.anchor_coeff > 0 and not sae_cfg.tied_decoder:
+        if args.random_anchor == "shuffle":
+            perm = torch.randperm(emb.weight.size(0))
+            anchor_emb = torch.nn.Embedding.from_pretrained(emb.weight[perm], freeze=True)
+        elif args.random_anchor == "gaussian":
+            rand_w = torch.randn_like(emb.weight)
+            rand_w = rand_w / rand_w.norm(dim=1, keepdim=True) * emb.weight.norm(dim=1, keepdim=True)
+            anchor_emb = torch.nn.Embedding.from_pretrained(rand_w, freeze=True)
+        else:
+            anchor_emb = emb
+        model.attach_anchor_embedding(anchor_emb)
+        # Save random embedding for later analysis
+        if args.random_anchor != "none":
+            random_emb_path = Path(sae_cfg.sae_save_path).parent / "random_emb.pt"
+            torch.save(anchor_emb.weight.data, random_emb_path)
+            logger.info(f"Saved random anchor embedding to {random_emb_path}")
 
     # train
     logitlens = LogitLens(unemb)

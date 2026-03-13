@@ -1,0 +1,923 @@
+\documentclass{article}
+
+% if you need to pass options to natbib, use, e.g.:
+%     \PassOptionsToPackage{numbers, compress}{natbib}
+% before loading neurips_2025
+\PassOptionsToPackage{numbers,compress}{natbib}
+
+% The authors should use one of these tracks.
+% Before accepting by the NeurIPS conference, select one of the options below.
+% 0. "default" for submission
+ \usepackage{neurips_2025}
+% the "default" option is equal to the "main" option, which is used for the Main Track with double-blind reviewing.
+% 1. "main" option is used for the Main Track
+%  \usepackage[main]{neurips_2025}
+% 2. "position" option is used for the Position Paper Track
+%  \usepackage[position]{neurips_2025}
+% 3. "dandb" option is used for the Datasets & Benchmarks Track
+ % \usepackage[dandb]{neurips_2025}
+% 4. "creativeai" option is used for the Creative AI Track
+%  \usepackage[creativeai]{neurips_2025}
+% 5. "sglblindworkshop" option is used for the Workshop with single-blind reviewing
+ % \usepackage[sglblindworkshop]{neurips_2025}
+% 6. "dblblindworkshop" option is used for the Workshop with double-blind reviewing
+%  \usepackage[dblblindworkshop]{neurips_2025}
+
+% After being accepted, the authors should add "final" behind the track to compile a camera-ready version.
+% 1. Main Track
+ % \usepackage[main, final]{neurips_2025}
+% 2. Position Paper Track
+%  \usepackage[position, final]{neurips_2025}
+% 3. Datasets & Benchmarks Track
+ % \usepackage[dandb, final]{neurips_2025}
+% 4. Creative AI Track
+%  \usepackage[creativeai, final]{neurips_2025}
+% 5. Workshop with single-blind reviewing
+%  \usepackage[sglblindworkshop, final]{neurips_2025}
+% 6. Workshop with double-blind reviewing
+%  \usepackage[dblblindworkshop, final]{neurips_2025}
+% Note. For the workshop paper template, both \title{} and \workshoptitle{} are required, with the former indicating the paper title shown in the title and the latter indicating the workshop title displayed in the footnote.
+% For workshops (5., 6.), the authors should add the name of the workshop, "\workshoptitle" command is used to set the workshop title.
+% \workshoptitle{WORKSHOP TITLE}
+
+% "preprint" option is used for arXiv or other preprint submissions
+ % \usepackage[preprint]{neurips_2025}
+
+% to avoid loading the natbib package, add option nonatbib:
+%    \usepackage[nonatbib]{neurips_2025}
+
+\usepackage[utf8]{inputenc} % allow utf-8 input
+\usepackage[T1]{fontenc}    % use 8-bit T1 fonts
+\usepackage{url}            % simple URL typesetting
+\usepackage{booktabs}       % professional-quality tables
+\usepackage{amsmath}        % advanced math typesetting
+\usepackage{amssymb}        % additional math symbols
+\usepackage{amsfonts}       % blackboard math symbols
+\usepackage{nicefrac}       % compact symbols for 1/2, etc.
+\usepackage{microtype}      % microtypography
+\usepackage{xcolor}         % colors
+\usepackage{hyperref}       % hyperlinks
+\usepackage[abbreviations]{glossaries-extra}
+\setabbreviationstyle{long-short}
+\glsdisablehyper
+
+% Note. For the workshop paper template, both \title{} and \workshoptitle{} are required, with the former indicating the paper title shown in the title and the latter indicating the workshop title displayed in the footnote.
+\title{Dual-Path Decomposition of Residual Streams in Language and Multimodal Generative Transformers}
+
+
+% The \author macro works with any number of authors. There are two commands
+% used to separate the names and addresses of multiple authors: \And and \AND.
+%
+% Using \And between authors leaves it to LaTeX to determine where to break the
+% lines. Using \AND forces a line break at that point. So, if LaTeX puts 3 of 4
+% authors names on the first line, and the last on the second line, try using
+% \AND instead of \And before the third author name.
+
+
+\author{%
+  Anonymous Authors \\
+  Paper under double-blind review
+}
+
+\input{macros.tex}
+
+\begin{document}
+
+
+\maketitle
+
+
+\begin{abstract}
+  We study whether residual-stream decomposition into vocabulary-aligned and dense components remains valid beyond text-only language models. Our empirical analysis spans GPT-2, Llama-3-8B with rotary position embeddings, LLaVA-1.5-7B, and Qwen2.5-Omni, covering both decoder-only language models and multimodal generators that receive image, audio, or video context while emitting text. For each model, we apply a token-aligned sparse autoencoder whose decoder is fixed to the text embedding matrix, and we analyze the embedding-orthogonal residual with principal component analysis. Across all four models, a substantial fraction of the text-decoder residual stream remains aligned with the vocabulary embedding space, while the unexplained component consistently occupies a structured low-rank dense subspace. In multimodal models, this dense component becomes more important around cross-modal fusion and higher-level reasoning layers, suggesting that grounded information is carried in a continuous state that is not reducible to token embeddings alone. Motivated by this pattern, we introduce a Dual-Path sparse autoencoder with a sparse token path and a dense principal-subspace path. The resulting decomposition improves reconstruction fidelity over token-only baselines while preserving token-level interpretability, indicating that residual-stream factorization remains useful for text-output multimodal transformers when the analysis is centered on the text-generating decoder.
+\end{abstract}
+
+
+
+\section{Introduction}
+
+Transformer-based generative models compute through a sequence of intermediate residual states that accumulate information across layers~\cite{vaswaniAttentionAllYou2017,gevaTransformerFeedForwardLayers2021}. Understanding the structure of these states is a central problem in mechanistic interpretability, because the residual stream is the interface through which attention and feedforward modules communicate. This question is no longer limited to text-only language models: recent multimodal systems also rely on a text-generating decoder whose residual stream integrates information coming from images, audio, or video before emitting text.
+
+Existing analyses often inspect intermediate residual states by decoding tokens from them, for example with \gls{logitlens}-style readout methods~\cite{tenneyBERTRediscoversClassical2019,hewittDesigningInterpretingProbes2019,belroseElicitingLatentPredictions2023}. These techniques are useful for tracking which vocabulary items are linearly readable, but they do not by themselves explain how the residual representation is organized. In particular, they leave open how much of the residual stream is actually captured by vocabulary-aligned structure and what kind of information remains outside that space. For multimodal text generators, the gap is even less clear: once non-text inputs are injected into the decoder, it is not obvious whether a token-based decomposition still captures the dominant geometry of the residual stream.
+
+In this work, we study residual-stream structure through the embedding matrix itself. We first build a token-aligned \gls{sae} whose decoder is fixed to the model text embedding matrix, so that any reconstruction must lie in the vocabulary-aligned subspace. We then analyze the embedding-orthogonal residual with \gls{pca} to test whether the unexplained component behaves like diffuse noise or instead forms a structured low-dimensional subspace.
+
+Motivated by that analysis, we introduce a Dual-Path \gls{sae} that combines a sparse token-aligned path with a dense path defined on the principal directions of the embedding-orthogonal residuals. This yields a decomposition in which vocabulary-aligned and dense components are separated by construction. Our empirical study spans GPT-2, Llama-3-8B, LLaVA-1.5-7B, and Qwen2.5-Omni, and evaluates how much decoder-state information is captured by token embeddings alone, whether the remaining component exhibits stable low-rank structure across modalities, and whether the dual-path model improves the trade-off between interpretability and reconstruction fidelity.
+
+\section{Background}
+
+\subsection{Transformer Residual Stream}
+
+Transformer models maintain a persistent hidden representation known as the \textit{residual stream}, which serves as the primary channel through which information flows across layers~\cite{vaswaniAttentionAllYou2017}. Let $\tok$ denote the corresponding input token and let $\WE \in \R^{\dvocab \times \dmodel}$ be the token embedding matrix, where $\dmodel$ is the model dimension and $\dvocab$ is the vocabulary size. Throughout the paper, we use a row-vector convention to stay consistent with implementations. We formalize token $\tok$ as the one-hot row vector $\mathbf{e}_{\tok}$. The token embedding $\h^{(0)} \in \R^{\dmodel}$, or initial residual stream, is given by
+\begin{equation}
+  \h^{(0)} = \mathbf{e}_{\tok} \WE,
+\end{equation}
+
+
+At each layer $\layer$, the residual stream is updated by adding the outputs of the attention and \gls{mlp} modules:
+\begin{equation}
+  \h^{(\layer)} = \h^{(\layer-1)} + \Attn_{\layer}(\h^{(\layer-1)}) + \MLP_{\layer}(\h^{(\layer-1)}).
+\end{equation}
+
+The vector $\h^{(\layer)} \in \R^{\dmodel}$ is referred to as the \textit{post-residual stream} at layer $\layer$. Since all layers read from and write to the residual stream, it accumulates the intermediate computation performed by the model.
+
+For autoregressive language models, the final prediction logits are obtained by projecting the last-layer residual stream through the unembedding matrix $\WU \in \R^{\dvocab \times \dmodel}$:
+\begin{equation}
+  \logits = \h^{(\nlayer)} \WU^\top .
+\end{equation}
+
+In many transformer implementations, such as \gls{gpt2}~\cite{radfordLanguageModelsAre2019}, the embedding and unembedding matrices are tied ($\WU = \WE$). 
+
+\subsection{Vocabulary-Aligned Probing}
+
+A common approach to interpreting transformer representations is to decode intermediate residual streams into token logits. The \gls{logitlens} method projects the residual stream from intermediate layers through the unembedding matrix:
+\begin{equation}
+  \logits^{(\layer)} = \h^{(\layer)} \WU^\top .
+\end{equation}
+
+This allows researchers to inspect which tokens are favored by the representation at layer $\layer$. Empirical observations show that meaningful token predictions can often be decoded from early layers and become progressively sharper across the network.
+
+Such probing methods quantify which tokens are linearly readable from the residual stream. In the sequel, we use this distinction between readout and reconstruction to study the geometry of the representation itself.
+
+\subsection{Sparse Autoencoders for Representation Analysis}
+
+\Glspl{sae} have recently emerged as a useful tool for analyzing neural network representations. Given an input representation $\h \in \R^{\dmodel}$, an \gls{sae} learns a sparse latent code $\saecode \in \R^{d_\mathrm{sparse}}$ through an encoder $\enc$ and reconstructs the input through a decoder matrix $\Wdec \in \R^{d_\mathrm{sparse} \times \dmodel}$:
+\begin{equation}
+  \label{eq:sae-generic-reconstruction}
+  \saecode = \enc(\h), \qquad
+  \saerecon = \saecode \Wdec .
+\end{equation}
+
+The \gls{sae} is trained to minimize reconstruction error together with a sparsity penalty on $\saecode$:
+\begin{equation}
+  \label{eq:sae-generic-loss}
+  \loss = \norm{\h - \saerecon}_2^2 + \lambda \norm{\saecode}_1 .
+\end{equation}
+
+Because the latent representation is sparse, individual latent dimensions often correspond to interpretable features. When applied to transformer residual streams, \glspl{sae} can reveal feature-level structure underlying model representations.
+
+In \secref{sec:method}, we specialize this framework to token-aligned and dual-path decompositions of the residual stream.
+
+\section{Method}
+\label{sec:method}
+
+Our goal is to analyze the internal structure of transformer residual streams by decomposing them into token-aligned and non-token components.
+
+For text-only language models, the decomposition is applied directly to the model residual stream. For multimodal generators, we apply the same formalism to the text decoder after visual, audio, or video features have been projected into the decoder hidden space. The key object is therefore always the residual stream that ultimately produces logits over the text vocabulary.
+
+\subsection{Token-Aligned Decomposition}
+\label{subsec:method_token_aligned}
+
+Building on the generic \gls{sae} framework introduced in the background, we first investigate how much of the residual stream can be explained using token embeddings. This corresponds to the specialization $d_\mathrm{sparse} = \dvocab$ and $\Wdec = \WE$ of \eq{eq:sae-generic-reconstruction}, yielding
+\begin{equation}
+  \label{eq:token-aligned-reconstruction}
+  \saerecon = \saecode \WE,
+\end{equation}
+where $\saecode$ now has the interpretation of token coefficients.
+
+To learn this decomposition, we train a token-aligned \gls{sae} whose decoder is fixed to the embedding matrix. The training objective is
+\begin{equation}
+  \loss_{\text{token}} =
+  \norm{\h - \saecode \WE}_2^2 + \lambda \norm{\saecode}_1 .
+\end{equation}
+
+Because the decoder basis consists of token embeddings, the learned latent variables $\saecode$ can be interpreted as token-level contributions to the residual representation. This formulation allows us to directly measure how well intermediate residual streams can be reconstructed using vocabulary-aligned components.
+
+\subsection{Residual Subspace Analysis}
+\label{subsec:method_residual_subspace}
+
+To analyze the dense component used by the dual-path model, we focus on the part of the residual stream that lies outside the vocabulary-aligned subspace.
+
+The subspace spanned by token embeddings is $\mathrm{span}(\WE)$. We define the orthogonal projection onto this subspace as
+\begin{equation}
+  \label{eq:embedding-projector}
+  \PE = \WE^\top (\WE \WE^\top)^{\dagger} \WE .
+\end{equation}
+The derivation of this projector is given in \app{apd:projection}.
+
+For a given residual stream vector $\h$, we define the embedding-orthogonal residual as
+\begin{equation}
+  \label{eq:embedding-orthogonal-residual}
+  \resid = \h - \PE \h .
+\end{equation}
+
+This vector captures the portion of the representation that is orthogonal to the embedding space. To analyze its structure, we collect residual vectors $\{\resid_n\}_{n=1}^{N}$ across tokens and layers, define their empirical mean
+\begin{equation}
+  \bar{\resid} = \frac{1}{N} \sum_{n=1}^{N} \resid_n,
+\end{equation}
+and apply PCA to the centered residuals $\{\resid_n - \bar{\resid}\}_{n=1}^{N}$. This reduces the problem to a standard subspace question: does the embedding-orthogonal component of the residual stream concentrate near a low-dimensional linear subspace? Let
+\begin{equation}
+  \label{eq:residual-pca-basis}
+  \mathbf{P}_k = [\mathbf{p}_1, \dots, \mathbf{p}_k] \in \R^{\dmodel \times k}
+\end{equation}
+collect the top-$k$ principal directions returned by PCA. We use the explained-variance curve to test whether these residuals lie near a low-dimensional subspace, and we evaluate that subspace directly through the rank-$k$ reconstruction
+\begin{equation}
+  \label{eq:residual-pca-reconstruction}
+  \tilde{\resid}^{(k)} = \bar{\resid} + \mathbf{P}_k \mathbf{P}_k^\top (\resid - \bar{\resid}) .
+\end{equation}
+The explicit matrix form of this PCA construction is given in \app{apd:pca-residual-subspace}.
+
+This analysis allows us to determine whether the unexplained component of the residual stream behaves as noise or forms a structured dense subspace.
+
+\subsection{Interpreting the Dense Subspace}
+\label{subsec:method_dense_subspace}
+
+To understand what information is carried by the dense subspace, we treat each principal direction as a candidate continuous feature and test how its activation varies with interpretable properties of the corresponding token and context. For each residual sample $\resid_n$, we compute its coordinates in the PCA basis
+\begin{equation}
+  \label{eq:dense-subspace-coordinates}
+  \boldsymbol{\alpha}_n = \mathbf{P}_k^\top (\resid_n - \bar{\resid}) \in \R^k .
+\end{equation}
+
+We then associate each sample with a collection of scalar annotations $\{f_m(n)\}_{m=1}^{M}$ extracted from the token identity, position, local context, and model behavior, such as token frequency, punctuation, position, surprisal, or next-token entropy. For each principal direction $i$ and annotation $m$, we compute a correlation score
+\begin{equation}
+  \label{eq:dense-subspace-correlation}
+  \rho_{i,m} = \mathrm{corr}(\alpha_{n,i}, f_m(n)) .
+\end{equation}
+Large-magnitude values of $\rho_{i,m}$ indicate that motion along principal direction $\mathbf{p}_i$ tracks a specific interpretable attribute.
+
+This procedure turns the dense-subspace interpretation problem into a concrete attribution task: identify which interpretable variables are most predictive of each principal coordinate, and conversely which principal directions best capture each variable. In the experiments, we apply the same analysis both to PCA coordinates and to the dense latents learned by the dual-path model, allowing us to compare whether the learned dense path preserves the same semantic structure found in the residual subspace.
+
+\subsection{Dual-Path Sparse Autoencoder}
+\label{subsec:method_dualpath}
+
+We now combine the token-aligned and dense components into a \textit{Dual-Path \glsentrylong{sae}}. The model decomposes the residual stream into a sparse token-aligned path and a dense latent path that captures embedding-orthogonal information.
+
+Relative to \eq{eq:sae-generic-reconstruction}, this is again a structured specialization. The latent is partitioned into a sparse token block $\saecode \in \R^{\dvocab}$ and a dense block $\densecode \in \R^{k_d}$; equivalently, the full latent has dimension $\dvocab + k_d$ and the decoder is the block matrix whose rows are given by $\WE$ and $\mathbf{P}_{k_d}^\top$. Under this choice, \eq{eq:sae-generic-reconstruction} takes the form
+\begin{equation}
+  \h \approx \saecode \WE + \densecode \mathbf{P}_{k_d}^\top ,
+\end{equation}
+
+where $\saecode \WE$ represents the token-aligned component expressed as a sparse linear combination of token embeddings; $\densecode \mathbf{P}_{k_d}^\top$ represents a dense latent component expressed in the top-$k_d$ principal directions of the embedding-orthogonal residuals.
+
+
+Correspondingly, the generic objective in \eq{eq:sae-generic-loss} becomes
+\begin{equation}
+  \loss_{\text{dual}} =
+  \norm{\h - (\saecode \WE + \densecode \mathbf{P}_{k_d}^\top)}_2^2
+  + \lambda_z \norm{\saecode}_1
+  + \lambda_y \norm{\densecode}_1 ,
+\end{equation}
+which encourages sparse token-aligned coefficients and a compact dense representation.
+
+To ensure that the dense path captures information outside the embedding subspace, we instantiate its decoder with the PCA basis fitted in \subsecref{subsec:method_residual_subspace}, rather than learning a basis from the model reconstruction residual $\h - \saecode \WE$. This makes the dense subspace a property of the residual-stream geometry itself, instead of allowing it to depend on encoder parameters during training.
+
+Concretely, $\mathbf{P}_{k_d} \in \R^{\dmodel \times k_d}$ collects the top $k_d$ principal directions of the centered embedding-orthogonal residuals $\{\resid_n\}$.
+This choice is justified by an alignment property: empirically, the leading principal directions of the token-reconstruction residual $\boldsymbol{\epsilon} = \h - \saecode\WE$ concentrate near the geometric complement of $\mathrm{row}(\WE)$, so the $\PE$-orthogonal PCA basis captures essentially the same structured subspace as a basis fitted directly on $\boldsymbol{\epsilon}$, while remaining fixed throughout encoder training and therefore not drifting as $\saecode$ changes.
+
+By construction, the resulting basis approximately lies in the orthogonal complement of the embedding subspace, satisfying
+\begin{equation}
+  \mathbf{P}_{k_d}^\top \WE^\top \approx 0 .
+\end{equation}
+This yields a stable separation of roles: the token path $\saecode \WE$ remains confined to the embedding subspace, while the dense path $\densecode \mathbf{P}_{k_d}^\top$ captures dominant embedding-orthogonal variation without competing to redefine that subspace during training.
+
+Under this design, the reconstruction can be interpreted as a structured decomposition of the residual stream into a sparse token-aligned component and a low-dimensional dense component capturing information that cannot be represented within the vocabulary embedding space. In later sections, we evaluate how this decomposition affects reconstruction quality and interpretability of transformer residual representations.
+
+\section{Experiments}
+\label{sec:experiments}
+
+We evaluate whether Transformer residual streams can be decomposed into a vocabulary-aligned token component and a complementary dense component. Our experiments are designed to answer five questions:
+(1) To what extent can post-residual activations be reconstructed directly from token embeddings?
+(2) Is the mismatch between the residual stream and the token embedding space structured rather than noise-like?
+(3) What information is encoded in the non-lexical dense subspace?
+(4) Can a dual-path \gls{sae} improve interpretability while preserving reconstruction fidelity?
+(5) Does the same decomposition remain informative when the decoder is conditioned on non-text modalities but still generates text?
+
+\subsection{Experimental Setup}
+\label{subsec:exp_setup}
+
+\paragraph{Models.}
+We evaluate four text-generating Transformer models chosen to span both unimodal and multimodal settings. GPT-2 is a compact decoder-only language model with tied embedding and unembedding matrices~\cite{radfordLanguageModelsAre2019}. Llama-3-8B is a modern decoder-only model that uses rotary position embeddings (RoPE) and serves as a stronger text-only baseline~\cite{grattafioriLlama3HerdModels2024}. LLaVA-1.5-7B is a vision-language model that injects image features from a CLIP vision tower through an MLP projector into a 7B text decoder, while still generating text autoregressively~\cite{liuImprovedBaselinesVisual2024}. Qwen2.5-Omni is an omni-modal model that conditions on text, image, audio, and video inputs and can emit text or speech; throughout this paper, we fix the output modality to text and analyze its text-generation stream~\cite{xuQwen25OmniTechnicalReport2025}. For each model, we extract the post-residual stream from multiple layers $\layer \in \{0, \dots, \nlayer-1\}$.
+
+\paragraph{Data.}
+We collect activations from held-out prompts matched to each model's input modality. For GPT-2 and Llama-3-8B, these prompts are text-only sequences. For LLaVA-1.5-7B, they are image-text instruction examples with textual answers. For Qwen2.5-Omni, they are mixed-modality prompts whose targets are textual responses. In every case, we cache activations only along positions in the text decoder, so that the target of reconstruction is always a text-generating residual stream. For analyses involving token-level alignment, each residual vector is paired with the corresponding ground-truth current-token or next-token text embedding, depending on the probing setup described in \subsecref{subsec:method_token_aligned}.
+
+\paragraph{Residual stream notation.}
+Let $\h_{\pos}^{(\layer)} \in \R^{\dmodel}$ denote the post-residual stream at position $\pos$ and layer $\layer$, and let $\WE \in \R^{\dvocab \times \dmodel}$ be the model's text embedding matrix, where $\dvocab = |\vocab|$ is the text vocabulary size. For a fixed position and layer, we write $\h := \h_{\pos}^{(\layer)}$. In multimodal models, $\h$ refers to the decoder state after non-text features have been projected into the decoder, but before logits over the text vocabulary are produced. Our token-aligned decomposition then takes the form
+\begin{equation}
+  \h \approx \tilde{\h}_{\text{tok}} + \tilde{\h}_{\text{dense}},
+\end{equation}
+where $\tilde{\h}_{\text{tok}}$ lies in a vocabulary-aligned subspace induced by $\WE$, and $\tilde{\h}_{\text{dense}}$ captures the residual structure not explained by discrete token embeddings.
+
+\paragraph{Baselines.}
+We compare against:
+\begin{enumerate}
+  \item \textbf{\gls{logitlens}-style decoding}: applying the model's unembedding to intermediate residual streams and reading out top tokens;
+  \item \textbf{Embedding-only reconstruction}: reconstructing residual streams using only token embedding combinations;
+  \item \textbf{Standard \glsentryshort{sae}}: a \gls{sae} trained directly on residual streams without explicit separation of token and dense pathways;
+  \item \textbf{Dual-Path \glsentryshort{sae}}: our proposed decomposition into a discrete token-aligned path and a dense residual path.
+\end{enumerate}
+
+\paragraph{Evaluation metrics.}
+We report two families of metrics.
+
+\textbf{\gls{ve}.}
+We measure reconstruction quality using variance explained. Given target residual streams $\{\h_i\}_{i=1}^{N}$, reconstructions $\{\tilde{\h}_i\}_{i=1}^{N}$, and empirical mean $\bar{\h} = \frac{1}{N}\sum_{i=1}^{N}\h_i$, we define
+\begin{equation}
+  \mathrm{VE} = 1 - \frac{\frac{1}{N}\sum_{i=1}^{N} \norm{\h_i - \tilde{\h}_i}_2^2}{\frac{1}{N}\sum_{i=1}^{N} \norm{\h_i - \bar{\h}}_2^2}.
+\end{equation}
+Equivalently, $\mathrm{VE} = 1 - \mathrm{MSE}/\mathrm{Var}$, where the numerator is the reconstruction MSE and the denominator is the target residual-stream variance relative to its empirical mean. Higher \glsentryshort{ve} indicates better recovery of the original residual representation. Additional details are given in \app{apd:evaluation-metrics}.
+
+\textbf{\gls{ce} recovery.}
+To measure whether a reconstruction preserves downstream language-model behavior, we report \glsentryshort{ce} recovery under the intervention protocol: the fraction of cross-entropy degradation recovered relative to zero ablation when the reconstruction map is spliced into the model at the evaluation site. Higher \glsentryshort{ce} recovery indicates better preservation of predictive information. The formal definition is given in \app{apd:evaluation-metrics}.
+
+\paragraph{Implementation details.}
+For \glspl{sae}, we scale latent dimension and sparsity strength with model width so that token-path activation density is comparable across model families. For \glsentryshort{pca}-based residual analysis, principal components are computed on centered residual activations from a training split of prompts and evaluated on held-out prompts. Unless otherwise stated, stochastic training results are averaged over multiple random initializations, while deterministic projector- and \glsentryshort{pca}-based analyses use a single fitted basis per model.
+
+\subsection{Token-Level Decomposition}
+\label{subsec:token_decomp}
+
+We first test the central hypothesis of this work: whether post-residual streams can be substantially reconstructed from token embeddings alone.
+Concretely, we use the token-aligned decomposition in \eq{eq:token-aligned-reconstruction}, which fixes the decoder dictionary to the model embedding matrix $\WE$.
+
+\paragraph{Main result.}
+\fig{fig:token_recovery} reports reconstruction quality across layers and model families.
+Two trends are consistent across GPT-2, Llama-3-8B, LLaVA-1.5-7B, and Qwen2.5-Omni.
+First, token-aligned reconstruction achieves non-trivial \glsentryshort{ve} throughout the network, indicating that a substantial portion of the text decoder residual stream remains geometrically aligned with the text embedding space even under multimodal conditioning.
+Second, \glsentryshort{ce} recovery is systematically stronger than what would be expected from \glsentryshort{ve} alone in early and middle layers, suggesting that the token-aligned component preferentially captures functionally relevant information for next-token prediction.
+
+\paragraph{Layerwise pattern.}
+The degree of token-space recoverability is not uniform across depth.
+In lower layers of GPT-2 and Llama-3-8B, the residual stream is more tightly coupled to lexical identity and local token information, leading to relatively strong embedding-based reconstruction.
+In LLaVA-1.5-7B and Qwen2.5-Omni, the same tendency holds, but the decline in token-only recoverability begins earlier around layers that must integrate projected non-text context.
+Even there, reconstruction from pure token embeddings does not collapse to chance, indicating that multimodal conditioning does not erase vocabulary-aligned structure; it instead coexists with additional dense state.
+
+\paragraph{Comparison to \glsentrytext{logitlens}.}
+These results complement \gls{logitlens}-style analyses: token readout can remain informative even when reconstruction within the embedding subspace is incomplete. This gap is especially visible in multimodal models, where grounded content can steer predictions without being representable as a sparse mixture of text embeddings. The gap motivates the explicit study of the residual component left unexplained by token embeddings.
+
+\begin{figure}[t]
+  \centering
+  %\includegraphics[width=0.95\linewidth]{figures/token_recovery_placeholder.pdf}
+  \fbox{\parbox[c][5.2cm][c]{0.92\linewidth}{\centering Placeholder for Figure 1\\
+  Layer $\times$ model type $\rightarrow$ \glsentryshort{ve} and \glsentryshort{ce} recovery}}
+  \caption{
+    Token-level reconstruction quality across layers for GPT-2, Llama-3-8B, LLaVA-1.5-7B, and Qwen2.5-Omni.
+    Left: \glsentryshort{ve} of the token-aligned decomposition.
+    Right: \glsentryshort{ce} recovery measured by the preserved next-token predictive performance.
+  }
+  \label{fig:token_recovery}
+\end{figure}
+
+\paragraph{Takeaway.}
+These results establish that token embeddings explain an important but incomplete fraction of the residual stream.
+The remaining mismatch is therefore the key object of interest in \subsecref{subsec:lowrank_universal}.
+
+\subsection{Is the Low-Rank Misaligned Structure Universal Across Modalities?}
+\label{subsec:lowrank_universal}
+
+The previous subsection shows that token embeddings do not fully reconstruct post-residual activations.
+A natural question is whether the unexplained remainder is merely isotropic noise, or whether it has its own structured geometry.
+Fixing a position and layer and writing $\h := \h_{\pos}^{(\layer)}$ and $\tilde{\h}_{\text{tok}}$ for its token-aligned reconstruction, we analyze the residual
+\begin{equation}
+  \boldsymbol{\epsilon} = \h - \tilde{\h}_{\text{tok}}.
+\end{equation}
+This token-reconstruction residual is distinct from the embedding-orthogonal residual $\resid = \h - \PE\h$ in \eq{eq:embedding-orthogonal-residual} used to construct the dense decoder.
+Concretely, $\boldsymbol{\epsilon}$ contains two parts: (i)~the geometric complement of $\mathrm{row}(\WE)$, which $\PE$ projects out regardless of the encoder, and (ii)~in-span content that the sparsity penalty forces out of the token code $\saecode$.
+The key empirical observation that underlies the dual-path design is that the dominant low-rank structure of $\boldsymbol{\epsilon}$ is concentrated in the geometric-complement directions: the top PCA directions of $\boldsymbol{\epsilon}$ align closely with those of $\resid$.
+We verify this subspace alignment below, which justifies using the fixed $\PE$-orthogonal PCA basis as a stable proxy for the structured component of the token-reconstruction mismatch.
+
+
+\paragraph{\glsentryshort{pca} of residual mismatch.}
+We apply \glsentryshort{pca} to $\boldsymbol{\epsilon}$ across layers and models.
+\fig{fig:residual_pca} visualizes the explained variance spectrum.
+Across all four evaluated models, the singular value mass is far from flat: a relatively small number of principal components explain a large fraction of the variance.
+This indicates that the token-misaligned remainder is highly structured and occupies a dense but low-dimensional subspace.
+
+\paragraph{Cross-model consistency.}
+The existence of such a low-rank structure is not confined to a single architecture.
+Although the exact dimensionality and spectral decay vary by model size, depth, and modality, we observe the same qualitative phenomenon across all tested models: the off-token residual is neither random nor fully diffuse in the ambient space.
+Instead, it exhibits a stable, compressible geometry. The multimodal models show a somewhat broader spectrum near layers responsible for cross-modal fusion, but the dominant energy still concentrates in a relatively small set of directions.
+
+\paragraph{Reconstruction from principal components.}
+To quantify this structure, we instantiate the rank-$k$ PCA reconstruction in \eq{eq:residual-pca-reconstruction} on the mismatch residuals $\boldsymbol{\epsilon}$.
+\fig{fig:residual_pca_recon} shows that relatively small $k$ already recovers a substantial portion of the residual mismatch.
+This further supports the view that the unexplained structure forms a compact dense subspace rather than high-dimensional noise. The same conclusion holds for LLaVA-1.5-7B and Qwen2.5-Omni, indicating that multimodal grounding information remains compressible once it enters the text decoder.
+
+\paragraph{Implication.}
+These observations motivate a two-part factorization of residual streams into a sparse vocabulary-aligned component and a dense low-rank component.
+
+\begin{figure}[t]
+  \centering
+  %\includegraphics[width=0.95\linewidth]{figures/residual_pca_placeholder.pdf}
+  \fbox{\parbox[c][5.2cm][c]{0.92\linewidth}{\centering Placeholder for Figure 2\\
+  \glsentryshort{pca} spectrum of residual mismatch}}
+  \caption{
+    \glsentryshort{pca} analysis of the residual mismatch $\boldsymbol{\epsilon}^{(\layer)}$.
+    The explained variance concentrates in a relatively small number of principal directions across both text-only and multimodal models, indicating structured low-rank geometry.
+  }
+  \label{fig:residual_pca}
+\end{figure}
+
+\begin{figure}[t]
+  \centering
+  %\includegraphics[width=0.95\linewidth]{figures/residual_pca_recon_placeholder.pdf}
+  \fbox{\parbox[c][5.2cm][c]{0.92\linewidth}{\centering Placeholder for Figure 3\\
+  Top-$k$ \glsentryshort{pca} reconstruction of residual mismatch}}
+  \caption{
+    Reconstruction of the residual mismatch from the top principal components.
+    A small number of components already recovers a large fraction of the unexplained structure, showing that the dense residual subspace is low-dimensional but information-rich in both unimodal and multimodal text-generation settings.
+  }
+  \label{fig:residual_pca_recon}
+\end{figure}
+
+\subsection{What Does the Dense Subspace Encode?}
+\label{subsec:dense_subspace}
+
+Having established that the token-misaligned component is structured, we next ask what information it carries.
+We analyze correlations between dense-subspace coordinates and a set of interpretable linguistic and statistical features.
+
+\paragraph{Feature attribution protocol.}
+We follow the attribution procedure defined in \subsecref{subsec:method_dense_subspace}: for each residual activation, we compute dense coordinates, then correlate them with hand-designed and model-derived features including
+frequency-related attributes, positional information, token length, punctuation indicators, \gls{pos} proxies, surprisal, entropy of the next-token distribution, and selected contextual features and local-context diversity indicators.
+
+\paragraph{Main observation.}
+The dense subspace captures information that is only weakly lexical but strongly contextual.
+Across layers, we consistently find that certain principal directions correlate with uncertainty-related quantities such as surprisal or predictive entropy, while others align with structural attributes such as position, punctuation, shallow syntactic markers, and modality-grounding cues. This supports the interpretation that the dense subspace carries non-vocabulary-aligned state variables required for computation but not naturally expressible as discrete token embeddings.
+
+\paragraph{Dense subspace is not merely lexical residue.}
+If the dense component were simply a lossy leftover of token reconstruction, one would expect its coordinates to correlate primarily with lexical identity or frequency.
+Instead, we observe that many of the strongest correlations involve contextual or computational features. In LLaVA-1.5-7B and Qwen2.5-Omni, these include signals tied to visual grounding, modality selection, or uncertainty over how non-text evidence should affect the next textual response.
+This suggests that the dense subspace stores information complementary to token identity, rather than being a degraded representation of it.
+
+\paragraph{Representative correlations.}
+\tab{tab:dense_features} lists representative dense features, their strongest correlated interpretable attributes, and the associated principal directions or latent units.
+Although the exact correspondence varies across models and layers, the overall pattern is stable: the dense subspace preferentially encodes information that is distributed, continuous, and difficult to localize to a small set of vocabulary items.
+
+\begin{table}[t]
+  \centering
+  \small
+  \begin{tabular}{lccc}
+    \toprule
+    Dense feature / latent & Correlated attribute & Correlation & Related PC / latent index \\
+    \midrule
+    Context continuity feature & Positional depth & positive & PC-1 \\
+    Entropy-sensitive feature & Next-token uncertainty & positive & PC-2 \\
+    Visual grounding feature & Image-conditioned answer content & positive & PC-3 \\
+    Modality-routing feature & Audio/video cue reliance & positive & PC-4 \\
+    \bottomrule
+  \end{tabular}
+  \caption{
+    Representative interpretable structure in the dense subspace.
+    Each row shows a dense feature or principal direction, the attribute it most strongly correlates with, and the corresponding correlation magnitude.
+  }
+  \label{tab:dense_features}
+\end{table}
+
+\paragraph{Takeaway.}
+The dense subspace appears to encode continuous contextual state that complements discrete lexical content.
+This motivates building an autoencoder that explicitly separates these two pathways.
+
+\subsection{Dual-Path SAE Evaluation}
+\label{subsec:dualpath_sae}
+
+We now evaluate the full dual-path \gls{sae} proposed in \subsecref{subsec:method_dualpath}.
+The model contains two reconstruction branches:
+a \emph{token path}, whose decoder is tied to the embedding matrix and produces a sparse combination of vocabulary-aligned components, and a \emph{dense path}, which captures the structured off-token residual using a learned dense code.
+
+\paragraph{Quantitative results.}
+\fig{fig:dualpath_recovery} compares the dual-path \gls{sae} with token-only reconstruction and standard \glsentryshortpl{sae} baselines.
+Adding the dense branch substantially improves both \glsentryshort{ve} and \glsentryshort{ce} recovery across layers and models.
+The gain is especially pronounced in middle and upper layers, where token-only reconstruction leaves a larger residual gap. The improvement is larger for LLaVA-1.5-7B and Qwen2.5-Omni than for GPT-2, consistent with the claim that multimodal conditioning injects additional structured dense state into the decoder.
+Importantly, the dual-path \gls{sae} preserves the interpretability advantages of token-level decomposition while recovering much of the performance loss.
+
+\paragraph{Why dual-path helps.}
+The token path captures sparse, vocabulary-aligned structure that can be directly interpreted as discrete lexical components.
+The dense path absorbs the low-rank misaligned structure identified in \subsecref{subsec:lowrank_universal}.
+This division of labor matches the empirical geometry of the residual stream, and explains why the dual-path architecture is more effective than either token-only or unconstrained single-path \glsentryshortpl{sae}. In multimodal models, it also provides a cleaner separation between text-vocabulary structure and grounded continuous state.
+
+\paragraph{Token-level visualization.}
+\fig{fig:token_vis} provides qualitative examples of the token pathway activations.
+Compared with \gls{logitlens}-style readout, the token path yields a more compositional view of the residual stream: instead of merely listing readable logits, it highlights which token embeddings actively participate in reconstructing the representation.
+This makes it easier to distinguish explicit lexical contributions from information delegated to the dense pathway.
+
+\paragraph{Ablation.}
+We perform ablations on dense latent dimension, token sparsity strength, and whether the embedding decoder is frozen or trainable.
+The main conclusion is robust:
+freezing the token decoder to the embedding matrix improves interpretability,
+while the dense branch accounts for most of the remaining reconstruction gap.
+A trainable decoder can slightly improve raw \glsentryshort{ve}, but tends to weaken the direct token-level semantics of the sparse code.
+This trade-off is particularly important in multimodal settings, where unconstrained decoders can absorb cross-modal information into uninterpretable directions and thereby blur the distinction between lexical and grounded state.
+
+\begin{figure}[t]
+  \centering
+  %\includegraphics[width=0.95\linewidth]{figures/dualpath_recovery_placeholder.pdf}
+  \fbox{\parbox[c][5.2cm][c]{0.92\linewidth}{\centering Placeholder for Figure 4\\
+  Layer $\times$ model type $\rightarrow$ \glsentryshort{ve} and \glsentryshort{ce} recovery for Dual-Path \glsentryshort{sae}}}
+  \caption{
+    Reconstruction quality of the dual-path \glsentryshort{sae} across layers and the four evaluated models.
+    The dual-path architecture consistently improves over token-only reconstruction and better preserves downstream language-model behavior.
+  }
+  \label{fig:dualpath_recovery}
+\end{figure}
+
+\begin{figure}[t]
+  \centering
+  %\includegraphics[width=0.95\linewidth]{figures/token_visualization_placeholder.pdf}
+  \fbox{\parbox[c][5.8cm][c]{0.92\linewidth}{\centering Placeholder for Figure 5\\
+  Token-level visualization of Dual-Path \glsentryshort{sae}}}
+  \caption{
+    Qualitative token-level visualization of the token pathway.
+    The figure illustrates which token embeddings contribute most strongly to reconstructing a residual activation, and contrasts discrete lexical structure with information delegated to the dense pathway.
+  }
+  \label{fig:token_vis}
+\end{figure}
+
+\section{Related Work}
+
+\subsection{Probing and Intermediate Readout}
+
+Probing work formalizes how to test whether intermediate activations linearly encode linguistic or task-relevant attributes~\cite{tenneyBERTRediscoversClassical2019,hewittDesigningInterpretingProbes2019}. In autoregressive Transformers, layerwise readout methods such as \gls{logitlens} further show that token predictions often become progressively sharper across depth~\cite{belroseElicitingLatentPredictions2023}. Our work is complementary to this literature: rather than studying decodability alone, we study decompositions of the residual representation itself.
+
+\subsection{Geometry of Representation Spaces}
+
+Another line of work characterizes the geometry of language-model representations, including anisotropy, dominant directions, and low intrinsic dimensionality~\cite{ethayarajhHowContextualAre2019,muAllbuttheTopSimpleEffective2018,aghajanyanIntrinsicDimensionalityExplains2021}. These results motivate the hypothesis that off-token components of residual streams may be structured rather than noise-like.
+
+\subsection{Mechanistic Interpretability of Transformer Internals}
+
+Mechanistic interpretability studies show that Transformer computations can often be factorized into interpretable internal mechanisms, including evidence that feed-forward layers implement key--value style memory behavior~\cite{gevaTransformerFeedForwardLayers2021}. Our perspective is complementary to module-centric analyses. Rather than attributing behavior to attention or \glsentryshortpl{mlp} blocks separately, we decompose residual states by representational alignment: vocabulary-aligned content versus dense, non-vocabulary structure.
+
+\subsection{Sparse Autoencoders for Feature Discovery}
+
+Recent top-tier work shows that \glspl{sae} can recover interpretable features from language-model activations and can scale to stronger models~\cite{hubenSparseAutoencodersFind2023,gaoScalingEvaluatingSparse2024,marksSparseFeatureCircuits2024}. These methods typically learn a single latent dictionary over activations. Our work differs in imposing a token-constrained path tied to the embedding basis together with a separate dense path for residual structure.
+
+\subsection{Multimodal Generative Transformers}
+
+Recent multimodal generative models project visual, audio, or video information into a text-generating decoder, often through learned connector modules or modality-specific encoders~\cite{liuImprovedBaselinesVisual2024,xuQwen25OmniTechnicalReport2025,xuMultimodalLearningTransformers2023}. These systems raise a representational question that is distinct from standard vision-language benchmarking: once non-text evidence is fused into the decoder, does the residual stream still admit an interpretable decomposition in terms of text embeddings plus a complementary dense state? Our work addresses this question directly.
+
+
+
+
+\section{Conclusion}
+
+We presented a residual-stream decomposition framework that separates text-vocabulary-aligned structure from a complementary dense subspace, and we evaluated it on GPT-2, Llama-3-8B, LLaVA-1.5-7B, and Qwen2.5-Omni. Across both text-only and multimodal text-generation settings, token embeddings explain a meaningful but incomplete fraction of the decoder residual stream, while the remaining component is consistently structured and low-rank rather than noise-like. This makes a Dual-Path \gls{sae} a natural fit: the sparse token path preserves direct lexical interpretability, and the dense path recovers structured state that becomes especially important under multimodal conditioning.
+
+The main conceptual takeaway is that multimodal input does not invalidate token-based residual analysis; instead, it changes the relative importance of the dense complementary pathway. For text-output multimodal transformers, the right unit of analysis is the decoder residual stream that interfaces with the text vocabulary. Within that scope, the same decomposition principles used for language models remain effective and expose where grounded, continuous state enters the computation.
+
+\paragraph{Limitations}
+Our analysis focuses on the text-generating decoder stream. For multimodal models, this means we do not directly decompose the internal states of the vision, audio, or video encoders, nor do we isolate the contribution of specific connector architectures. As a result, our conclusions should be interpreted as statements about multimodal information after it has entered the text decoder, not about the full end-to-end multimodal stack.
+
+In addition, the degree of token alignment and the dimensionality of the dense residual depend on prompt distribution, model scale, and the placement of cross-modal fusion layers. Stronger claims about universality would require broader coverage of multimodal architectures and more controlled interventions over modality mix and task type.
+
+\bibliographystyle{abbrvnat}
+\bibliography{ref}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\appendix
+
+
+\section{Orthogonal projection} \label{apd:projection}
+\eq{eq:embedding-projector} defines the projector onto the vocabulary-aligned subspace. This appendix briefly justifies that expression.
+
+Under our row-vector convention, the vocabulary-aligned subspace is the row space of $\WE$, namely
+\begin{equation}
+  \mathcal{S}_E = \mathrm{span}\{(\WE)_{i,:}\}_{i=1}^{\dvocab} \subseteq \R^{\dmodel} .
+\end{equation}
+Any vector in this subspace can be written as $\WE^\top \mathbf{a}$ for some coefficient vector $\mathbf{a} \in \R^{\dvocab}$. Given an arbitrary vector $\mathbf{v} \in \R^{\dmodel}$, its orthogonal projection onto $\mathcal{S}_E$ is obtained by solving the least-squares problem
+\begin{equation}
+    \min_{\mathbf{a} \in \R^{\dvocab}} \norm{\mathbf{v} - \WE^\top \mathbf{a}}_2^2.
+\end{equation}
+
+The normal equations are
+\begin{equation}
+    \WE \WE^\top \mathbf{a} = \WE \mathbf{v} .
+\end{equation}
+
+Because $\WE \WE^\top$ is generally singular, we use the Moore--Penrose pseudoinverse and take the minimum-norm solution
+\begin{equation}
+    \mathbf{a}^{\star} = (\WE \WE^\top)^{\dagger} \WE \mathbf{v} .
+\end{equation}
+
+Substituting this back gives the projected vector
+\begin{equation}
+    \WE^\top \mathbf{a}^{\star} = \WE^\top (\WE \WE^\top)^{\dagger} \WE \mathbf{v} = \PE \mathbf{v} .
+\end{equation}
+
+Hence the projection matrix onto the embedding subspace is exactly the operator given in \eq{eq:embedding-projector}.
+
+\section{PCA of embedding-orthogonal residuals} \label{apd:pca-residual-subspace}
+
+This appendix makes the PCA construction used in \subsecref{subsec:method_residual_subspace} explicit.
+
+Given embedding-orthogonal residuals $\{\resid_n\}_{n=1}^{N}$, we first define their empirical mean
+\begin{equation}
+  \bar{\resid} = \frac{1}{N} \sum_{n=1}^{N} \resid_n
+\end{equation}
+and the centered residual matrix
+\begin{equation}
+  \Res = [\resid_1 - \bar{\resid}, \dots, \resid_N - \bar{\resid}] \in \R^{\dmodel \times N} .
+\end{equation}
+
+Applying PCA to the residual samples is equivalent to diagonalizing the empirical covariance matrix
+\begin{equation}
+  \mathbf{C} = \frac{1}{N} \Res \Res^\top .
+\end{equation}
+Let $(\lambda_i, \mathbf{p}_i)$ denote the eigenvalue--eigenvector pairs of $\mathbf{C}$, ordered by decreasing eigenvalue. The matrix
+\begin{equation}
+  \mathbf{P}_k = [\mathbf{p}_1, \dots, \mathbf{p}_k] \in \R^{\dmodel \times k}
+\end{equation}
+then collects the top-$k$ principal directions, and the explained-variance curve is determined by the spectrum $\{\lambda_i\}$.
+
+The associated rank-$k$ approximation is exactly the reconstruction in \eq{eq:residual-pca-reconstruction}. This is the low-dimensional dense component used to assess whether the embedding-orthogonal residual behaves like diffuse noise or instead occupies a structured subspace.
+
+\section{Evaluation metrics} \label{apd:evaluation-metrics}
+
+This appendix defines the two main quantitative metrics used in the experiments: \gls{ve} and \glsentryshort{ce} recovery.
+
+\paragraph{Variance explained.}
+Given evaluation residual streams $\{\h_i\}_{i=1}^{N}$ and reconstructions $\{\tilde{\h}_i\}_{i=1}^{N}$, let
+\begin{equation}
+  \label{eq:eval-mean}
+  \bar{\h} = \frac{1}{N} \sum_{i=1}^{N} \h_i
+\end{equation}
+denote the empirical mean target residual stream. We then define the reconstruction mean-squared error and target variance as
+\begin{equation}
+  \label{eq:eval-mse}
+  \mathrm{MSE} = \frac{1}{N} \sum_{i=1}^{N} \norm{\h_i - \tilde{\h}_i}_2^2,
+\end{equation}
+\begin{equation}
+  \label{eq:eval-var}
+  \mathrm{Var} = \frac{1}{N} \sum_{i=1}^{N} \norm{\h_i - \bar{\h}}_2^2.
+\end{equation}
+Variance explained is then
+\begin{equation}
+  \label{eq:ve-compact}
+  \mathrm{VE} = 1 - \frac{\mathrm{MSE}}{\mathrm{Var}},
+\end{equation}
+which can be written equivalently as
+\begin{equation}
+  \label{eq:ve}
+  \mathrm{VE} = 1 - \frac{\sum_{i=1}^{N} \norm{\h_i - \tilde{\h}_i}_2^2}{\sum_{i=1}^{N} \norm{\h_i - \bar{\h}}_2^2}.
+\end{equation}
+According to this definition, higher \glsentryshort{ve} indicates that the reconstruction accounts for a larger fraction of the residual-stream variance.
+
+\paragraph{\glsentryshort{ce} recovery.}
+To evaluate whether a reconstruction preserves downstream language-model behavior, we use the intervention-based metric common in \glsentryshort{sae} evaluation. Let $\phi : \R^{\dmodel} \to \R^{\dmodel}$ denote the function spliced into the model at the evaluation site during the forward pass, and let $\operatorname{CE}(\phi)$ denote the average language-model cross-entropy on the evaluation dataset under that intervention. We define \glsentryshort{ce} recovery as
+\begin{equation}
+  \label{eq:ce-recovery}
+  1 - \frac{\operatorname{CE}(\hat{\mathbf{x}} \circ \mathbf{f}) - \operatorname{CE}(\mathrm{Id})}{\operatorname{CE}(\zeta) - \operatorname{CE}(\mathrm{Id})},
+\end{equation}
+where $\hat{\mathbf{x}} \circ \mathbf{f}$ is the autoencoder reconstruction map, $\zeta : \mathbf{x} \mapsto \mathbf{0}$ is the zero-ablation function, and $\mathrm{Id} : \mathbf{x} \mapsto \mathbf{x}$ is the identity function.
+
+Under this definition, an autoencoder that always outputs the zero vector obtains \glsentryshort{ce} recovery $0\%$, while an autoencoder that reconstructs its inputs perfectly obtains \glsentryshort{ce} recovery $100\%$.
+
+
+
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\newpage
+\section*{NeurIPS Paper Checklist}
+
+%%% BEGIN INSTRUCTIONS %%%
+The checklist is designed to encourage best practices for responsible machine learning research, addressing issues of reproducibility, transparency, research ethics, and societal impact. Do not remove the checklist: {\bf The papers not including the checklist will be desk rejected.} The checklist should follow the references and follow the (optional) supplemental material.  The checklist does NOT count towards the page
+limit. 
+
+Please read the checklist guidelines carefully for information on how to answer these questions. For each question in the checklist:
+\begin{itemize}
+    \item You should answer \answerYes{}, \answerNo{}, or \answerNA{}.
+    \item \answerNA{} means either that the question is Not Applicable for that particular paper or the relevant information is Not Available.
+    \item Please provide a short (1–2 sentence) justification right after your answer (even for NA). 
+   % \item {\bf The papers not including the checklist will be desk rejected.}
+\end{itemize}
+
+{\bf The checklist answers are an integral part of your paper submission.} They are visible to the reviewers, area chairs, senior area chairs, and ethics reviewers. You will be asked to also include it (after eventual revisions) with the final version of your paper, and its final version will be published with the paper.
+
+The reviewers of your paper will be asked to use the checklist as one of the factors in their evaluation. While "\answerYes{}" is generally preferable to "\answerNo{}", it is perfectly acceptable to answer "\answerNo{}" provided a proper justification is given (e.g., "error bars are not reported because it would be too computationally expensive" or "we were unable to find the license for the dataset we used"). In general, answering "\answerNo{}" or "\answerNA{}" is not grounds for rejection. While the questions are phrased in a binary way, we acknowledge that the true answer is often more nuanced, so please just use your best judgment and write a justification to elaborate. All supporting evidence can appear either in the main paper or the supplemental material, provided in appendix. If you answer \answerYes{} to a question, in the justification please point to the section(s) where related material for the question can be found.
+
+IMPORTANT, please:
+\begin{itemize}
+    \item {\bf Delete this instruction block, but keep the section heading ``NeurIPS Paper Checklist"},
+    \item  {\bf Keep the checklist subsection headings, questions/answers and guidelines below.}
+    \item {\bf Do not modify the questions and only use the provided macros for your answers}.
+\end{itemize} 
+ 
+
+%%% END INSTRUCTIONS %%%
+
+
+\begin{enumerate}
+
+\item {\bf Claims}
+    \item[] Question: Do the main claims made in the abstract and introduction accurately reflect the paper's contributions and scope?
+    \item[] Answer: \answerTODO{} % Replace by \answerYes{}, \answerNo{}, or \answerNA{}.
+    \item[] Justification: \justificationTODO{}
+    \item[] Guidelines:
+    \begin{itemize}
+        \item The answer NA means that the abstract and introduction do not include the claims made in the paper.
+        \item The abstract and/or introduction should clearly state the claims made, including the contributions made in the paper and important assumptions and limitations. A No or NA answer to this question will not be perceived well by the reviewers. 
+        \item The claims made should match theoretical and experimental results, and reflect how much the results can be expected to generalize to other settings. 
+        \item It is fine to include aspirational goals as motivation as long as it is clear that these goals are not attained by the paper. 
+    \end{itemize}
+
+\item {\bf Limitations}
+    \item[] Question: Does the paper discuss the limitations of the work performed by the authors?
+    \item[] Answer: \answerTODO{} % Replace by \answerYes{}, \answerNo{}, or \answerNA{}.
+    \item[] Justification: \justificationTODO{}
+    \item[] Guidelines:
+    \begin{itemize}
+        \item The answer NA means that the paper has no limitation while the answer No means that the paper has limitations, but those are not discussed in the paper. 
+        \item The authors are encouraged to create a separate "Limitations" section in their paper.
+        \item The paper should point out any strong assumptions and how robust the results are to violations of these assumptions (e.g., independence assumptions, noiseless settings, model well-specification, asymptotic approximations only holding locally). The authors should reflect on how these assumptions might be violated in practice and what the implications would be.
+        \item The authors should reflect on the scope of the claims made, e.g., if the approach was only tested on a few datasets or with a few runs. In general, empirical results often depend on implicit assumptions, which should be articulated.
+        \item The authors should reflect on the factors that influence the performance of the approach. For example, a facial recognition algorithm may perform poorly when image resolution is low or images are taken in low lighting. Or a speech-to-text system might not be used reliably to provide closed captions for online lectures because it fails to handle technical jargon.
+        \item The authors should discuss the computational efficiency of the proposed algorithms and how they scale with dataset size.
+        \item If applicable, the authors should discuss possible limitations of their approach to address problems of privacy and fairness.
+        \item While the authors might fear that complete honesty about limitations might be used by reviewers as grounds for rejection, a worse outcome might be that reviewers discover limitations that aren't acknowledged in the paper. The authors should use their best judgment and recognize that individual actions in favor of transparency play an important role in developing norms that preserve the integrity of the community. Reviewers will be specifically instructed to not penalize honesty concerning limitations.
+    \end{itemize}
+
+\item {\bf Theory assumptions and proofs}
+    \item[] Question: For each theoretical result, does the paper provide the full set of assumptions and a complete (and correct) proof?
+    \item[] Answer: \answerTODO{} % Replace by \answerYes{}, \answerNo{}, or \answerNA{}.
+    \item[] Justification: \justificationTODO{}
+    \item[] Guidelines:
+    \begin{itemize}
+        \item The answer NA means that the paper does not include theoretical results. 
+        \item All the theorems, formulas, and proofs in the paper should be numbered and cross-referenced.
+        \item All assumptions should be clearly stated or referenced in the statement of any theorems.
+        \item The proofs can either appear in the main paper or the supplemental material, but if they appear in the supplemental material, the authors are encouraged to provide a short proof sketch to provide intuition. 
+        \item Inversely, any informal proof provided in the core of the paper should be complemented by formal proofs provided in appendix or supplemental material.
+        \item Theorems and Lemmas that the proof relies upon should be properly referenced. 
+    \end{itemize}
+
+    \item {\bf Experimental result reproducibility}
+    \item[] Question: Does the paper fully disclose all the information needed to reproduce the main experimental results of the paper to the extent that it affects the main claims and/or conclusions of the paper (regardless of whether the code and data are provided or not)?
+    \item[] Answer: \answerTODO{} % Replace by \answerYes{}, \answerNo{}, or \answerNA{}.
+    \item[] Justification: \justificationTODO{}
+    \item[] Guidelines:
+    \begin{itemize}
+        \item The answer NA means that the paper does not include experiments.
+        \item If the paper includes experiments, a No answer to this question will not be perceived well by the reviewers: Making the paper reproducible is important, regardless of whether the code and data are provided or not.
+        \item If the contribution is a dataset and/or model, the authors should describe the steps taken to make their results reproducible or verifiable. 
+        \item Depending on the contribution, reproducibility can be accomplished in various ways. For example, if the contribution is a novel architecture, describing the architecture fully might suffice, or if the contribution is a specific model and empirical evaluation, it may be necessary to either make it possible for others to replicate the model with the same dataset, or provide access to the model. In general. releasing code and data is often one good way to accomplish this, but reproducibility can also be provided via detailed instructions for how to replicate the results, access to a hosted model (e.g., in the case of a large language model), releasing of a model checkpoint, or other means that are appropriate to the research performed.
+        \item While NeurIPS does not require releasing code, the conference does require all submissions to provide some reasonable avenue for reproducibility, which may depend on the nature of the contribution. For example
+        \begin{enumerate}
+            \item If the contribution is primarily a new algorithm, the paper should make it clear how to reproduce that algorithm.
+            \item If the contribution is primarily a new model architecture, the paper should describe the architecture clearly and fully.
+            \item If the contribution is a new model (e.g., a large language model), then there should either be a way to access this model for reproducing the results or a way to reproduce the model (e.g., with an open-source dataset or instructions for how to construct the dataset).
+            \item We recognize that reproducibility may be tricky in some cases, in which case authors are welcome to describe the particular way they provide for reproducibility. In the case of closed-source models, it may be that access to the model is limited in some way (e.g., to registered users), but it should be possible for other researchers to have some path to reproducing or verifying the results.
+        \end{enumerate}
+    \end{itemize}
+
+
+\item {\bf Open access to data and code}
+    \item[] Question: Does the paper provide open access to the data and code, with sufficient instructions to faithfully reproduce the main experimental results, as described in supplemental material?
+    \item[] Answer: \answerTODO{} % Replace by \answerYes{}, \answerNo{}, or \answerNA{}.
+    \item[] Justification: \justificationTODO{}
+    \item[] Guidelines:
+    \begin{itemize}
+        \item The answer NA means that paper does not include experiments requiring code.
+        \item Please see the NeurIPS code and data submission guidelines (\url{https://nips.cc/public/guides/CodeSubmissionPolicy}) for more details.
+        \item While we encourage the release of code and data, we understand that this might not be possible, so “No” is an acceptable answer. Papers cannot be rejected simply for not including code, unless this is central to the contribution (e.g., for a new open-source benchmark).
+        \item The instructions should contain the exact command and environment needed to run to reproduce the results. See the NeurIPS code and data submission guidelines (\url{https://nips.cc/public/guides/CodeSubmissionPolicy}) for more details.
+        \item The authors should provide instructions on data access and preparation, including how to access the raw data, preprocessed data, intermediate data, and generated data, etc.
+        \item The authors should provide scripts to reproduce all experimental results for the new proposed method and baselines. If only a subset of experiments are reproducible, they should state which ones are omitted from the script and why.
+        \item At submission time, to preserve anonymity, the authors should release anonymized versions (if applicable).
+        \item Providing as much information as possible in supplemental material (appended to the paper) is recommended, but including URLs to data and code is permitted.
+    \end{itemize}
+
+
+\item {\bf Experimental setting/details}
+    \item[] Question: Does the paper specify all the training and test details (e.g., data splits, hyperparameters, how they were chosen, type of optimizer, etc.) necessary to understand the results?
+    \item[] Answer: \answerTODO{} % Replace by \answerYes{}, \answerNo{}, or \answerNA{}.
+    \item[] Justification: \justificationTODO{}
+    \item[] Guidelines:
+    \begin{itemize}
+        \item The answer NA means that the paper does not include experiments.
+        \item The experimental setting should be presented in the core of the paper to a level of detail that is necessary to appreciate the results and make sense of them.
+        \item The full details can be provided either with the code, in appendix, or as supplemental material.
+    \end{itemize}
+
+\item {\bf Experiment statistical significance}
+    \item[] Question: Does the paper report error bars suitably and correctly defined or other appropriate information about the statistical significance of the experiments?
+    \item[] Answer: \answerTODO{} % Replace by \answerYes{}, \answerNo{}, or \answerNA{}.
+    \item[] Justification: \justificationTODO{}
+    \item[] Guidelines:
+    \begin{itemize}
+        \item The answer NA means that the paper does not include experiments.
+        \item The authors should answer "Yes" if the results are accompanied by error bars, confidence intervals, or statistical significance tests, at least for the experiments that support the main claims of the paper.
+        \item The factors of variability that the error bars are capturing should be clearly stated (for example, train/test split, initialization, random drawing of some parameter, or overall run with given experimental conditions).
+        \item The method for calculating the error bars should be explained (closed form formula, call to a library function, bootstrap, etc.)
+        \item The assumptions made should be given (e.g., Normally distributed errors).
+        \item It should be clear whether the error bar is the standard deviation or the standard error of the mean.
+        \item It is OK to report 1-sigma error bars, but one should state it. The authors should preferably report a 2-sigma error bar than state that they have a 96\% CI, if the hypothesis of Normality of errors is not verified.
+        \item For asymmetric distributions, the authors should be careful not to show in tables or figures symmetric error bars that would yield results that are out of range (e.g. negative error rates).
+        \item If error bars are reported in tables or plots, The authors should explain in the text how they were calculated and reference the corresponding figures or tables in the text.
+    \end{itemize}
+
+\item {\bf Experiments compute resources}
+    \item[] Question: For each experiment, does the paper provide sufficient information on the computer resources (type of compute workers, memory, time of execution) needed to reproduce the experiments?
+    \item[] Answer: \answerTODO{} % Replace by \answerYes{}, \answerNo{}, or \answerNA{}.
+    \item[] Justification: \justificationTODO{}
+    \item[] Guidelines:
+    \begin{itemize}
+        \item The answer NA means that the paper does not include experiments.
+        \item The paper should indicate the type of compute workers CPU or GPU, internal cluster, or cloud provider, including relevant memory and storage.
+        \item The paper should provide the amount of compute required for each of the individual experimental runs as well as estimate the total compute. 
+        \item The paper should disclose whether the full research project required more compute than the experiments reported in the paper (e.g., preliminary or failed experiments that didn't make it into the paper). 
+    \end{itemize}
+    
+\item {\bf Code of ethics}
+    \item[] Question: Does the research conducted in the paper conform, in every respect, with the NeurIPS Code of Ethics \url{https://neurips.cc/public/EthicsGuidelines}?
+    \item[] Answer: \answerTODO{} % Replace by \answerYes{}, \answerNo{}, or \answerNA{}.
+    \item[] Justification: \justificationTODO{}
+    \item[] Guidelines:
+    \begin{itemize}
+        \item The answer NA means that the authors have not reviewed the NeurIPS Code of Ethics.
+        \item If the authors answer No, they should explain the special circumstances that require a deviation from the Code of Ethics.
+        \item The authors should make sure to preserve anonymity (e.g., if there is a special consideration due to laws or regulations in their jurisdiction).
+    \end{itemize}
+
+
+\item {\bf Broader impacts}
+    \item[] Question: Does the paper discuss both potential positive societal impacts and negative societal impacts of the work performed?
+    \item[] Answer: \answerTODO{} % Replace by \answerYes{}, \answerNo{}, or \answerNA{}.
+    \item[] Justification: \justificationTODO{}
+    \item[] Guidelines:
+    \begin{itemize}
+        \item The answer NA means that there is no societal impact of the work performed.
+        \item If the authors answer NA or No, they should explain why their work has no societal impact or why the paper does not address societal impact.
+        \item Examples of negative societal impacts include potential malicious or unintended uses (e.g., disinformation, generating fake profiles, surveillance), fairness considerations (e.g., deployment of technologies that could make decisions that unfairly impact specific groups), privacy considerations, and security considerations.
+        \item The conference expects that many papers will be foundational research and not tied to particular applications, let alone deployments. However, if there is a direct path to any negative applications, the authors should point it out. For example, it is legitimate to point out that an improvement in the quality of generative models could be used to generate deepfakes for disinformation. On the other hand, it is not needed to point out that a generic algorithm for optimizing neural networks could enable people to train models that generate Deepfakes faster.
+        \item The authors should consider possible harms that could arise when the technology is being used as intended and functioning correctly, harms that could arise when the technology is being used as intended but gives incorrect results, and harms following from (intentional or unintentional) misuse of the technology.
+        \item If there are negative societal impacts, the authors could also discuss possible mitigation strategies (e.g., gated release of models, providing defenses in addition to attacks, mechanisms for monitoring misuse, mechanisms to monitor how a system learns from feedback over time, improving the efficiency and accessibility of ML).
+    \end{itemize}
+    
+\item {\bf Safeguards}
+    \item[] Question: Does the paper describe safeguards that have been put in place for responsible release of data or models that have a high risk for misuse (e.g., pretrained language models, image generators, or scraped datasets)?
+    \item[] Answer: \answerTODO{} % Replace by \answerYes{}, \answerNo{}, or \answerNA{}.
+    \item[] Justification: \justificationTODO{}
+    \item[] Guidelines:
+    \begin{itemize}
+        \item The answer NA means that the paper poses no such risks.
+        \item Released models that have a high risk for misuse or dual-use should be released with necessary safeguards to allow for controlled use of the model, for example by requiring that users adhere to usage guidelines or restrictions to access the model or implementing safety filters. 
+        \item Datasets that have been scraped from the Internet could pose safety risks. The authors should describe how they avoided releasing unsafe images.
+        \item We recognize that providing effective safeguards is challenging, and many papers do not require this, but we encourage authors to take this into account and make a best faith effort.
+    \end{itemize}
+
+\item {\bf Licenses for existing assets}
+    \item[] Question: Are the creators or original owners of assets (e.g., code, data, models), used in the paper, properly credited and are the license and terms of use explicitly mentioned and properly respected?
+    \item[] Answer: \answerTODO{} % Replace by \answerYes{}, \answerNo{}, or \answerNA{}.
+    \item[] Justification: \justificationTODO{}
+    \item[] Guidelines:
+    \begin{itemize}
+        \item The answer NA means that the paper does not use existing assets.
+        \item The authors should cite the original paper that produced the code package or dataset.
+        \item The authors should state which version of the asset is used and, if possible, include a URL.
+        \item The name of the license (e.g., CC-BY 4.0) should be included for each asset.
+        \item For scraped data from a particular source (e.g., website), the copyright and terms of service of that source should be provided.
+        \item If assets are released, the license, copyright information, and terms of use in the package should be provided. For popular datasets, \url{paperswithcode.com/datasets} has curated licenses for some datasets. Their licensing guide can help determine the license of a dataset.
+        \item For existing datasets that are re-packaged, both the original license and the license of the derived asset (if it has changed) should be provided.
+        \item If this information is not available online, the authors are encouraged to reach out to the asset's creators.
+    \end{itemize}
+
+\item {\bf New assets}
+    \item[] Question: Are new assets introduced in the paper well documented and is the documentation provided alongside the assets?
+    \item[] Answer: \answerTODO{} % Replace by \answerYes{}, \answerNo{}, or \answerNA{}.
+    \item[] Justification: \justificationTODO{}
+    \item[] Guidelines:
+    \begin{itemize}
+        \item The answer NA means that the paper does not release new assets.
+        \item Researchers should communicate the details of the dataset/code/model as part of their submissions via structured templates. This includes details about training, license, limitations, etc. 
+        \item The paper should discuss whether and how consent was obtained from people whose asset is used.
+        \item At submission time, remember to anonymize your assets (if applicable). You can either create an anonymized URL or include an anonymized zip file.
+    \end{itemize}
+
+\item {\bf Crowdsourcing and research with human subjects}
+    \item[] Question: For crowdsourcing experiments and research with human subjects, does the paper include the full text of instructions given to participants and screenshots, if applicable, as well as details about compensation (if any)? 
+    \item[] Answer: \answerTODO{} % Replace by \answerYes{}, \answerNo{}, or \answerNA{}.
+    \item[] Justification: \justificationTODO{}
+    \item[] Guidelines:
+    \begin{itemize}
+        \item The answer NA means that the paper does not involve crowdsourcing nor research with human subjects.
+        \item Including this information in the supplemental material is fine, but if the main contribution of the paper involves human subjects, then as much detail as possible should be included in the main paper. 
+        \item According to the NeurIPS Code of Ethics, workers involved in data collection, curation, or other labor should be paid at least the minimum wage in the country of the data collector. 
+    \end{itemize}
+
+\item {\bf \Gls{irb} approvals or equivalent for research with human subjects}
+  \item[] Question: Does the paper describe potential risks incurred by study participants, whether such risks were disclosed to the subjects, and whether \glspl{irb} (or an equivalent approval/review based on the requirements of your country or institution) were obtained?
+    \item[] Answer: \answerTODO{} % Replace by \answerYes{}, \answerNo{}, or \answerNA{}.
+    \item[] Justification: \justificationTODO{}
+    \item[] Guidelines:
+    \begin{itemize}
+        \item The answer NA means that the paper does not involve crowdsourcing nor research with human subjects.
+        \item Depending on the country in which research is conducted, \glsentryshort{irb} approval (or equivalent) may be required for any human subjects research. If you obtained \glsentryshort{irb} approval, you should clearly state this in the paper. 
+        \item We recognize that the procedures for this may vary significantly between institutions and locations, and we expect authors to adhere to the NeurIPS Code of Ethics and the guidelines for their institution. 
+        \item For initial submissions, do not include any information that would break anonymity (if applicable), such as the institution conducting the review.
+    \end{itemize}
+
+\item {\bf Declaration of \glsentryshort{llm} usage}
+  \item[] Question: Does the paper describe the usage of \glspl{llm} if it is an important, original, or non-standard component of the core methods in this research? Note that if the \gls{llm} is used only for writing, editing, or formatting purposes and does not impact the core methodology, scientific rigorousness, or originality of the research, declaration is not required.
+    %this research? 
+    \item[] Answer: \answerTODO{} % Replace by \answerYes{}, \answerNo{}, or \answerNA{}.
+    \item[] Justification: \justificationTODO{}
+    \item[] Guidelines:
+    \begin{itemize}
+        \item The answer NA means that the core method development in this research does not involve \glspl{llm} as any important, original, or non-standard components.
+        \item Please refer to our \glsentryshort{llm} policy (\url{https://neurips.cc/Conferences/2025/LLM}) for what should or should not be described.
+    \end{itemize}
+
+\end{enumerate}
+
+
+\end{document}

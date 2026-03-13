@@ -112,6 +112,7 @@ class SAEOutput(ModelOutput):
     pre_activations: Optional[torch.Tensor] = None
     loss_per_sample: Optional[torch.Tensor] = None
     loss_lowrank: Optional[float] = None
+    loss_anchor: Optional[torch.Tensor] = None
 
 
 # -------------------------
@@ -137,6 +138,9 @@ class SAEConfig(PretrainedConfig):
         use_lowrank: bool = True,
         lowrank_coeff: float = 0.1,
         use_abs_topk: bool = False,  # use absolute value for topk selection
+        anchor_coeff: float = 0.0,  # weak token-anchoring regularizer coefficient
+        anchor_mode: str = "hard",  # "hard" | "logsumexp" | "softmax"
+        anchor_topk: int = 10,  # top-k for soft anchor modes
         **kwargs,
     ):
         super().__init__(**kwargs)
@@ -155,6 +159,9 @@ class SAEConfig(PretrainedConfig):
         self.use_lowrank = use_lowrank
         self.lowrank_coeff = lowrank_coeff
         self.use_abs_topk = bool(use_abs_topk)
+        self.anchor_coeff = float(anchor_coeff)
+        self.anchor_mode = anchor_mode
+        self.anchor_topk = int(anchor_topk)
 
         self._validate()
 
@@ -173,6 +180,10 @@ class SAEConfig(PretrainedConfig):
             raise ValueError("Do not use L1 with topk/batch_topk. Set l1_coeff=0.")
         if self.dim_input <= 0 or self.dim_sparse <= 0:
             raise ValueError("dim_input and dim_sparse must be positive.")
+        if self.anchor_mode not in {"hard", "logsumexp", "softmax"}:
+            raise ValueError(
+                f"anchor_mode must be 'hard'|'logsumexp'|'softmax', got {self.anchor_mode}"
+            )
 
 
 # -------------------------
@@ -214,6 +225,7 @@ class SAEModel(PreTrainedModel):
         )
 
         self._tied_embedding: Optional[nn.Embedding] = None
+        self._anchor_embedding: Optional[nn.Embedding] = None
         if config.tied_decoder:
             # We'll freeze decoder weight by default; actual tying via attach_embedding() TODO
             self.decoder.weight.requires_grad_(False)
@@ -254,6 +266,10 @@ class SAEModel(PreTrainedModel):
         # Bias typically off for tied decoder; keep consistent.
         if self.decoder.bias is not None:
             self.decoder.bias.requires_grad_(not freeze)
+
+    def attach_anchor_embedding(self, embedding: nn.Embedding):
+        """Store embedding reference for anchor loss (does not modify decoder weights)."""
+        self._anchor_embedding = embedding
 
     def encode(self, hidden_states: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:
         pre = self.encoder(hidden_states)
@@ -306,6 +322,28 @@ class SAEModel(PreTrainedModel):
             total_loss = total_loss + self.config.l1_coeff * l1_loss
             l1_loss = l1_loss.detach().cpu().item()
 
+        # anchor loss
+        loss_anchor = None
+        if self.config.anchor_coeff > 0 and self._anchor_embedding is not None:
+            d_norm = F.normalize(self.decoder.weight.T, dim=1)  # (dim_sparse, dim_input)
+            e_norm = F.normalize(self._anchor_embedding.weight, dim=1)  # (vocab, dim_input)
+            chunk_size = 2048
+            max_sims = []
+            for i in range(0, d_norm.size(0), chunk_size):
+                chunk = d_norm[i:i + chunk_size]
+                sim = chunk @ e_norm.T  # (chunk, vocab)
+                if self.config.anchor_mode == "hard":
+                    max_sims.append(sim.max(dim=1)[0])
+                elif self.config.anchor_mode == "logsumexp":
+                    topk_sim = sim.topk(self.config.anchor_topk, dim=1)[0]
+                    max_sims.append(torch.logsumexp(topk_sim, dim=1))
+                elif self.config.anchor_mode == "softmax":
+                    topk_sim = sim.topk(self.config.anchor_topk, dim=1)[0]
+                    w = F.softmax(topk_sim, dim=1)
+                    max_sims.append((w * topk_sim).sum(dim=1))
+            loss_anchor = -torch.cat(max_sims).mean()
+            total_loss = total_loss + self.config.anchor_coeff * loss_anchor
+
         if not return_dict:
             outs = (recon, z)
             if output_pre_activations:
@@ -321,6 +359,7 @@ class SAEModel(PreTrainedModel):
             pre_activations=(pre if output_pre_activations else None),
             loss_per_sample=(mse_per if output_loss_per_sample else None),
             loss_lowrank=(None),
+            loss_anchor=loss_anchor,
         )
 
 
