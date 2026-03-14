@@ -1,1 +1,1 @@
-from .interface import IMetric, Metrics
+from .base import Aggregator, IMetric, MetricComposer

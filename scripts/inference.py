@@ -8,14 +8,14 @@ import torch
 import torch.optim as optim
 
 import wandb
-from vasae.configs.data import DataConfig
-from vasae.configs.train import TrainConfig
+from vasae.data.schema import DataConfig
+from vasae.engine.config import TrainConfig
 from vasae.data.dataset import get_dataloader
 from vasae.engine.evaluate import evaluate
-from vasae.metrics.interface import MetricComposer
+from vasae.metrics.base import MetricComposer
 from vasae.metrics.logitlens import LogitLens, LogitLensAccuracy, LogitLensMetric
 from vasae.models.factory import get_blackbox_model
-from vasae.models.sae_hf import SAEConfig, SAEModel, SAEOutput
+from vasae.models.sae import SAEConfig, SAEModel, SAEOutput
 from vasae.utils.log import get_logger
 from vasae.utils.seed import set_seed
 

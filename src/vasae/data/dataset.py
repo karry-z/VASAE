@@ -5,8 +5,7 @@ import numpy as np
 import torch
 from torch.utils.data import DataLoader, Dataset, random_split
 
-from vasae.configs.data import DataConfig
-from vasae.data.data_schema import LayerMeta, Meta
+from vasae.data.schema import DataConfig, LayerMeta, Meta
 
 
 def load_meta(meta_path: Path) -> Meta:

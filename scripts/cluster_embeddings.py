@@ -27,14 +27,14 @@ from sklearn.manifold import TSNE
 from sklearn.metrics import silhouette_score
 from sklearn.preprocessing import normalize
 
-from vasae.models.factory import BlackBoxModelConfig, load_embeding_layer
+from vasae.models.factory import BlackBoxModelConfig, load_embedding_layer
 
 # ---------- helpers ----------------------------------------------------------
 
 
 def get_embeddings(cfg: BlackBoxModelConfig) -> np.ndarray:
     """Load embedding layer and return weight matrix as numpy (vocab x dim)."""
-    emb = load_embeding_layer(cfg)
+    emb = load_embedding_layer(cfg)
     return emb.weight.detach().cpu().numpy()
 
 

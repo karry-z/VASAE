@@ -1,17 +1,16 @@
-from typing import Dict, Tuple
+from typing import Any, Dict
 
 import numpy as np
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
 
-from vasae.metrics.interface import IMetric
+from vasae.metrics.base import IMetric
 
 
 class LogitLens:
     def __init__(self, unembed_layer: nn.Linear, ln=None):
         self.unembed_layer = unembed_layer
-        self.ln = ln  # TODO: check if ln is necessary
+        self.ln = ln
 
     def unembed(self, activation: torch.Tensor) -> torch.Tensor:
         activation = activation.to(self.unembed_layer.weight.device)
@@ -40,37 +39,28 @@ class LogitLensAccuracy:
         return np.mean(correct).item()
 
 
-class LogitLensMetric:
-    def __init__(self, logitlens: LogitLens, logitlens_acc: LogitLensAccuracy):
+class LogitLensMetric(IMetric):
+    """Logit lens accuracy metric.
+
+    Expects context keys:
+    - "hidden_states": original activations
+    - "hidden_states_recon": SAE reconstruction
+    """
+
+    def __init__(self, logitlens: LogitLens, logitlens_acc: LogitLensAccuracy = None):
         self.logitlens = logitlens
-        self.logitlens_acc = logitlens_acc
+        self.logitlens_acc = logitlens_acc or LogitLensAccuracy()
 
-    def __call__(self, preds):
-        decoded = preds["decoded"]
-        data = preds["data"]
-
-        data_ids = self.logitlens.top1(data)["token_ids"].cpu()
-        recons_ids = self.logitlens.top1(decoded)["token_ids"].cpu()
-
-        return {
-            "logitlens_acc": self.logitlens_acc.compute(
-                data_ids.flatten().tolist(),
-                recons_ids.flatten().tolist(),
-            )
-        }
-
-    def compute(self, preds):
-        decoded = preds["decoded"]
-        data = preds["data"]
+    def compute(self, context: Dict[str, Any]) -> Dict[str, float]:
+        data = context["hidden_states"]
+        decoded = context["hidden_states_recon"]
 
         data_ids = self.logitlens.top1(data)["token_ids"].cpu()
         recons_ids = self.logitlens.top1(decoded)["token_ids"].cpu()
 
-        return {
-            "logitlens_acc": self.logitlens_acc.compute(
-                data_ids.flatten().tolist(),
-                recons_ids.flatten().tolist(),
-            ),
-            "data_ids": data_ids.flatten().tolist(),
-            "recons_ids": recons_ids.flatten().tolist(),
-        }
+        acc = self.logitlens_acc.compute(
+            data_ids.flatten().tolist(),
+            recons_ids.flatten().tolist(),
+        )
+
+        return {"logitlens_acc": acc}

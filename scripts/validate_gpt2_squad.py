@@ -10,7 +10,6 @@ from datasets import load_dataset
 from torch.utils.data import DataLoader
 from transformers import GPT2LMHeadModel, GPT2TokenizerFast
 
-from vasae.metrics.sbert_score import SBERTScore
 from vasae.utils.log import get_logger
 
 

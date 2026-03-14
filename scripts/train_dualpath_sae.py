@@ -15,16 +15,16 @@ import torch.nn.functional as F
 import torch.optim as optim
 
 import wandb
-from vasae.configs.data import DataConfig
-from vasae.configs.train import TrainConfig
+from vasae.data.schema import DataConfig
+from vasae.engine.config import TrainConfig
 from vasae.data.dataset import get_dataloader
-from vasae.metrics.interface import Aggregator, MetricComposer
+from vasae.metrics.base import Aggregator, MetricComposer
 from vasae.metrics.logitlens import LogitLens, LogitLensAccuracy, LogitLensMetric
 from vasae.models.dualpath_sae import DualPathSAE, DualPathSAEOutput
 from vasae.models.factory import (
     BlackBoxModelConfig,
-    load_embeding_layer,
-    load_unembeding_layer,
+    load_embedding_layer,
+    load_unembedding_layer,
 )
 from vasae.utils.log import get_logger
 from vasae.utils.seed import set_seed
@@ -451,8 +451,8 @@ def main():
         name=args.blackbox_model_name,
         dir=Path(args.blackbox_model_dir),
     )
-    emb = load_embeding_layer(bb_cfg)
-    unemb = load_unembeding_layer(bb_cfg)
+    emb = load_embedding_layer(bb_cfg)
+    unemb = load_unembedding_layer(bb_cfg)
 
     # ---- Phase 1: Compute embedding-orthogonal PCA ----
     if pca_path.exists():

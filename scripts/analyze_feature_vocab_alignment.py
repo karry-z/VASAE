@@ -16,8 +16,8 @@ import torch
 import torch.nn.functional as F
 from transformers import GPT2TokenizerFast
 
-from vasae.models.factory import BlackBoxModelConfig, load_embeding_layer
-from vasae.models.sae_hf import SAEConfig, SAEModel
+from vasae.models.factory import BlackBoxModelConfig, load_embedding_layer
+from vasae.models.sae import SAEConfig, SAEModel
 
 
 def parse_args():
@@ -271,7 +271,7 @@ def main():
     else:
         print("Loading vocab embeddings...")
         bb_cfg = BlackBoxModelConfig(name="gpt2", dir=Path(args.blackbox_model_dir))
-        emb = load_embeding_layer(bb_cfg)
+        emb = load_embedding_layer(bb_cfg)
 
     # Get weights
     decoder_weight = model.decoder.weight.data  # (dim_input, dim_sparse)

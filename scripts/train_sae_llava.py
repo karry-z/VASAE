@@ -5,18 +5,18 @@ import torch
 import torch.optim as optim
 
 import wandb
-from vasae.configs.data import DataConfig
-from vasae.configs.train import TrainConfig
+from vasae.data.schema import DataConfig
+from vasae.engine.config import TrainConfig
 from vasae.data.dataset import get_dataloader
 from vasae.engine import evaluate, train
-from vasae.metrics.interface import MetricComposer
+from vasae.metrics.base import MetricComposer
 from vasae.metrics.logitlens import LogitLens, LogitLensAccuracy, LogitLensMetric
 from vasae.models.factory import (
     BlackBoxModelConfig,
-    load_embeding_layer,
-    load_unembeding_layer,
+    load_embedding_layer,
+    load_unembedding_layer,
 )
-from vasae.models.sae_hf import SAEConfig, SAEModel
+from vasae.models.sae import SAEConfig, SAEModel
 from vasae.utils.log import get_logger
 from vasae.utils.seed import set_seed
 
@@ -206,8 +206,8 @@ def main():
     )
 
     # Load model layers from pretrained blackbox model
-    emb = load_embeding_layer(blackbox_model_cfg)
-    unemb = load_unembeding_layer(blackbox_model_cfg)
+    emb = load_embedding_layer(blackbox_model_cfg)
+    unemb = load_unembedding_layer(blackbox_model_cfg)
 
     # Ensure float32 (embeddings may have been saved in fp16)
     emb = emb.float()

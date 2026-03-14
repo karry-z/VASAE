@@ -4,9 +4,9 @@ from typing import Dict
 
 import torch
 
-from vasae.configs.train import TrainConfig
-from vasae.metrics.interface import Aggregator, MetricComposer
-from vasae.models.sae_hf import SAEConfig, SAEModel, SAEOutput
+from vasae.engine.config import TrainConfig
+from vasae.metrics.base import Aggregator, MetricComposer
+from vasae.models.sae import SAEModel, SAEOutput
 
 
 def train_one_epoch(
@@ -30,7 +30,7 @@ def train_one_epoch(
 
         output: SAEOutput = model(activations)
         decoded = output.hidden_states_recon
-        eval_outcomes = metrics.compute({"data": activations, "decoded": decoded})
+        eval_outcomes = metrics.compute({"hidden_states": activations, "hidden_states_recon": decoded})
         # accumulate loss
         aggregator.add(
             {

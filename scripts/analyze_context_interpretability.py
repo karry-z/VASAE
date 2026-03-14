@@ -21,9 +21,9 @@ import torch
 import torch.nn.functional as F
 from transformers import GPT2TokenizerFast
 
-from vasae.configs.data import DataConfig
+from vasae.data.schema import DataConfig
 from vasae.data.dataset import GPT2LayerActivations
-from vasae.models.sae_hf import SAEConfig, SAEModel
+from vasae.models.sae import SAEConfig, SAEModel
 
 
 def parse_args():

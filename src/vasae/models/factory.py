@@ -1,67 +1,84 @@
 from dataclasses import dataclass
 from pathlib import Path
+from typing import Tuple
 
 import torch
 import torch.nn as nn
-from transformers import model_addition_debugger_context
-
-try:
-    from .sae import (
-        VASAE,
-        BatchTopKSAE,
-        KSparse,
-        TopKSAE,
-        VanillaSAE,
-        VASAE_LearnedDecoder,
-        VASAE_ReLU,
-    )
-except ImportError:
-    pass  # Legacy models not available in new layout
+from transformers import AutoModelForCausalLM, AutoTokenizer
 
 
-def get_sae_model(model_name: str, **args) -> nn.Module:
-    if model_name == "VASAE_BatchKSparse":
-        model = VASAE(args["k"], args["embedding_weight"])
-    elif model_name == "VASAE_KSparse":
-        model = VASAE(args["k"], args["embedding_weight"], act_fn=KSparse(args["k"]))
-    elif model_name == "VanillaSAE":
-        model = VanillaSAE(args["dim_input"], args["dim_sparse"])
-    elif model_name == "TopKSAE":
-        model = TopKSAE(args["dim_input"], args["dim_sparse"], args["k"])
-    elif model_name == "BatchTopKSAE":
-        model = BatchTopKSAE(args["dim_input"], args["dim_sparse"], args["k"])
-    elif model_name == "VASAE_ReLU":
-        model = VASAE_ReLU(args["embedding_weight"])
-    elif model_name == "VASAE_LearnedDecoder":
-        model = VASAE_LearnedDecoder(
-            args["k"], args["embedding_weight"], lambda_cos=args["lambda_cos"]
-        )
-    else:
-        raise ValueError(f"invalid model_name {model_name}")
-    return model
+def load_model(model_name: str, device: str = "cuda", dtype=None) -> Tuple:
+    """Load any HuggingFace causal LM and its tokenizer.
 
+    Returns:
+        (model, tokenizer)
+    """
+    kwargs = {}
+    if dtype is not None:
+        kwargs["torch_dtype"] = dtype
 
-def get_blackbox_model(model_name, device):
-    from transformers import GPT2LMHeadModel, GPT2TokenizerFast
+    tokenizer = AutoTokenizer.from_pretrained(model_name)
+    if tokenizer.pad_token is None:
+        tokenizer.pad_token = tokenizer.eos_token
 
-    tokenizer = GPT2TokenizerFast.from_pretrained(model_name)
-    tokenizer.pad_token = tokenizer.eos_token
-
-    model = GPT2LMHeadModel.from_pretrained(model_name)
+    model = AutoModelForCausalLM.from_pretrained(model_name, **kwargs)
     model.to(device).eval()
     return model, tokenizer
 
 
-def get_llava_model(model_name, device):
-    from transformers import LlavaForConditionalGeneration, AutoProcessor
+def get_layers(model: nn.Module) -> nn.ModuleList:
+    """Return the transformer layer list for any supported HF causal LM.
 
-    processor = AutoProcessor.from_pretrained(model_name)
-    model = LlavaForConditionalGeneration.from_pretrained(
-        model_name, torch_dtype=torch.float16, device_map="auto"
+    Supports:
+    - GPT-2, GPT-Neo, GPT-J: model.transformer.h
+    - LLaMA, Mistral, Qwen, Phi, Gemma: model.model.layers
+    - OPT: model.model.decoder.layers
+    """
+    if hasattr(model, "transformer") and hasattr(model.transformer, "h"):
+        return model.transformer.h
+    if hasattr(model, "model") and hasattr(model.model, "layers"):
+        return model.model.layers
+    if hasattr(model, "model") and hasattr(model.model, "decoder") and hasattr(model.model.decoder, "layers"):
+        return model.model.decoder.layers
+    if hasattr(model, "gpt_neox") and hasattr(model.gpt_neox, "layers"):
+        return model.gpt_neox.layers
+    raise ValueError(
+        f"Cannot find transformer layers for {type(model).__name__}. "
+        "Add support in vasae.models.factory.get_layers()."
     )
-    model.eval()
-    return model, processor
 
+
+def get_embedding(model: nn.Module) -> nn.Embedding:
+    """Return the token embedding layer (W_E) for any supported HF causal LM."""
+    if hasattr(model, "transformer") and hasattr(model.transformer, "wte"):
+        return model.transformer.wte
+    if hasattr(model, "model") and hasattr(model.model, "embed_tokens"):
+        return model.model.embed_tokens
+    if hasattr(model, "model") and hasattr(model.model, "decoder") and hasattr(model.model.decoder, "embed_tokens"):
+        return model.model.decoder.embed_tokens
+    if hasattr(model, "gpt_neox") and hasattr(model.gpt_neox, "embed_in"):
+        return model.gpt_neox.embed_in
+    raise ValueError(
+        f"Cannot find embedding layer for {type(model).__name__}. "
+        "Add support in vasae.models.factory.get_embedding()."
+    )
+
+
+def get_lm_head(model: nn.Module) -> nn.Linear:
+    """Return the language model head (unembedding) for any supported HF causal LM."""
+    if hasattr(model, "lm_head"):
+        return model.lm_head
+    if hasattr(model, "embed_out"):
+        return model.embed_out
+    raise ValueError(
+        f"Cannot find lm_head for {type(model).__name__}. "
+        "Add support in vasae.models.factory.get_lm_head()."
+    )
+
+
+# ---------------------------------------------------------------------------
+# Legacy offline helpers (used by offline training scripts)
+# ---------------------------------------------------------------------------
 
 @dataclass
 class BlackBoxModelConfig:
@@ -69,9 +86,14 @@ class BlackBoxModelConfig:
     dir: Path | None = None
 
 
-def load_unembeding_layer(cfg: BlackBoxModelConfig) -> nn.Linear:
+def load_unembedding_layer(cfg: BlackBoxModelConfig) -> nn.Linear:
     return torch.load(cfg.dir / "unemb.pth", weights_only=False)
 
 
-def load_embeding_layer(cfg: BlackBoxModelConfig) -> nn.Embedding:
+def load_embedding_layer(cfg: BlackBoxModelConfig) -> nn.Embedding:
     return torch.load(cfg.dir / "emb.pth", weights_only=False)
+
+
+def get_blackbox_model(model_name, device):
+    """Legacy helper — prefer load_model() for new code."""
+    return load_model(model_name, device=device)

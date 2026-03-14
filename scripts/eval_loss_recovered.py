@@ -17,7 +17,7 @@ from vasae.models.decompose_sae import DecomposeSAEModel
 from vasae.models.factory import (
     BlackBoxModelConfig,
     get_blackbox_model,
-    load_embeding_layer,
+    load_embedding_layer,
 )
 from vasae.utils.log import get_logger
 from vasae.utils.seed import set_seed
@@ -125,7 +125,7 @@ def main():
         name=args.blackbox_model_name,
         dir=Path(args.blackbox_model_dir),
     )
-    emb = load_embeding_layer(bb_cfg)
+    emb = load_embedding_layer(bb_cfg)
     vocab_size, model_dim = emb.weight.shape
 
     # Load PCA

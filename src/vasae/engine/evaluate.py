@@ -1,9 +1,7 @@
-import numpy as np
 import torch
 
-from vasae.metrics.interface import Aggregator, MetricComposer
-from vasae.metrics.logitlens import LogitLensAccuracy
-from vasae.models.sae_hf import SAEOutput
+from vasae.metrics.base import Aggregator, MetricComposer
+from vasae.models.sae import SAEOutput
 
 
 @torch.no_grad()
@@ -20,7 +18,7 @@ def evaluate(
         decoded = output.hidden_states_recon
 
         eval_outcomes = metrics.compute(
-            {"data": data, "decoded": decoded, "display_text": display_text}
+            {"hidden_states": data, "hidden_states_recon": decoded, "display_text": display_text}
         )
 
         logger.info(f"{batch_i}/{len(data_loader)}")

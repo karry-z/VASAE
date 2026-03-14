@@ -5,7 +5,8 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from .sae_hf import LinearEncoder, TopKSparse
+from .encoders import LinearEncoder
+from .sparsity import TopKSparse
 
 
 @dataclass

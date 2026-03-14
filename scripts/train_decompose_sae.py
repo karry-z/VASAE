@@ -15,19 +15,19 @@ import torch.nn.functional as F
 import torch.optim as optim
 
 import wandb
-from vasae.configs.data import DataConfig
-from vasae.configs.train import TrainConfig
+from vasae.data.schema import DataConfig
+from vasae.engine.config import TrainConfig
 from vasae.data.dataset import get_dataloader
 from vasae.engine import evaluate, train
-from vasae.metrics.interface import Aggregator, MetricComposer
+from vasae.metrics.base import Aggregator, MetricComposer
 from vasae.metrics.logitlens import LogitLens, LogitLensAccuracy, LogitLensMetric
 from vasae.models.decompose_sae import DecomposeSAEModel, DecomposeSAEOutput
 from vasae.models.factory import (
     BlackBoxModelConfig,
-    load_embeding_layer,
-    load_unembeding_layer,
+    load_embedding_layer,
+    load_unembedding_layer,
 )
-from vasae.models.sae_hf import SAEConfig, SAEModel
+from vasae.models.sae import SAEConfig, SAEModel
 from vasae.utils.log import get_logger
 from vasae.utils.seed import set_seed
 
@@ -456,8 +456,8 @@ def main():
         name=args.blackbox_model_name,
         dir=Path(args.blackbox_model_dir),
     )
-    emb = load_embeding_layer(bb_cfg)
-    unemb = load_unembeding_layer(bb_cfg)
+    emb = load_embedding_layer(bb_cfg)
+    unemb = load_unembedding_layer(bb_cfg)
 
     vocab_size, model_dim = emb.weight.shape
     stage1_epochs = args.stage1_epochs if args.stage1_epochs is not None else args.num_epochs

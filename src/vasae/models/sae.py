@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Dict, Optional, Tuple
+from typing import Optional, Tuple
 
 import torch
 import torch.nn as nn
@@ -8,100 +8,10 @@ import torch.nn.functional as F
 from transformers import PretrainedConfig, PreTrainedModel
 from transformers.utils import ModelOutput
 
-
-# -------------------------
-# Sparsity modules
-# -------------------------
-class TopKSparse(nn.Module):
-    def __init__(self, k: int, use_abs: bool = False):
-        super().__init__()
-        self.k = int(k)
-        self.use_abs = bool(use_abs)
-
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
-        k = min(self.k, x.size(-1))
-        if self.use_abs:
-            _, idx = torch.topk(torch.abs(x), k, dim=-1)
-        else:
-            _, idx = torch.topk(x, k, dim=-1)
-        mask = torch.zeros_like(x)
-        mask.scatter_(-1, idx, 1.0)
-        return x * mask
+from .encoders import LinearEncoder, MLPEncoder
+from .sparsity import BatchTopKSparse, IdentitySparsity, TopKSparse
 
 
-class BatchTopKSparse(nn.Module):
-    """
-    Keeps top (k * n_items) activations globally across all items in the batch (or batch*time),
-    where item = each slice along last dim.
-
-    If per_item_in_eval=True, uses per-item topk during eval to avoid cross-sample coupling.
-    """
-
-    def __init__(self, k: int, per_item_in_eval: bool = False, use_abs: bool = False):
-        super().__init__()
-        self.k = int(k)
-        self.per_item_in_eval = bool(per_item_in_eval)
-        self.use_abs = bool(use_abs)
-
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
-        if (not self.training) and self.per_item_in_eval:
-            k = min(self.k, x.size(-1))
-            if self.use_abs:
-                _, idx = torch.topk(torch.abs(x), k, dim=-1)
-            else:
-                _, idx = torch.topk(x, k, dim=-1)
-            mask = torch.zeros_like(x)
-            mask.scatter_(-1, idx, 1.0)
-            return x * mask
-
-        d = x.size(-1)
-        n_items = x.numel() // d
-        k_total = self.k * n_items
-        k_total = min(k_total, x.numel())  # safety
-
-        flat = x.reshape(-1)
-        if self.use_abs:
-            _, idx = torch.topk(torch.abs(flat), k_total, sorted=False)
-        else:
-            _, idx = torch.topk(flat, k_total, sorted=False)
-        mask = torch.zeros_like(flat)
-        mask[idx] = 1.0
-        return (flat * mask).reshape_as(x)
-
-
-class IdentitySparsity(nn.Module):
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
-        return x
-
-
-# -------------------------
-# Encoders
-# -------------------------
-class LinearEncoder(nn.Module):
-    def __init__(self, dim_input: int, dim_sparse: int):
-        super().__init__()
-        self.fc = nn.Linear(dim_input, dim_sparse)
-
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
-        return self.fc(x)
-
-
-class MLPEncoder(nn.Module):
-    def __init__(self, dim_input: int, dim_sparse: int, hidden_mult: int = 4):
-        super().__init__()
-        self.net = nn.Sequential(
-            nn.Linear(dim_input, dim_input * hidden_mult),
-            nn.GELU(),
-            nn.Linear(dim_input * hidden_mult, dim_sparse),
-        )
-
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
-        return self.net(x)
-
-
-# -------------------------
-# HF Output
-# -------------------------
 @dataclass
 class SAEOutput(ModelOutput):
     loss: Optional[torch.Tensor] = None
@@ -115,9 +25,6 @@ class SAEOutput(ModelOutput):
     loss_anchor: Optional[torch.Tensor] = None
 
 
-# -------------------------
-# Config
-# -------------------------
 class SAEConfig(PretrainedConfig):
     model_type = "sae"
 
@@ -186,9 +93,6 @@ class SAEConfig(PretrainedConfig):
             )
 
 
-# -------------------------
-# Model
-# -------------------------
 class SAEModel(PreTrainedModel):
     config_class = SAEConfig
     base_model_prefix = "sae"
@@ -205,7 +109,6 @@ class SAEModel(PreTrainedModel):
         # sparsity
         if config.sparsity_type == "none":
             self.sparsity = IdentitySparsity()
-            # relu
         elif config.sparsity_type == "topk":
             self.sparsity = TopKSparse(config.k, use_abs=config.use_abs_topk)
         else:
@@ -214,7 +117,6 @@ class SAEModel(PreTrainedModel):
             )
 
         # decoder
-        # Note: tied-decoder weight is attached later; we still create a module for shape & save/load.
         self.decoder = nn.Linear(
             config.dim_sparse, config.dim_input, bias=(not config.tied_decoder)
         )
@@ -224,13 +126,14 @@ class SAEModel(PreTrainedModel):
             nn.Linear(config.dim_sparse // 2, config.dim_input),
         )
 
-        self._tied_embedding: Optional[nn.Embedding] = None
-        self._anchor_embedding: Optional[nn.Embedding] = None
+        # Store as plain attributes (not nn.Module submodules) to avoid
+        # interfering with save_pretrained tied-weight detection.
+        object.__setattr__(self, "_tied_embedding", None)
+        object.__setattr__(self, "_anchor_embedding", None)
         if config.tied_decoder:
-            # We'll freeze decoder weight by default; actual tying via attach_embedding() TODO
             self.decoder.weight.requires_grad_(False)
             if self.decoder.bias is not None:
-                self.decoder.bias.requires_grad_(False)  # TODO：fix or not
+                self.decoder.bias.requires_grad_(False)
 
         self.learnable_lowrank_coeff = nn.Parameter(torch.randn(config.dim_input))
 
@@ -238,10 +141,6 @@ class SAEModel(PreTrainedModel):
 
     @torch.no_grad()
     def attach_embedding(self, embedding: nn.Embedding, freeze: bool = True):
-        """
-        Tie decoder weights to embedding.weight.T (VASAE-style).
-        embedding.weight: (vocab, dim_input) => decoder.weight: (dim_input, dim_sparse) expects dim_sparse == vocab.
-        """
         if self.config.dim_sparse != embedding.weight.size(0):
             raise ValueError(
                 f"dim_sparse ({self.config.dim_sparse}) must equal embedding vocab size "
@@ -253,23 +152,18 @@ class SAEModel(PreTrainedModel):
                 f"({embedding.weight.size(1)}) to tie decoder."
             )
 
-        self._tied_embedding = embedding
+        object.__setattr__(self, "_tied_embedding", embedding)
         self.config.tied_decoder = True
 
-        # Make decoder weight a view/copy of embedding^T via Parameter that points to same storage is tricky.
-        # The simplest robust way: assign a new Parameter with copied data and keep it synced if needed.
-        # For VASAE you usually freeze, so sync isn't needed.
         self.decoder.weight = nn.Parameter(
-            embedding.weight.T, requires_grad=(not freeze)
+            embedding.weight.T.contiguous(), requires_grad=(not freeze)
         )
 
-        # Bias typically off for tied decoder; keep consistent.
         if self.decoder.bias is not None:
             self.decoder.bias.requires_grad_(not freeze)
 
     def attach_anchor_embedding(self, embedding: nn.Embedding):
-        """Store embedding reference for anchor loss (does not modify decoder weights)."""
-        self._anchor_embedding = embedding
+        object.__setattr__(self, "_anchor_embedding", embedding)
 
     def encode(self, hidden_states: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:
         pre = self.encoder(hidden_states)
@@ -293,23 +187,14 @@ class SAEModel(PreTrainedModel):
         output_pre_activations: bool = False,
         output_loss_per_sample: bool = True,
     ) -> SAEOutput:
-        """
-        hidden_states: (..., dim_input)
-        """
         pre, z = self.encode(hidden_states)
         recon = self.decode(z)
 
-        # loss per sample (reduce over all dims except leading batch-like dims)
-        # For general (..., dim), treat the first dim as batch and reduce the rest.
-        # If you pass (B,T,D), this yields per-item per-batch? -> we produce loss_per_sample over the first dim only by default.
-        # To keep it predictable: collapse everything except first dim.
         x = hidden_states
         xr = recon
         if x.ndim == 2:
-            # (B,D)
-            mse_per = F.mse_loss(xr, x, reduction="none").mean(dim=1)  # (B,)
+            mse_per = F.mse_loss(xr, x, reduction="none").mean(dim=1)
         else:
-            # (B, ... , D) -> mean over dims 1..end
             mse_per = F.mse_loss(xr, x, reduction="none").mean(dim=-1)
 
         recon_loss = mse_per.mean()
@@ -325,13 +210,13 @@ class SAEModel(PreTrainedModel):
         # anchor loss
         loss_anchor = None
         if self.config.anchor_coeff > 0 and self._anchor_embedding is not None:
-            d_norm = F.normalize(self.decoder.weight.T, dim=1)  # (dim_sparse, dim_input)
-            e_norm = F.normalize(self._anchor_embedding.weight, dim=1)  # (vocab, dim_input)
+            d_norm = F.normalize(self.decoder.weight.T, dim=1)
+            e_norm = F.normalize(self._anchor_embedding.weight, dim=1)
             chunk_size = 2048
             max_sims = []
             for i in range(0, d_norm.size(0), chunk_size):
                 chunk = d_norm[i:i + chunk_size]
-                sim = chunk @ e_norm.T  # (chunk, vocab)
+                sim = chunk @ e_norm.T
                 if self.config.anchor_mode == "hard":
                     max_sims.append(sim.max(dim=1)[0])
                 elif self.config.anchor_mode == "logsumexp":
@@ -361,70 +246,3 @@ class SAEModel(PreTrainedModel):
             loss_lowrank=(None),
             loss_anchor=loss_anchor,
         )
-
-
-# -------------------------
-# Quick usage examples
-# -------------------------
-if __name__ == "__main__":
-    torch.manual_seed(0)
-
-    # 1) Vanilla SAE (ReLU + optional L1)
-    cfg = SAEConfig(
-        dim_input=16,
-        dim_sparse=64,
-        encoder_type="linear",
-        sparsity_type="none",
-        nonneg_latents=True,
-        l1_coeff=1e-3,
-        tied_decoder=False,
-    )
-    m = SAEModel(cfg)
-    x = torch.randn(8, 16)
-    out = m(x, output_pre_activations=True)
-    print(
-        "vanilla loss:",
-        float(out.loss),
-        "recon:",
-        float(out.recon_loss),
-        "l1:",
-        float(out.l1_loss),
-    )
-
-    # 2) TopK SAE (no L1)
-    cfg2 = SAEConfig(
-        dim_input=16,
-        dim_sparse=64,
-        encoder_type="linear",
-        sparsity_type="topk",
-        k=4,
-        nonneg_latents=True,
-        l1_coeff=0.0,
-    )
-    m2 = SAEModel(cfg2)
-    out2 = m2(x)
-    print("topk loss:", float(out2.loss))
-
-    # 3) BatchTopK SAE (train batch-coupled, eval per-item optional)
-    cfg3 = SAEConfig(
-        dim_input=16,
-        dim_sparse=64,
-        encoder_type="mlp",
-        sparsity_type="batch_topk",
-        k=4,
-        per_item_in_eval=True,
-        nonneg_latents=True,
-        l1_coeff=0.0,
-    )
-    m3 = SAEModel(cfg3)
-    m3.train()
-    out3 = m3(x)
-    m3.eval()
-    out3_eval = m3(x)
-    print(
-        "batch_topk train loss:", float(out3.loss), "eval loss:", float(out3_eval.loss)
-    )
-
-    # 4) Save / load
-    # m3.save_pretrained("./sae_ckpt")
-    # m3_loaded = SAEModel.from_pretrained("./sae_ckpt")

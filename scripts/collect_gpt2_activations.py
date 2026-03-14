@@ -7,8 +7,7 @@ import torch
 from datasets import load_dataset
 from transformers import GPT2LMHeadModel, GPT2TokenizerFast
 
-from vasae.configs.data import DataConfig
-from vasae.data.data_schema import Meta
+from vasae.data.schema import DataConfig, Meta
 from vasae.data.dataset import load_meta
 from vasae.utils.log import get_logger
 
