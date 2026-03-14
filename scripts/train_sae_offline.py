@@ -1,3 +1,9 @@
+"""Offline SAE training on pre-extracted activations (memmap).
+
+Works with any model whose activations have been collected beforehand
+(e.g. via collect_gpt2_activations.py or collect_llava_activations.py).
+"""
+
 import argparse
 from pathlib import Path
 
@@ -34,7 +40,6 @@ def train_model(
 ):
 
     for epoch in range(train_cfg.num_epochs):
-        # train
         train_out = train.train_one_epoch(
             model=model,
             loader=train_loader,
@@ -64,23 +69,19 @@ def train_model(
 
 
 def parse_args():
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(
+        description="Offline SAE training on pre-extracted activations"
+    )
 
     # data config
     parser.add_argument("--train-batchsize", type=int, default=128)
     parser.add_argument("--valid-batchsize", type=int, default=128)
     parser.add_argument("--test-batchsize", type=int, default=128)
     parser.add_argument("--use-centralize", action="store_true")
-    parser.add_argument(
-        "--layer-name",
-        type=str,
-        default="transformer.h.11",
-    )
-    parser.add_argument(
-        "--data-dir",
-        type=str,
-        default=r"/scratch/b5bq/pu22650.b5bq/activations_gpt2_Geralt-Targaryen_openwebtext2",
-    )
+    parser.add_argument("--layer-name", type=str, required=True,
+                        help="Layer name in meta.json (e.g. transformer.h.11)")
+    parser.add_argument("--data-dir", type=str, required=True,
+                        help="Directory with meta.json and activation .dat files")
 
     # sae config
     parser.add_argument("--dim-input", type=int, default=768)
@@ -94,9 +95,8 @@ def parse_args():
     parser.add_argument("--no-tied-decoder", action="store_true")
     parser.add_argument("--mse-reduction", type=str, default="mean")
     parser.add_argument(
-        "--sae-save-path",
-        type=str,
-        default=r"/scratch/b5bq/pu22650.b5bq/VASAE_out/sae.pth",
+        "--sae-save-path", type=str,
+        default="/scratch/b5bq/pu22650.b5bq/VASAE_out/sae.pth",
     )
     parser.add_argument("--no-freeze-decoder", action="store_true")
     parser.add_argument("--use-lowrank", action="store_true")
@@ -104,16 +104,12 @@ def parse_args():
     parser.add_argument("--use-abs-topk", action="store_true")
     parser.add_argument("--anchor-coeff", type=float, default=0.0)
     parser.add_argument(
-        "--anchor-mode",
-        type=str,
-        default="hard",
+        "--anchor-mode", type=str, default="hard",
         choices=["hard", "logsumexp", "softmax"],
     )
     parser.add_argument("--anchor-topk", type=int, default=10)
     parser.add_argument(
-        "--random-anchor",
-        type=str,
-        default="none",
+        "--random-anchor", type=str, default="none",
         choices=["none", "shuffle", "gaussian"],
     )
 
@@ -126,15 +122,12 @@ def parse_args():
     parser.add_argument("--device", type=str, default="cuda")
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument("--no-wandb", action="store_true")
-    parser.add_argument("--wandb-group", type=str, default="test")
+    parser.add_argument("--wandb-group", type=str, default="offline")
 
     # blackbox model config
     parser.add_argument("--blackbox-model-name", type=str, default="gpt2")
-    parser.add_argument(
-        "--blackbox-model-dir",
-        type=str,
-        default=r"/scratch/b5bq/pu22650.b5bq/VASAE_out/BlackBoxModels/gpt2",
-    )
+    parser.add_argument("--blackbox-model-dir", type=str, required=True,
+                        help="Directory with emb.pth and unemb.pth")
 
     # exp name
     parser.add_argument("--exp-name", type=str, required=True)
@@ -142,8 +135,10 @@ def parse_args():
     return parser.parse_args()
 
 
-def parse_data_cfg(args) -> DataConfig:
-    return DataConfig(
+def main():
+    args = parse_args()
+
+    data_cfg = DataConfig(
         train_batchsize=args.train_batchsize,
         valid_batchsize=args.valid_batchsize,
         test_batchsize=args.test_batchsize,
@@ -151,10 +146,7 @@ def parse_data_cfg(args) -> DataConfig:
         layer_name=args.layer_name,
         data_dir=args.data_dir,
     )
-
-
-def parse_sae_cfg(args) -> SAEConfig:
-    return SAEConfig(
+    sae_cfg = SAEConfig(
         dim_input=args.dim_input,
         dim_sparse=args.dim_sparse,
         encoder_type=args.encoder_type,
@@ -174,65 +166,36 @@ def parse_sae_cfg(args) -> SAEConfig:
         anchor_mode=args.anchor_mode,
         anchor_topk=args.anchor_topk,
     )
-
-
-def parse_train_cfg(args) -> TrainConfig:
-    return TrainConfig(
+    train_cfg = TrainConfig(
         num_epochs=args.num_epochs,
         max_batchsize=args.max_batchsize,
         lr=args.lr,
     )
-
-
-def parse_system_cfg(args) -> dict:
-    return {
-        "device": args.device,
-        "seed": args.seed,
-        "wandb": not args.no_wandb,
-        "wandb_group": args.wandb_group,
-    }
-
-
-def parse_blackbox_model_cfg(args) -> BlackBoxModelConfig:
-    return BlackBoxModelConfig(
+    bbm_cfg = BlackBoxModelConfig(
         name=args.blackbox_model_name,
-        dir=Path(args.blackbox_model_dir) if args.blackbox_model_dir else None,
+        dir=Path(args.blackbox_model_dir),
     )
 
+    device = torch.device(args.device)
+    set_seed(args.seed)
 
-def main():
-    args = parse_args()
-
-    data_cfg = parse_data_cfg(args)
-    sae_cfg = parse_sae_cfg(args)
-    train_cfg = parse_train_cfg(args)
-    system_cfg = parse_system_cfg(args)
-    blackbox_model_cfg = parse_blackbox_model_cfg(args)
-    exp_name = args.exp_name
-
-    device = torch.device(system_cfg["device"])
-    set_seed(system_cfg["seed"])
-
-    # prepare_paths
     model_path = Path(sae_cfg.sae_save_path)
     model_path.parent.mkdir(parents=True, exist_ok=True)
 
     logger = get_logger()
 
-    train_loader, valid_loader, test_loader = get_dataloader(
-        data_cfg, system_cfg["seed"]
-    )
+    train_loader, valid_loader, test_loader = get_dataloader(data_cfg, args.seed)
 
     # Load model layers from pretrained blackbox model
-    emb = load_embedding_layer(blackbox_model_cfg)
-    unemb = load_unembedding_layer(blackbox_model_cfg)
+    emb = load_embedding_layer(bbm_cfg).float()
+    unemb = load_unembedding_layer(bbm_cfg).float()
 
     vocab_size, model_dim = emb.weight.shape
-
     sae_cfg.dim_input = model_dim
     sae_cfg.dim_sparse = vocab_size
     logger.info(vars(args))
     model = SAEModel(sae_cfg).to(device)
+
     if sae_cfg.tied_decoder:
         model.attach_embedding(emb, freeze=sae_cfg.freeze_decoder)
 
@@ -247,25 +210,21 @@ def main():
         else:
             anchor_emb = emb
         model.attach_anchor_embedding(anchor_emb)
-        # Save random embedding for later analysis
         if args.random_anchor != "none":
             random_emb_path = Path(sae_cfg.sae_save_path).parent / "random_emb.pt"
             torch.save(anchor_emb.weight.data, random_emb_path)
             logger.info(f"Saved random anchor embedding to {random_emb_path}")
 
-    # train
+    # metrics
     logitlens = LogitLens(unemb)
     logitlens_acc = LogitLensAccuracy()
-
     metrics = MetricComposer([LogitLensMetric(logitlens, logitlens_acc)])
 
     # wandb
-    if system_cfg["wandb"]:
+    if not args.no_wandb:
         wandb.init(
-            project="VASAE",
-            name=exp_name,
-            group=system_cfg["wandb_group"],
-            config=vars(args),
+            project="VASAE", name=args.exp_name,
+            group=args.wandb_group, config=vars(args),
         )
     else:
         wandb.init(mode="disabled")
@@ -281,7 +240,7 @@ def main():
         valid_loader=valid_loader,
         logger=logger,
         metrics=metrics,
-        device=system_cfg["device"],
+        device=args.device,
     )
 
     # save model
@@ -293,25 +252,20 @@ def main():
         model=model,
         data_loader=test_loader,
         metrics=metrics,
-        device=system_cfg["device"],
+        device=args.device,
         logger=logger,
         max_batchsize=train_cfg.max_batchsize,
     )
 
     logger.info(
         f"[Test] "
-        f"loss {outcome["loss"]:.4f}"
-        f"loss_reconst {outcome["loss_reconst"]:.4f}"
-        f"acc: {outcome["logitlens_acc"] * 100:.2f}% "
-        f"loss_lowrank {outcome.get("loss_lowrank", 0):.4f}"
+        f"loss={outcome['loss']:.4f} "
+        f"recon={outcome['loss_reconst']:.4f} "
+        f"acc={outcome['logitlens_acc'] * 100:.2f}% "
+        f"lowrank={outcome.get('loss_lowrank', 0):.4f}"
     )
 
-    wandb.log(
-        {
-            **{f"test/{k}": v for k, v in outcome.items()},
-        },
-    )
-
+    wandb.log({f"test/{k}": v for k, v in outcome.items()})
     wandb.finish()
 
 

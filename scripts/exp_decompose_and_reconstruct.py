@@ -31,6 +31,8 @@ import numpy as np
 import torch
 from transformers import GPT2LMHeadModel, GPT2TokenizerFast
 
+import sys
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from analyze_missing_components import (
     get_device,
     get_sample_texts,
