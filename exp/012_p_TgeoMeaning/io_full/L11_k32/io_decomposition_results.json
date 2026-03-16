@@ -1,0 +1,4605 @@
+{
+  "config": {
+    "sae_path": "/scratch/b5bq/pu22650.b5bq/VASAE_out/010_soft_align/010_soft_gpt2_L11_k32_a1e-4",
+    "model_name": "gpt2",
+    "layer_idx": 11,
+    "n_samples": 500,
+    "n_causal_samples": 100,
+    "n_features": 6144,
+    "top_k": 5
+  },
+  "weight_tying": {
+    "W_E_eq_W_U": true,
+    "geo_eq_logit_top1_pct": 92.90364384651184
+  },
+  "feature_stats": {
+    "alive": 504,
+    "dead": 5640,
+    "alive_pct": 8.203125
+  },
+  "consistency": {
+    "n_features_analyzed": 504,
+    "geo_eq_logit_top1_pct": 87.10317460317461,
+    "geo_eq_input_top1_pct": 1.984126984126984,
+    "logit_eq_input_top1_pct": 1.7857142857142856,
+    "geo_input_topk_overlap_mean": 0.022222222222222223,
+    "geo_eq_causal_top1_pct": 10.515873015873016,
+    "logit_eq_causal_top1_pct": 10.515873015873016,
+    "input_eq_causal_top1_pct": 0.0,
+    "all_agree_top1_pct": 0.0,
+    "geo_causal_topk_overlap_mean": 0.6075471698113208
+  },
+  "categories": {
+    "dead": 5640,
+    "unaligned": 157,
+    "output_feature": 53,
+    "context_feature": 293,
+    "token_feature": 1
+  },
+  "examples": [
+    {
+      "feature_id": 1208,
+      "geo_max_sim": 0.9985,
+      "geo_top_tokens": [
+        {
+          "token": " bore",
+          "token_id": 18631,
+          "sim": 0.9985
+        },
+        {
+          "token": " Bore",
+          "token_id": 45409,
+          "sim": 0.5305
+        },
+        {
+          "token": " bears",
+          "token_id": 13062,
+          "sim": 0.4993
+        },
+        {
+          "token": " bearing",
+          "token_id": 14121,
+          "sim": 0.477
+        },
+        {
+          "token": " bear",
+          "token_id": 6842,
+          "sim": 0.4466
+        }
+      ],
+      "logit_top_tokens": [
+        {
+          "token": " bore",
+          "token_id": 18631,
+          "val": 1.9943
+        },
+        {
+          "token": " Bore",
+          "token_id": 45409,
+          "val": 1.2117
+        },
+        {
+          "token": " bears",
+          "token_id": 13062,
+          "val": 0.9577
+        },
+        {
+          "token": "��",
+          "token_id": 31204,
+          "val": 0.9421
+        },
+        {
+          "token": "ゼウス",
+          "token_id": 43361,
+          "val": 0.925
+        }
+      ],
+      "input_top_tokens": [
+        {
+          "token": " 1893",
+          "token_id": 48889,
+          "act_sum": 21.7646
+        },
+        {
+          "token": " Nav",
+          "token_id": 13244,
+          "act_sum": 14.6929
+        },
+        {
+          "token": "$",
+          "token_id": 3,
+          "act_sum": 0.0
+        },
+        {
+          "token": "\"",
+          "token_id": 1,
+          "act_sum": 0.0
+        },
+        {
+          "token": "%",
+          "token_id": 4,
+          "act_sum": 0.0
+        }
+      ],
+      "total_activations": 2
+    },
+    {
+      "feature_id": 1861,
+      "geo_max_sim": 0.9982,
+      "geo_top_tokens": [
+        {
+          "token": "=/",
+          "token_id": 33223,
+          "sim": 0.9982
+        },
+        {
+          "token": "=$",
+          "token_id": 43641,
+          "sim": 0.6153
+        },
+        {
+          "token": "=\"/",
+          "token_id": 35922,
+          "sim": 0.6144
+        },
+        {
+          "token": "=-",
+          "token_id": 10779,
+          "sim": 0.5924
+        },
+        {
+          "token": "=",
+          "token_id": 28,
+          "sim": 0.5903
+        }
+      ],
+      "logit_top_tokens": [
+        {
+          "token": "=/",
+          "token_id": 33223,
+          "val": 2.3893
+        },
+        {
+          "token": "=\"/",
+          "token_id": 35922,
+          "val": 1.4895
+        },
+        {
+          "token": "=~",
+          "token_id": 31820,
+          "val": 1.4237
+        },
+        {
+          "token": "=$",
+          "token_id": 43641,
+          "val": 1.4097
+        },
+        {
+          "token": "=-",
+          "token_id": 10779,
+          "val": 1.3179
+        }
+      ],
+      "input_top_tokens": [
+        {
+          "token": " to",
+          "token_id": 284,
+          "act_sum": 22.2594
+        },
+        {
+          "token": "\"",
+          "token_id": 1,
+          "act_sum": 0.0
+        },
+        {
+          "token": "$",
+          "token_id": 3,
+          "act_sum": 0.0
+        },
+        {
+          "token": "%",
+          "token_id": 4,
+          "act_sum": 0.0
+        },
+        {
+          "token": "!",
+          "token_id": 0,
+          "act_sum": 0.0
+        }
+      ],
+      "total_activations": 1
+    },
+    {
+      "feature_id": 5631,
+      "geo_max_sim": 0.9981,
+      "geo_top_tokens": [
+        {
+          "token": " Hulk",
+          "token_id": 22860,
+          "sim": 0.9981
+        },
+        {
+          "token": " Avengers",
+          "token_id": 19845,
+          "sim": 0.527
+        },
+        {
+          "token": " Deadpool",
+          "token_id": 40448,
+          "sim": 0.4999
+        },
+        {
+          "token": " Daredevil",
+          "token_id": 42390,
+          "sim": 0.4931
+        },
+        {
+          "token": " Ultron",
+          "token_id": 46315,
+          "sim": 0.4827
+        }
+      ],
+      "logit_top_tokens": [
+        {
+          "token": " Hulk",
+          "token_id": 22860,
+          "val": 2.1438
+        },
+        {
+          "token": " Ultron",
+          "token_id": 46315,
+          "val": 1.1195
+        },
+        {
+          "token": " Deadpool",
+          "token_id": 40448,
+          "val": 1.0769
+        },
+        {
+          "token": " Daredevil",
+          "token_id": 42390,
+          "val": 1.0466
+        },
+        {
+          "token": " Loki",
+          "token_id": 31771,
+          "val": 1.0298
+        }
+      ],
+      "input_top_tokens": [
+        {
+          "token": " sch",
+          "token_id": 5513,
+          "act_sum": 14.4489
+        },
+        {
+          "token": "\"",
+          "token_id": 1,
+          "act_sum": 0.0
+        },
+        {
+          "token": "$",
+          "token_id": 3,
+          "act_sum": 0.0
+        },
+        {
+          "token": "%",
+          "token_id": 4,
+          "act_sum": 0.0
+        },
+        {
+          "token": "!",
+          "token_id": 0,
+          "act_sum": 0.0
+        }
+      ],
+      "total_activations": 1
+    },
+    {
+      "feature_id": 421,
+      "geo_max_sim": 0.9981,
+      "geo_top_tokens": [
+        {
+          "token": " Walking",
+          "token_id": 21276,
+          "sim": 0.9981
+        },
+        {
+          "token": " walking",
+          "token_id": 6155,
+          "sim": 0.6639
+        },
+        {
+          "token": "walking",
+          "token_id": 44065,
+          "sim": 0.5687
+        },
+        {
+          "token": " Walk",
+          "token_id": 6857,
+          "sim": 0.5588
+        },
+        {
+          "token": " walk",
+          "token_id": 2513,
+          "sim": 0.5218
+        }
+      ],
+      "logit_top_tokens": [
+        {
+          "token": " Walking",
+          "token_id": 21276,
+          "val": 1.9799
+        },
+        {
+          "token": "walking",
+          "token_id": 44065,
+          "val": 1.2687
+        },
+        {
+          "token": " walking",
+          "token_id": 6155,
+          "val": 1.0993
+        },
+        {
+          "token": "Walk",
+          "token_id": 35963,
+          "val": 1.093
+        },
+        {
+          "token": " Walk",
+          "token_id": 6857,
+          "val": 1.0729
+        }
+      ],
+      "input_top_tokens": [
+        {
+          "token": " game",
+          "token_id": 983,
+          "act_sum": 22.5723
+        },
+        {
+          "token": "\"",
+          "token_id": 1,
+          "act_sum": 0.0
+        },
+        {
+          "token": "$",
+          "token_id": 3,
+          "act_sum": 0.0
+        },
+        {
+          "token": "%",
+          "token_id": 4,
+          "act_sum": 0.0
+        },
+        {
+          "token": "!",
+          "token_id": 0,
+          "act_sum": 0.0
+        }
+      ],
+      "total_activations": 1
+    },
+    {
+      "feature_id": 3433,
+      "geo_max_sim": 0.9981,
+      "geo_top_tokens": [
+        {
+          "token": "sheet",
+          "token_id": 21760,
+          "sim": 0.9981
+        },
+        {
+          "token": "sheets",
+          "token_id": 42011,
+          "sim": 0.7924
+        },
+        {
+          "token": " sheet",
+          "token_id": 9629,
+          "sim": 0.6628
+        },
+        {
+          "token": " sheets",
+          "token_id": 15747,
+          "sim": 0.5971
+        },
+        {
+          "token": " Sheet",
+          "token_id": 21616,
+          "sim": 0.5842
+        }
+      ],
+      "logit_top_tokens": [
+        {
+          "token": "sheet",
+          "token_id": 21760,
+          "val": 2.5312
+        },
+        {
+          "token": "sheets",
+          "token_id": 42011,
+          "val": 2.0486
+        },
+        {
+          "token": "heet",
+          "token_id": 25473,
+          "val": 1.3142
+        },
+        {
+          "token": " sheet",
+          "token_id": 9629,
+          "val": 1.3091
+        },
+        {
+          "token": " Sheet",
+          "token_id": 21616,
+          "val": 1.2641
+        }
+      ],
+      "input_top_tokens": [
+        {
+          "token": " they",
+          "token_id": 484,
+          "act_sum": 49.0841
+        },
+        {
+          "token": "\"",
+          "token_id": 1,
+          "act_sum": 0.0
+        },
+        {
+          "token": "$",
+          "token_id": 3,
+          "act_sum": 0.0
+        },
+        {
+          "token": "%",
+          "token_id": 4,
+          "act_sum": 0.0
+        },
+        {
+          "token": "!",
+          "token_id": 0,
+          "act_sum": 0.0
+        }
+      ],
+      "total_activations": 2
+    },
+    {
+      "feature_id": 3617,
+      "geo_max_sim": 0.9981,
+      "geo_top_tokens": [
+        {
+          "token": "omas",
+          "token_id": 16911,
+          "sim": 0.9981
+        },
+        {
+          "token": "oma",
+          "token_id": 6086,
+          "sim": 0.671
+        },
+        {
+          "token": "om",
+          "token_id": 296,
+          "sim": 0.4561
+        },
+        {
+          "token": " tumors",
+          "token_id": 31155,
+          "sim": 0.428
+        },
+        {
+          "token": "\u001d",
+          "token_id": 217,
+          "sim": 0.4206
+        }
+      ],
+      "logit_top_tokens": [
+        {
+          "token": "omas",
+          "token_id": 16911,
+          "val": 2.4536
+        },
+        {
+          "token": "oma",
+          "token_id": 6086,
+          "val": 1.4604
+        },
+        {
+          "token": "mares",
+          "token_id": 23745,
+          "val": 0.9982
+        },
+        {
+          "token": "iannopoulos",
+          "token_id": 36408,
+          "val": 0.9907
+        },
+        {
+          "token": " mosa",
+          "token_id": 39788,
+          "val": 0.9901
+        }
+      ],
+      "input_top_tokens": [
+        {
+          "token": " wife",
+          "token_id": 3656,
+          "act_sum": 19.8252
+        },
+        {
+          "token": " prior",
+          "token_id": 3161,
+          "act_sum": 17.6513
+        },
+        {
+          "token": "$",
+          "token_id": 3,
+          "act_sum": 0.0
+        },
+        {
+          "token": "\"",
+          "token_id": 1,
+          "act_sum": 0.0
+        },
+        {
+          "token": "%",
+          "token_id": 4,
+          "act_sum": 0.0
+        }
+      ],
+      "total_activations": 2
+    },
+    {
+      "feature_id": 3168,
+      "geo_max_sim": 0.998,
+      "geo_top_tokens": [
+        {
+          "token": "iew",
+          "token_id": 769,
+          "sim": 0.998
+        },
+        {
+          "token": "ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ",
+          "token_id": 23090,
+          "sim": 0.4286
+        },
+        {
+          "token": "\u001f",
+          "token_id": 219,
+          "sim": 0.4237
+        },
+        {
+          "token": "\u0018",
+          "token_id": 212,
+          "sim": 0.423
+        },
+        {
+          "token": "\u000b",
+          "token_id": 199,
+          "sim": 0.4226
+        }
+      ],
+      "logit_top_tokens": [
+        {
+          "token": "iew",
+          "token_id": 769,
+          "val": 2.4615
+        },
+        {
+          "token": "iewicz",
+          "token_id": 48596,
+          "val": 1.1074
+        },
+        {
+          "token": "tein",
+          "token_id": 22006,
+          "val": 1.0158
+        },
+        {
+          "token": "iem",
+          "token_id": 26597,
+          "val": 1.0055
+        },
+        {
+          "token": "icz",
+          "token_id": 28051,
+          "val": 0.9926
+        }
+      ],
+      "input_top_tokens": [
+        {
+          "token": " life",
+          "token_id": 1204,
+          "act_sum": 22.6809
+        },
+        {
+          "token": "isers",
+          "token_id": 21572,
+          "act_sum": 21.413
+        },
+        {
+          "token": " the",
+          "token_id": 262,
+          "act_sum": 19.7068
+        },
+        {
+          "token": " her",
+          "token_id": 607,
+          "act_sum": 19.6128
+        },
+        {
+          "token": " books",
+          "token_id": 3835,
+          "act_sum": 18.0383
+        }
+      ],
+      "total_activations": 5
+    },
+    {
+      "feature_id": 3421,
+      "geo_max_sim": 0.998,
+      "geo_top_tokens": [
+        {
+          "token": " intermitt",
+          "token_id": 30598,
+          "sim": 0.998
+        },
+        {
+          "token": " intermittent",
+          "token_id": 38361,
+          "sim": 0.6685
+        },
+        {
+          "token": " spor",
+          "token_id": 35810,
+          "sim": 0.6151
+        },
+        {
+          "token": " periodically",
+          "token_id": 26034,
+          "sim": 0.5971
+        },
+        {
+          "token": " occasionally",
+          "token_id": 10491,
+          "sim": 0.5919
+        }
+      ],
+      "logit_top_tokens": [
+        {
+          "token": " intermitt",
+          "token_id": 30598,
+          "val": 2.0905
+        },
+        {
+          "token": " intermittent",
+          "token_id": 38361,
+          "val": 1.3307
+        },
+        {
+          "token": " spor",
+          "token_id": 35810,
+          "val": 1.3291
+        },
+        {
+          "token": " inconsist",
+          "token_id": 26104,
+          "val": 1.2584
+        },
+        {
+          "token": " horizont",
+          "token_id": 13736,
+          "val": 1.2074
+        }
+      ],
+      "input_top_tokens": [
+        {
+          "token": " por",
+          "token_id": 16964,
+          "act_sum": 15.699
+        },
+        {
+          "token": "\"",
+          "token_id": 1,
+          "act_sum": 0.0
+        },
+        {
+          "token": "$",
+          "token_id": 3,
+          "act_sum": 0.0
+        },
+        {
+          "token": "%",
+          "token_id": 4,
+          "act_sum": 0.0
+        },
+        {
+          "token": "!",
+          "token_id": 0,
+          "act_sum": 0.0
+        }
+      ],
+      "total_activations": 1
+    },
+    {
+      "feature_id": 1028,
+      "geo_max_sim": 0.9978,
+      "geo_top_tokens": [
+        {
+          "token": " Brand",
+          "token_id": 13512,
+          "sim": 0.9978
+        },
+        {
+          "token": "Brand",
+          "token_id": 38416,
+          "sim": 0.7252
+        },
+        {
+          "token": " brand",
+          "token_id": 4508,
+          "sim": 0.5714
+        },
+        {
+          "token": "brand",
+          "token_id": 17938,
+          "sim": 0.55
+        },
+        {
+          "token": " brands",
+          "token_id": 11394,
+          "sim": 0.5251
+        }
+      ],
+      "logit_top_tokens": [
+        {
+          "token": " Brand",
+          "token_id": 13512,
+          "val": 1.956
+        },
+        {
+          "token": "Brand",
+          "token_id": 38416,
+          "val": 1.6576
+        },
+        {
+          "token": "brand",
+          "token_id": 17938,
+          "val": 1.2504
+        },
+        {
+          "token": " Brands",
+          "token_id": 46129,
+          "val": 1.0979
+        },
+        {
+          "token": " brands",
+          "token_id": 11394,
+          "val": 1.0153
+        }
+      ],
+      "input_top_tokens": [
+        {
+          "token": "ace",
+          "token_id": 558,
+          "act_sum": 9.7569
+        },
+        {
+          "token": "\"",
+          "token_id": 1,
+          "act_sum": 0.0
+        },
+        {
+          "token": "$",
+          "token_id": 3,
+          "act_sum": 0.0
+        },
+        {
+          "token": "%",
+          "token_id": 4,
+          "act_sum": 0.0
+        },
+        {
+          "token": "!",
+          "token_id": 0,
+          "act_sum": 0.0
+        }
+      ],
+      "total_activations": 1
+    },
+    {
+      "feature_id": 4734,
+      "geo_max_sim": 0.9978,
+      "geo_top_tokens": [
+        {
+          "token": " nearly",
+          "token_id": 3016,
+          "sim": 0.9978
+        },
+        {
+          "token": " almost",
+          "token_id": 2048,
+          "sim": 0.768
+        },
+        {
+          "token": " Nearly",
+          "token_id": 21233,
+          "sim": 0.6469
+        },
+        {
+          "token": " virtually",
+          "token_id": 9826,
+          "sim": 0.6446
+        },
+        {
+          "token": " roughly",
+          "token_id": 7323,
+          "sim": 0.6394
+        }
+      ],
+      "logit_top_tokens": [
+        {
+          "token": " nearly",
+          "token_id": 3016,
+          "val": 1.4542
+        },
+        {
+          "token": "almost",
+          "token_id": 28177,
+          "val": 1.1519
+        },
+        {
+          "token": "Nearly",
+          "token_id": 27927,
+          "val": 1.1223
+        },
+        {
+          "token": " almost",
+          "token_id": 2048,
+          "val": 1.1122
+        },
+        {
+          "token": " Nearly",
+          "token_id": 21233,
+          "val": 1.0949
+        }
+      ],
+      "input_top_tokens": [
+        {
+          "token": " such",
+          "token_id": 884,
+          "act_sum": 27.1572
+        },
+        {
+          "token": " sexual",
+          "token_id": 3206,
+          "act_sum": 18.2479
+        },
+        {
+          "token": "$",
+          "token_id": 3,
+          "act_sum": 0.0
+        },
+        {
+          "token": "\"",
+          "token_id": 1,
+          "act_sum": 0.0
+        },
+        {
+          "token": "%",
+          "token_id": 4,
+          "act_sum": 0.0
+        }
+      ],
+      "total_activations": 2,
+      "causal_top_tokens": [
+        {
+          "token": " nearly",
+          "token_id": 3016
+        },
+        {
+          "token": "everal",
+          "token_id": 8438
+        },
+        {
+          "token": "almost",
+          "token_id": 28177
+        },
+        {
+          "token": " agre",
+          "token_id": 2477
+        },
+        {
+          "token": " challeng",
+          "token_id": 4010
+        }
+      ]
+    },
+    {
+      "feature_id": 3063,
+      "geo_max_sim": 0.9978,
+      "geo_top_tokens": [
+        {
+          "token": " Window",
+          "token_id": 26580,
+          "sim": 0.9978
+        },
+        {
+          "token": " window",
+          "token_id": 4324,
+          "sim": 0.7443
+        },
+        {
+          "token": "Window",
+          "token_id": 27703,
+          "sim": 0.6975
+        },
+        {
+          "token": " windows",
+          "token_id": 9168,
+          "sim": 0.6544
+        },
+        {
+          "token": "window",
+          "token_id": 17497,
+          "sim": 0.5986
+        }
+      ],
+      "logit_top_tokens": [
+        {
+          "token": " Window",
+          "token_id": 26580,
+          "val": 1.9647
+        },
+        {
+          "token": "Window",
+          "token_id": 27703,
+          "val": 1.4466
+        },
+        {
+          "token": "window",
+          "token_id": 17497,
+          "val": 1.4046
+        },
+        {
+          "token": " window",
+          "token_id": 4324,
+          "val": 1.3807
+        },
+        {
+          "token": " windows",
+          "token_id": 9168,
+          "val": 1.2683
+        }
+      ],
+      "input_top_tokens": [
+        {
+          "token": " @",
+          "token_id": 2488,
+          "act_sum": 19.1817
+        },
+        {
+          "token": " charge",
+          "token_id": 3877,
+          "act_sum": 18.6492
+        },
+        {
+          "token": " part",
+          "token_id": 636,
+          "act_sum": 18.3572
+        },
+        {
+          "token": "$",
+          "token_id": 3,
+          "act_sum": 0.0
+        },
+        {
+          "token": "\"",
+          "token_id": 1,
+          "act_sum": 0.0
+        }
+      ],
+      "total_activations": 3
+    },
+    {
+      "feature_id": 5965,
+      "geo_max_sim": 0.9977,
+      "geo_top_tokens": [
+        {
+          "token": " initial",
+          "token_id": 4238,
+          "sim": 0.9977
+        },
+        {
+          "token": " Initial",
+          "token_id": 20768,
+          "sim": 0.676
+        },
+        {
+          "token": " initially",
+          "token_id": 7317,
+          "sim": 0.6594
+        },
+        {
+          "token": "initial",
+          "token_id": 36733,
+          "sim": 0.6525
+        },
+        {
+          "token": "Initial",
+          "token_id": 24243,
+          "sim": 0.6511
+        }
+      ],
+      "logit_top_tokens": [
+        {
+          "token": " initial",
+          "token_id": 4238,
+          "val": 1.6353
+        },
+        {
+          "token": "initial",
+          "token_id": 36733,
+          "val": 1.4075
+        },
+        {
+          "token": "Initial",
+          "token_id": 24243,
+          "val": 1.3561
+        },
+        {
+          "token": " Initial",
+          "token_id": 20768,
+          "val": 1.2729
+        },
+        {
+          "token": " initially",
+          "token_id": 7317,
+          "val": 1.0931
+        }
+      ],
+      "input_top_tokens": [
+        {
+          "token": " Scott",
+          "token_id": 4746,
+          "act_sum": 12.8313
+        },
+        {
+          "token": "\"",
+          "token_id": 1,
+          "act_sum": 0.0
+        },
+        {
+          "token": "$",
+          "token_id": 3,
+          "act_sum": 0.0
+        },
+        {
+          "token": "%",
+          "token_id": 4,
+          "act_sum": 0.0
+        },
+        {
+          "token": "!",
+          "token_id": 0,
+          "act_sum": 0.0
+        }
+      ],
+      "total_activations": 1
+    },
+    {
+      "feature_id": 2275,
+      "geo_max_sim": 0.9977,
+      "geo_top_tokens": [
+        {
+          "token": "��",
+          "token_id": 43518,
+          "sim": 0.9977
+        },
+        {
+          "token": "��",
+          "token_id": 43769,
+          "sim": 0.5436
+        },
+        {
+          "token": "\u0014",
+          "token_id": 208,
+          "sim": 0.5094
+        },
+        {
+          "token": "\u001f",
+          "token_id": 219,
+          "sim": 0.508
+        },
+        {
+          "token": "reportprint",
+          "token_id": 30897,
+          "sim": 0.508
+        }
+      ],
+      "logit_top_tokens": [
+        {
+          "token": "��",
+          "token_id": 43518,
+          "val": 2.8304
+        },
+        {
+          "token": "��",
+          "token_id": 43769,
+          "val": 1.3973
+        },
+        {
+          "token": "��",
+          "token_id": 39333,
+          "val": 1.2086
+        },
+        {
+          "token": "��",
+          "token_id": 31204,
+          "val": 1.1962
+        },
+        {
+          "token": "��",
+          "token_id": 45539,
+          "val": 1.18
+        }
+      ],
+      "input_top_tokens": [
+        {
+          "token": " factors",
+          "token_id": 5087,
+          "act_sum": 22.7877
+        },
+        {
+          "token": "inging",
+          "token_id": 14146,
+          "act_sum": 18.0746
+        },
+        {
+          "token": "int",
+          "token_id": 600,
+          "act_sum": 14.1554
+        },
+        {
+          "token": "$",
+          "token_id": 3,
+          "act_sum": 0.0
+        },
+        {
+          "token": "\"",
+          "token_id": 1,
+          "act_sum": 0.0
+        }
+      ],
+      "total_activations": 3,
+      "causal_top_tokens": [
+        {
+          "token": "��",
+          "token_id": 43518
+        },
+        {
+          "token": "��",
+          "token_id": 43769
+        },
+        {
+          "token": "��",
+          "token_id": 39333
+        },
+        {
+          "token": "��極",
+          "token_id": 47703
+        },
+        {
+          "token": "��",
+          "token_id": 7134
+        }
+      ]
+    },
+    {
+      "feature_id": 1971,
+      "geo_max_sim": 0.9977,
+      "geo_top_tokens": [
+        {
+          "token": " format",
+          "token_id": 5794,
+          "sim": 0.9977
+        },
+        {
+          "token": " formats",
+          "token_id": 17519,
+          "sim": 0.7579
+        },
+        {
+          "token": " Format",
+          "token_id": 18980,
+          "sim": 0.7119
+        },
+        {
+          "token": "format",
+          "token_id": 18982,
+          "sim": 0.6617
+        },
+        {
+          "token": "Format",
+          "token_id": 26227,
+          "sim": 0.6523
+        }
+      ],
+      "logit_top_tokens": [
+        {
+          "token": " format",
+          "token_id": 5794,
+          "val": 1.8735
+        },
+        {
+          "token": " formats",
+          "token_id": 17519,
+          "val": 1.5464
+        },
+        {
+          "token": "format",
+          "token_id": 18982,
+          "val": 1.4713
+        },
+        {
+          "token": " Format",
+          "token_id": 18980,
+          "val": 1.441
+        },
+        {
+          "token": "Format",
+          "token_id": 26227,
+          "val": 1.4084
+        }
+      ],
+      "input_top_tokens": [
+        {
+          "token": " not",
+          "token_id": 407,
+          "act_sum": 21.4005
+        },
+        {
+          "token": "\"",
+          "token_id": 1,
+          "act_sum": 0.0
+        },
+        {
+          "token": "$",
+          "token_id": 3,
+          "act_sum": 0.0
+        },
+        {
+          "token": "%",
+          "token_id": 4,
+          "act_sum": 0.0
+        },
+        {
+          "token": "!",
+          "token_id": 0,
+          "act_sum": 0.0
+        }
+      ],
+      "total_activations": 1
+    },
+    {
+      "feature_id": 5260,
+      "geo_max_sim": 0.9977,
+      "geo_top_tokens": [
+        {
+          "token": " ---",
+          "token_id": 11420,
+          "sim": 0.9977
+        },
+        {
+          "token": "---",
+          "token_id": 6329,
+          "sim": 0.6851
+        },
+        {
+          "token": " ----",
+          "token_id": 13498,
+          "sim": 0.5907
+        },
+        {
+          "token": " -----",
+          "token_id": 37404,
+          "sim": 0.5657
+        },
+        {
+          "token": " --",
+          "token_id": 1377,
+          "sim": 0.5581
+        }
+      ],
+      "logit_top_tokens": [
+        {
+          "token": " ---",
+          "token_id": 11420,
+          "val": 1.9668
+        },
+        {
+          "token": "---",
+          "token_id": 6329,
+          "val": 1.3516
+        },
+        {
+          "token": " -----",
+          "token_id": 37404,
+          "val": 1.2393
+        },
+        {
+          "token": " ----",
+          "token_id": 13498,
+          "val": 1.2027
+        },
+        {
+          "token": " +++",
+          "token_id": 49954,
+          "val": 1.1763
+        }
+      ],
+      "input_top_tokens": [
+        {
+          "token": " Scott",
+          "token_id": 4746,
+          "act_sum": 12.3263
+        },
+        {
+          "token": "\"",
+          "token_id": 1,
+          "act_sum": 0.0
+        },
+        {
+          "token": "$",
+          "token_id": 3,
+          "act_sum": 0.0
+        },
+        {
+          "token": "%",
+          "token_id": 4,
+          "act_sum": 0.0
+        },
+        {
+          "token": "!",
+          "token_id": 0,
+          "act_sum": 0.0
+        }
+      ],
+      "total_activations": 1
+    },
+    {
+      "feature_id": 3006,
+      "geo_max_sim": 0.9977,
+      "geo_top_tokens": [
+        {
+          "token": " Pale",
+          "token_id": 21706,
+          "sim": 0.9977
+        },
+        {
+          "token": " pale",
+          "token_id": 14005,
+          "sim": 0.6745
+        },
+        {
+          "token": " Paleo",
+          "token_id": 46840,
+          "sim": 0.5636
+        },
+        {
+          "token": " prehistoric",
+          "token_id": 44741,
+          "sim": 0.4461
+        },
+        {
+          "token": " fossils",
+          "token_id": 34066,
+          "sim": 0.4423
+        }
+      ],
+      "logit_top_tokens": [
+        {
+          "token": " Pale",
+          "token_id": 21706,
+          "val": 2.0824
+        },
+        {
+          "token": " pale",
+          "token_id": 14005,
+          "val": 1.3458
+        },
+        {
+          "token": " Paleo",
+          "token_id": 46840,
+          "val": 1.257
+        },
+        {
+          "token": "BuyableInstoreAndOnline",
+          "token_id": 40242,
+          "val": 1.0449
+        },
+        {
+          "token": "ocene",
+          "token_id": 34973,
+          "val": 1.0112
+        }
+      ],
+      "input_top_tokens": [
+        {
+          "token": " St",
+          "token_id": 520,
+          "act_sum": 39.177
+        },
+        {
+          "token": " part",
+          "token_id": 636,
+          "act_sum": 20.9336
+        },
+        {
+          "token": "$",
+          "token_id": 3,
+          "act_sum": 0.0
+        },
+        {
+          "token": "\"",
+          "token_id": 1,
+          "act_sum": 0.0
+        },
+        {
+          "token": "%",
+          "token_id": 4,
+          "act_sum": 0.0
+        }
+      ],
+      "total_activations": 3,
+      "causal_top_tokens": [
+        {
+          "token": " Pale",
+          "token_id": 21706
+        },
+        {
+          "token": " pale",
+          "token_id": 14005
+        },
+        {
+          "token": " Paleo",
+          "token_id": 46840
+        },
+        {
+          "token": " therap",
+          "token_id": 6987
+        },
+        {
+          "token": " Seym",
+          "token_id": 42543
+        }
+      ]
+    },
+    {
+      "feature_id": 1280,
+      "geo_max_sim": 0.9976,
+      "geo_top_tokens": [
+        {
+          "token": "umbered",
+          "token_id": 26584,
+          "sim": 0.9976
+        },
+        {
+          "token": "umbers",
+          "token_id": 17024,
+          "sim": 0.5619
+        },
+        {
+          "token": "umber",
+          "token_id": 4494,
+          "sim": 0.5149
+        },
+        {
+          "token": "\u0001",
+          "token_id": 189,
+          "sim": 0.5102
+        },
+        {
+          "token": "�",
+          "token_id": 183,
+          "sim": 0.5087
+        }
+      ],
+      "logit_top_tokens": [
+        {
+          "token": "umbered",
+          "token_id": 26584,
+          "val": 2.51
+        },
+        {
+          "token": "umbers",
+          "token_id": 17024,
+          "val": 1.3521
+        },
+        {
+          "token": "numbered",
+          "token_id": 35565,
+          "val": 1.2186
+        },
+        {
+          "token": "umber",
+          "token_id": 4494,
+          "val": 1.2021
+        },
+        {
+          "token": "SPONSORED",
+          "token_id": 37190,
+          "val": 1.1718
+        }
+      ],
+      "input_top_tokens": [
+        {
+          "token": " sketch",
+          "token_id": 17548,
+          "act_sum": 14.8976
+        },
+        {
+          "token": "\"",
+          "token_id": 1,
+          "act_sum": 0.0
+        },
+        {
+          "token": "$",
+          "token_id": 3,
+          "act_sum": 0.0
+        },
+        {
+          "token": "%",
+          "token_id": 4,
+          "act_sum": 0.0
+        },
+        {
+          "token": "!",
+          "token_id": 0,
+          "act_sum": 0.0
+        }
+      ],
+      "total_activations": 1
+    },
+    {
+      "feature_id": 5975,
+      "geo_max_sim": 0.9976,
+      "geo_top_tokens": [
+        {
+          "token": "drive",
+          "token_id": 19472,
+          "sim": 0.9976
+        },
+        {
+          "token": "Drive",
+          "token_id": 24825,
+          "sim": 0.6472
+        },
+        {
+          "token": " drive",
+          "token_id": 3708,
+          "sim": 0.6301
+        },
+        {
+          "token": " Drive",
+          "token_id": 9974,
+          "sim": 0.6208
+        },
+        {
+          "token": "dri",
+          "token_id": 7553,
+          "sim": 0.6114
+        }
+      ],
+      "logit_top_tokens": [
+        {
+          "token": "drive",
+          "token_id": 19472,
+          "val": 2.3523
+        },
+        {
+          "token": "Drive",
+          "token_id": 24825,
+          "val": 1.4986
+        },
+        {
+          "token": "dri",
+          "token_id": 7553,
+          "val": 1.4917
+        },
+        {
+          "token": " Drive",
+          "token_id": 9974,
+          "val": 1.2243
+        },
+        {
+          "token": "driving",
+          "token_id": 24255,
+          "val": 1.2183
+        }
+      ],
+      "input_top_tokens": [
+        {
+          "token": " value",
+          "token_id": 1988,
+          "act_sum": 18.4733
+        },
+        {
+          "token": "\"",
+          "token_id": 1,
+          "act_sum": 0.0
+        },
+        {
+          "token": "$",
+          "token_id": 3,
+          "act_sum": 0.0
+        },
+        {
+          "token": "%",
+          "token_id": 4,
+          "act_sum": 0.0
+        },
+        {
+          "token": "!",
+          "token_id": 0,
+          "act_sum": 0.0
+        }
+      ],
+      "total_activations": 1
+    },
+    {
+      "feature_id": 459,
+      "geo_max_sim": 0.9976,
+      "geo_top_tokens": [
+        {
+          "token": " Vict",
+          "token_id": 6114,
+          "sim": 0.9976
+        },
+        {
+          "token": " vict",
+          "token_id": 2210,
+          "sim": 0.552
+        },
+        {
+          "token": "Vict",
+          "token_id": 21944,
+          "sim": 0.545
+        },
+        {
+          "token": " victories",
+          "token_id": 19017,
+          "sim": 0.5266
+        },
+        {
+          "token": " Victory",
+          "token_id": 21203,
+          "sim": 0.51
+        }
+      ],
+      "logit_top_tokens": [
+        {
+          "token": " Vict",
+          "token_id": 6114,
+          "val": 2.2539
+        },
+        {
+          "token": " vict",
+          "token_id": 2210,
+          "val": 1.1891
+        },
+        {
+          "token": "Vict",
+          "token_id": 21944,
+          "val": 1.1534
+        },
+        {
+          "token": "vict",
+          "token_id": 32433,
+          "val": 1.1426
+        },
+        {
+          "token": "ufact",
+          "token_id": 3603,
+          "val": 1.105
+        }
+      ],
+      "input_top_tokens": [
+        {
+          "token": " of",
+          "token_id": 286,
+          "act_sum": 21.2943
+        },
+        {
+          "token": " Curtis",
+          "token_id": 25157,
+          "act_sum": 14.9742
+        },
+        {
+          "token": "$",
+          "token_id": 3,
+          "act_sum": 0.0
+        },
+        {
+          "token": "\"",
+          "token_id": 1,
+          "act_sum": 0.0
+        },
+        {
+          "token": "%",
+          "token_id": 4,
+          "act_sum": 0.0
+        }
+      ],
+      "total_activations": 2
+    },
+    {
+      "feature_id": 2494,
+      "geo_max_sim": 0.9976,
+      "geo_top_tokens": [
+        {
+          "token": " student",
+          "token_id": 3710,
+          "sim": 0.9976
+        },
+        {
+          "token": " Student",
+          "token_id": 13613,
+          "sim": 0.7911
+        },
+        {
+          "token": " students",
+          "token_id": 2444,
+          "sim": 0.788
+        },
+        {
+          "token": "student",
+          "token_id": 50139,
+          "sim": 0.7553
+        },
+        {
+          "token": "Student",
+          "token_id": 38778,
+          "sim": 0.7364
+        }
+      ],
+      "logit_top_tokens": [
+        {
+          "token": " student",
+          "token_id": 3710,
+          "val": 1.755
+        },
+        {
+          "token": "student",
+          "token_id": 50139,
+          "val": 1.6738
+        },
+        {
+          "token": "Student",
+          "token_id": 38778,
+          "val": 1.5994
+        },
+        {
+          "token": " Student",
+          "token_id": 13613,
+          "val": 1.5261
+        },
+        {
+          "token": "Students",
+          "token_id": 28239,
+          "val": 1.4948
+        }
+      ],
+      "input_top_tokens": [
+        {
+          "token": " Conan",
+          "token_id": 31634,
+          "act_sum": 10.0202
+        },
+        {
+          "token": "\"",
+          "token_id": 1,
+          "act_sum": 0.0
+        },
+        {
+          "token": "$",
+          "token_id": 3,
+          "act_sum": 0.0
+        },
+        {
+          "token": "%",
+          "token_id": 4,
+          "act_sum": 0.0
+        },
+        {
+          "token": "!",
+          "token_id": 0,
+          "act_sum": 0.0
+        }
+      ],
+      "total_activations": 1
+    },
+    {
+      "feature_id": 3259,
+      "geo_max_sim": 0.9976,
+      "geo_top_tokens": [
+        {
+          "token": " dusk",
+          "token_id": 46166,
+          "sim": 0.9976
+        },
+        {
+          "token": " twilight",
+          "token_id": 45493,
+          "sim": 0.635
+        },
+        {
+          "token": " sunrise",
+          "token_id": 40048,
+          "sim": 0.6341
+        },
+        {
+          "token": " sunset",
+          "token_id": 26428,
+          "sim": 0.6127
+        },
+        {
+          "token": " dawn",
+          "token_id": 17577,
+          "sim": 0.6081
+        }
+      ],
+      "logit_top_tokens": [
+        {
+          "token": " dusk",
+          "token_id": 46166,
+          "val": 2.2103
+        },
+        {
+          "token": " sunset",
+          "token_id": 26428,
+          "val": 1.4062
+        },
+        {
+          "token": " sunrise",
+          "token_id": 40048,
+          "val": 1.379
+        },
+        {
+          "token": " twilight",
+          "token_id": 45493,
+          "val": 1.363
+        },
+        {
+          "token": " Dusk",
+          "token_id": 42553,
+          "val": 1.3421
+        }
+      ],
+      "input_top_tokens": [
+        {
+          "token": "ew",
+          "token_id": 413,
+          "act_sum": 12.7615
+        },
+        {
+          "token": "roy",
+          "token_id": 3287,
+          "act_sum": 11.6939
+        },
+        {
+          "token": "$",
+          "token_id": 3,
+          "act_sum": 0.0
+        },
+        {
+          "token": "\"",
+          "token_id": 1,
+          "act_sum": 0.0
+        },
+        {
+          "token": "%",
+          "token_id": 4,
+          "act_sum": 0.0
+        }
+      ],
+      "total_activations": 2
+    },
+    {
+      "feature_id": 3671,
+      "geo_max_sim": 0.9976,
+      "geo_top_tokens": [
+        {
+          "token": "ical",
+          "token_id": 605,
+          "sim": 0.9976
+        },
+        {
+          "token": "icals",
+          "token_id": 20155,
+          "sim": 0.6542
+        },
+        {
+          "token": "ically",
+          "token_id": 1146,
+          "sim": 0.6307
+        },
+        {
+          "token": "ICAL",
+          "token_id": 20151,
+          "sim": 0.6104
+        },
+        {
+          "token": "ics",
+          "token_id": 873,
+          "sim": 0.5174
+        }
+      ],
+      "logit_top_tokens": [
+        {
+          "token": "ical",
+          "token_id": 605,
+          "val": 2.1419
+        },
+        {
+          "token": "icals",
+          "token_id": 20155,
+          "val": 1.6671
+        },
+        {
+          "token": "ICAL",
+          "token_id": 20151,
+          "val": 1.3805
+        },
+        {
+          "token": "ically",
+          "token_id": 1146,
+          "val": 1.3678
+        },
+        {
+          "token": "icism",
+          "token_id": 11965,
+          "val": 1.2067
+        }
+      ],
+      "input_top_tokens": [
+        {
+          "token": " was",
+          "token_id": 373,
+          "act_sum": 22.4477
+        },
+        {
+          "token": "\"",
+          "token_id": 1,
+          "act_sum": 0.0
+        },
+        {
+          "token": "$",
+          "token_id": 3,
+          "act_sum": 0.0
+        },
+        {
+          "token": "%",
+          "token_id": 4,
+          "act_sum": 0.0
+        },
+        {
+          "token": "!",
+          "token_id": 0,
+          "act_sum": 0.0
+        }
+      ],
+      "total_activations": 1
+    },
+    {
+      "feature_id": 1317,
+      "geo_max_sim": 0.9975,
+      "geo_top_tokens": [
+        {
+          "token": "iction",
+          "token_id": 2867,
+          "sim": 0.9975
+        },
+        {
+          "token": "ictions",
+          "token_id": 9278,
+          "sim": 0.7562
+        },
+        {
+          "token": "icted",
+          "token_id": 5722,
+          "sim": 0.6764
+        },
+        {
+          "token": "icts",
+          "token_id": 14137,
+          "sim": 0.597
+        },
+        {
+          "token": "ictional",
+          "token_id": 47273,
+          "sim": 0.568
+        }
+      ],
+      "logit_top_tokens": [
+        {
+          "token": "iction",
+          "token_id": 2867,
+          "val": 2.3439
+        },
+        {
+          "token": "ictions",
+          "token_id": 9278,
+          "val": 1.8372
+        },
+        {
+          "token": "icted",
+          "token_id": 5722,
+          "val": 1.5401
+        },
+        {
+          "token": "icts",
+          "token_id": 14137,
+          "val": 1.4643
+        },
+        {
+          "token": "ictive",
+          "token_id": 45279,
+          "val": 1.3555
+        }
+      ],
+      "input_top_tokens": [
+        {
+          "token": " to",
+          "token_id": 284,
+          "act_sum": 52.341
+        },
+        {
+          "token": "\"",
+          "token_id": 1,
+          "act_sum": 0.0
+        },
+        {
+          "token": "$",
+          "token_id": 3,
+          "act_sum": 0.0
+        },
+        {
+          "token": "%",
+          "token_id": 4,
+          "act_sum": 0.0
+        },
+        {
+          "token": "!",
+          "token_id": 0,
+          "act_sum": 0.0
+        }
+      ],
+      "total_activations": 2,
+      "causal_top_tokens": [
+        {
+          "token": "iction",
+          "token_id": 2867
+        },
+        {
+          "token": "ictions",
+          "token_id": 9278
+        },
+        {
+          "token": "icted",
+          "token_id": 5722
+        },
+        {
+          "token": "icts",
+          "token_id": 14137
+        },
+        {
+          "token": "ictional",
+          "token_id": 47273
+        }
+      ]
+    },
+    {
+      "feature_id": 5936,
+      "geo_max_sim": 0.9975,
+      "geo_top_tokens": [
+        {
+          "token": " Fed",
+          "token_id": 10169,
+          "sim": 0.9975
+        },
+        {
+          "token": "Fed",
+          "token_id": 42268,
+          "sim": 0.6939
+        },
+        {
+          "token": " Federal",
+          "token_id": 5618,
+          "sim": 0.5179
+        },
+        {
+          "token": " ECB",
+          "token_id": 36285,
+          "sim": 0.4922
+        },
+        {
+          "token": " FedEx",
+          "token_id": 45212,
+          "sim": 0.4711
+        }
+      ],
+      "logit_top_tokens": [
+        {
+          "token": " Fed",
+          "token_id": 10169,
+          "val": 2.069
+        },
+        {
+          "token": "Fed",
+          "token_id": 42268,
+          "val": 1.7233
+        },
+        {
+          "token": " ECB",
+          "token_id": 36285,
+          "val": 1.1293
+        },
+        {
+          "token": "anke",
+          "token_id": 49200,
+          "val": 1.1047
+        },
+        {
+          "token": " JPM",
+          "token_id": 40145,
+          "val": 1.0846
+        }
+      ],
+      "input_top_tokens": [
+        {
+          "token": " @",
+          "token_id": 2488,
+          "act_sum": 20.0624
+        },
+        {
+          "token": " charge",
+          "token_id": 3877,
+          "act_sum": 18.6907
+        },
+        {
+          "token": "$",
+          "token_id": 3,
+          "act_sum": 0.0
+        },
+        {
+          "token": "\"",
+          "token_id": 1,
+          "act_sum": 0.0
+        },
+        {
+          "token": "%",
+          "token_id": 4,
+          "act_sum": 0.0
+        }
+      ],
+      "total_activations": 2
+    },
+    {
+      "feature_id": 2985,
+      "geo_max_sim": 0.9975,
+      "geo_top_tokens": [
+        {
+          "token": "usk",
+          "token_id": 17990,
+          "sim": 0.9975
+        },
+        {
+          "token": "\u0015",
+          "token_id": 209,
+          "sim": 0.4445
+        },
+        {
+          "token": "龍�",
+          "token_id": 39820,
+          "sim": 0.4434
+        },
+        {
+          "token": "\u001f",
+          "token_id": 219,
+          "sim": 0.4431
+        },
+        {
+          "token": "�",
+          "token_id": 177,
+          "sim": 0.4428
+        }
+      ],
+      "logit_top_tokens": [
+        {
+          "token": "usk",
+          "token_id": 17990,
+          "val": 2.4358
+        },
+        {
+          "token": "ğ",
+          "token_id": 33133,
+          "val": 1.0277
+        },
+        {
+          "token": "emort",
+          "token_id": 24466,
+          "val": 1.0
+        },
+        {
+          "token": "usky",
+          "token_id": 42431,
+          "val": 0.9989
+        },
+        {
+          "token": "ussen",
+          "token_id": 35951,
+          "val": 0.9919
+        }
+      ],
+      "input_top_tokens": [
+        {
+          "token": " part",
+          "token_id": 636,
+          "act_sum": 18.4939
+        },
+        {
+          "token": "\"",
+          "token_id": 1,
+          "act_sum": 0.0
+        },
+        {
+          "token": "$",
+          "token_id": 3,
+          "act_sum": 0.0
+        },
+        {
+          "token": "%",
+          "token_id": 4,
+          "act_sum": 0.0
+        },
+        {
+          "token": "!",
+          "token_id": 0,
+          "act_sum": 0.0
+        }
+      ],
+      "total_activations": 1
+    },
+    {
+      "feature_id": 4940,
+      "geo_max_sim": 0.9975,
+      "geo_top_tokens": [
+        {
+          "token": "ongo",
+          "token_id": 25162,
+          "sim": 0.9975
+        },
+        {
+          "token": "ong",
+          "token_id": 506,
+          "sim": 0.4747
+        },
+        {
+          "token": " Mongo",
+          "token_id": 42591,
+          "sim": 0.4514
+        },
+        {
+          "token": " ongoing",
+          "token_id": 7044,
+          "sim": 0.4313
+        },
+        {
+          "token": " Ong",
+          "token_id": 48041,
+          "sim": 0.4229
+        }
+      ],
+      "logit_top_tokens": [
+        {
+          "token": "ongo",
+          "token_id": 25162,
+          "val": 2.4799
+        },
+        {
+          "token": "ong",
+          "token_id": 506,
+          "val": 1.0247
+        },
+        {
+          "token": "onga",
+          "token_id": 44294,
+          "val": 1.0228
+        },
+        {
+          "token": " Mongo",
+          "token_id": 42591,
+          "val": 0.9946
+        },
+        {
+          "token": " awa",
+          "token_id": 14908,
+          "val": 0.9823
+        }
+      ],
+      "input_top_tokens": [
+        {
+          "token": " to",
+          "token_id": 284,
+          "act_sum": 22.312
+        },
+        {
+          "token": " FIFA",
+          "token_id": 21285,
+          "act_sum": 18.3815
+        },
+        {
+          "token": " membership",
+          "token_id": 9931,
+          "act_sum": 18.2025
+        },
+        {
+          "token": "$",
+          "token_id": 3,
+          "act_sum": 0.0
+        },
+        {
+          "token": "\"",
+          "token_id": 1,
+          "act_sum": 0.0
+        }
+      ],
+      "total_activations": 3
+    },
+    {
+      "feature_id": 887,
+      "geo_max_sim": 0.9974,
+      "geo_top_tokens": [
+        {
+          "token": "Esc",
+          "token_id": 47051,
+          "sim": 0.9974
+        },
+        {
+          "token": " Esc",
+          "token_id": 16319,
+          "sim": 0.775
+        },
+        {
+          "token": " esc",
+          "token_id": 3671,
+          "sim": 0.5881
+        },
+        {
+          "token": "esc",
+          "token_id": 3798,
+          "sim": 0.507
+        },
+        {
+          "token": "Enc",
+          "token_id": 27195,
+          "sim": 0.505
+        }
+      ],
+      "logit_top_tokens": [
+        {
+          "token": "Esc",
+          "token_id": 47051,
+          "val": 2.2104
+        },
+        {
+          "token": " Esc",
+          "token_id": 16319,
+          "val": 1.6011
+        },
+        {
+          "token": " esc",
+          "token_id": 3671,
+          "val": 1.2728
+        },
+        {
+          "token": "esc",
+          "token_id": 3798,
+          "val": 1.2401
+        },
+        {
+          "token": "escal",
+          "token_id": 47647,
+          "val": 1.177
+        }
+      ],
+      "input_top_tokens": [
+        {
+          "token": " the",
+          "token_id": 262,
+          "act_sum": 25.4989
+        },
+        {
+          "token": " larger",
+          "token_id": 4025,
+          "act_sum": 18.4519
+        },
+        {
+          "token": " sales",
+          "token_id": 4200,
+          "act_sum": 17.1771
+        },
+        {
+          "token": "$",
+          "token_id": 3,
+          "act_sum": 0.0
+        },
+        {
+          "token": "\"",
+          "token_id": 1,
+          "act_sum": 0.0
+        }
+      ],
+      "total_activations": 3,
+      "causal_top_tokens": [
+        {
+          "token": "Esc",
+          "token_id": 47051
+        },
+        {
+          "token": " Esc",
+          "token_id": 16319
+        },
+        {
+          "token": " mosqu",
+          "token_id": 22263
+        },
+        {
+          "token": " esc",
+          "token_id": 3671
+        },
+        {
+          "token": " corrid",
+          "token_id": 16080
+        }
+      ]
+    },
+    {
+      "feature_id": 2325,
+      "geo_max_sim": 0.9974,
+      "geo_top_tokens": [
+        {
+          "token": " specification",
+          "token_id": 20855,
+          "sim": 0.9974
+        },
+        {
+          "token": " specifications",
+          "token_id": 20640,
+          "sim": 0.757
+        },
+        {
+          "token": " specs",
+          "token_id": 25274,
+          "sim": 0.5895
+        },
+        {
+          "token": " Spec",
+          "token_id": 18291,
+          "sim": 0.5872
+        },
+        {
+          "token": " Specifications",
+          "token_id": 46271,
+          "sim": 0.5746
+        }
+      ],
+      "logit_top_tokens": [
+        {
+          "token": " specification",
+          "token_id": 20855,
+          "val": 1.9447
+        },
+        {
+          "token": " specifications",
+          "token_id": 20640,
+          "val": 1.4927
+        },
+        {
+          "token": " Specifications",
+          "token_id": 46271,
+          "val": 1.2912
+        },
+        {
+          "token": "spec",
+          "token_id": 16684,
+          "val": 1.2441
+        },
+        {
+          "token": " specs",
+          "token_id": 25274,
+          "val": 1.1856
+        }
+      ],
+      "input_top_tokens": [
+        {
+          "token": " shorth",
+          "token_id": 39147,
+          "act_sum": 13.3265
+        },
+        {
+          "token": "\"",
+          "token_id": 1,
+          "act_sum": 0.0
+        },
+        {
+          "token": "$",
+          "token_id": 3,
+          "act_sum": 0.0
+        },
+        {
+          "token": "%",
+          "token_id": 4,
+          "act_sum": 0.0
+        },
+        {
+          "token": "!",
+          "token_id": 0,
+          "act_sum": 0.0
+        }
+      ],
+      "total_activations": 1
+    },
+    {
+      "feature_id": 4882,
+      "geo_max_sim": 0.9974,
+      "geo_top_tokens": [
+        {
+          "token": "auder",
+          "token_id": 29233,
+          "sim": 0.9974
+        },
+        {
+          "token": "embedreportprint",
+          "token_id": 30898,
+          "sim": 0.4983
+        },
+        {
+          "token": "�",
+          "token_id": 183,
+          "sim": 0.4982
+        },
+        {
+          "token": "\u0007",
+          "token_id": 195,
+          "sim": 0.4979
+        },
+        {
+          "token": "quickShip",
+          "token_id": 39752,
+          "sim": 0.4978
+        }
+      ],
+      "logit_top_tokens": [
+        {
+          "token": "auder",
+          "token_id": 29233,
+          "val": 2.5006
+        },
+        {
+          "token": "theless",
+          "token_id": 9603,
+          "val": 1.1787
+        },
+        {
+          "token": "BuyableInstoreAndOnline",
+          "token_id": 40242,
+          "val": 1.1363
+        },
+        {
+          "token": " Lauder",
+          "token_id": 39212,
+          "val": 1.1359
+        },
+        {
+          "token": "interstitial",
+          "token_id": 29446,
+          "val": 1.128
+        }
+      ],
+      "input_top_tokens": [
+        {
+          "token": " retention",
+          "token_id": 21545,
+          "act_sum": 18.4542
+        },
+        {
+          "token": "\"",
+          "token_id": 1,
+          "act_sum": 0.0
+        },
+        {
+          "token": "$",
+          "token_id": 3,
+          "act_sum": 0.0
+        },
+        {
+          "token": "%",
+          "token_id": 4,
+          "act_sum": 0.0
+        },
+        {
+          "token": "!",
+          "token_id": 0,
+          "act_sum": 0.0
+        }
+      ],
+      "total_activations": 1
+    },
+    {
+      "feature_id": 2931,
+      "geo_max_sim": 0.9974,
+      "geo_top_tokens": [
+        {
+          "token": " imagine",
+          "token_id": 5967,
+          "sim": 0.9974
+        },
+        {
+          "token": "Imagine",
+          "token_id": 25153,
+          "sim": 0.6819
+        },
+        {
+          "token": " Imagine",
+          "token_id": 18450,
+          "sim": 0.6682
+        },
+        {
+          "token": " imagined",
+          "token_id": 15758,
+          "sim": 0.6598
+        },
+        {
+          "token": " imagining",
+          "token_id": 34140,
+          "sim": 0.6473
+        }
+      ],
+      "logit_top_tokens": [
+        {
+          "token": " imagine",
+          "token_id": 5967,
+          "val": 1.8631
+        },
+        {
+          "token": "Imagine",
+          "token_id": 25153,
+          "val": 1.4031
+        },
+        {
+          "token": " envision",
+          "token_id": 21786,
+          "val": 1.3485
+        },
+        {
+          "token": " imagining",
+          "token_id": 34140,
+          "val": 1.329
+        },
+        {
+          "token": " suppose",
+          "token_id": 11691,
+          "val": 1.2936
+        }
+      ],
+      "input_top_tokens": [
+        {
+          "token": " Leo",
+          "token_id": 19632,
+          "act_sum": 16.5708
+        },
+        {
+          "token": "\"",
+          "token_id": 1,
+          "act_sum": 0.0
+        },
+        {
+          "token": "$",
+          "token_id": 3,
+          "act_sum": 0.0
+        },
+        {
+          "token": "%",
+          "token_id": 4,
+          "act_sum": 0.0
+        },
+        {
+          "token": "!",
+          "token_id": 0,
+          "act_sum": 0.0
+        }
+      ],
+      "total_activations": 1
+    },
+    {
+      "feature_id": 1184,
+      "geo_max_sim": 0.9974,
+      "geo_top_tokens": [
+        {
+          "token": "Mail",
+          "token_id": 25804,
+          "sim": 0.9974
+        },
+        {
+          "token": " Mail",
+          "token_id": 11099,
+          "sim": 0.7239
+        },
+        {
+          "token": "mail",
+          "token_id": 4529,
+          "sim": 0.6915
+        },
+        {
+          "token": " mail",
+          "token_id": 6920,
+          "sim": 0.6283
+        },
+        {
+          "token": "mails",
+          "token_id": 26165,
+          "sim": 0.6079
+        }
+      ],
+      "logit_top_tokens": [
+        {
+          "token": "Mail",
+          "token_id": 25804,
+          "val": 2.2678
+        },
+        {
+          "token": "mail",
+          "token_id": 4529,
+          "val": 1.5595
+        },
+        {
+          "token": "mails",
+          "token_id": 26165,
+          "val": 1.4754
+        },
+        {
+          "token": " Mail",
+          "token_id": 11099,
+          "val": 1.4595
+        },
+        {
+          "token": " mail",
+          "token_id": 6920,
+          "val": 1.2492
+        }
+      ],
+      "input_top_tokens": [
+        {
+          "token": " Scott",
+          "token_id": 4746,
+          "act_sum": 13.7614
+        },
+        {
+          "token": "\"",
+          "token_id": 1,
+          "act_sum": 0.0
+        },
+        {
+          "token": "$",
+          "token_id": 3,
+          "act_sum": 0.0
+        },
+        {
+          "token": "%",
+          "token_id": 4,
+          "act_sum": 0.0
+        },
+        {
+          "token": "!",
+          "token_id": 0,
+          "act_sum": 0.0
+        }
+      ],
+      "total_activations": 1
+    },
+    {
+      "feature_id": 816,
+      "geo_max_sim": 0.9974,
+      "geo_top_tokens": [
+        {
+          "token": " sponsor",
+          "token_id": 17487,
+          "sim": 0.9974
+        },
+        {
+          "token": " sponsors",
+          "token_id": 18073,
+          "sim": 0.8075
+        },
+        {
+          "token": " sponsorship",
+          "token_id": 27418,
+          "sim": 0.7273
+        },
+        {
+          "token": " sponsoring",
+          "token_id": 42569,
+          "sim": 0.7174
+        },
+        {
+          "token": " sponsored",
+          "token_id": 15901,
+          "sim": 0.642
+        }
+      ],
+      "logit_top_tokens": [
+        {
+          "token": " sponsor",
+          "token_id": 17487,
+          "val": 2.1545
+        },
+        {
+          "token": " sponsors",
+          "token_id": 18073,
+          "val": 1.6919
+        },
+        {
+          "token": " sponsoring",
+          "token_id": 42569,
+          "val": 1.5841
+        },
+        {
+          "token": "spons",
+          "token_id": 20587,
+          "val": 1.5349
+        },
+        {
+          "token": " sponsorship",
+          "token_id": 27418,
+          "val": 1.5136
+        }
+      ],
+      "input_top_tokens": [
+        {
+          "token": " remain",
+          "token_id": 3520,
+          "act_sum": 21.2571
+        },
+        {
+          "token": " It",
+          "token_id": 632,
+          "act_sum": 18.1835
+        },
+        {
+          "token": "s",
+          "token_id": 82,
+          "act_sum": 12.3928
+        },
+        {
+          "token": "$",
+          "token_id": 3,
+          "act_sum": 0.0
+        },
+        {
+          "token": "\"",
+          "token_id": 1,
+          "act_sum": 0.0
+        }
+      ],
+      "total_activations": 3,
+      "causal_top_tokens": [
+        {
+          "token": " sponsor",
+          "token_id": 17487
+        },
+        {
+          "token": " sponsors",
+          "token_id": 18073
+        },
+        {
+          "token": " sponsoring",
+          "token_id": 42569
+        },
+        {
+          "token": " sponsorship",
+          "token_id": 27418
+        },
+        {
+          "token": "spons",
+          "token_id": 20587
+        }
+      ]
+    },
+    {
+      "feature_id": 1629,
+      "geo_max_sim": 0.9974,
+      "geo_top_tokens": [
+        {
+          "token": " José",
+          "token_id": 36997,
+          "sim": 0.9974
+        },
+        {
+          "token": " Jose",
+          "token_id": 5264,
+          "sim": 0.72
+        },
+        {
+          "token": "Jose",
+          "token_id": 23409,
+          "sim": 0.6676
+        },
+        {
+          "token": " Diego",
+          "token_id": 9500,
+          "sim": 0.5963
+        },
+        {
+          "token": " Javier",
+          "token_id": 44492,
+          "sim": 0.5828
+        }
+      ],
+      "logit_top_tokens": [
+        {
+          "token": " José",
+          "token_id": 36997,
+          "val": 2.0845
+        },
+        {
+          "token": "Jose",
+          "token_id": 23409,
+          "val": 1.448
+        },
+        {
+          "token": " Jose",
+          "token_id": 5264,
+          "val": 1.3048
+        },
+        {
+          "token": " Javier",
+          "token_id": 44492,
+          "val": 1.2159
+        },
+        {
+          "token": "ía",
+          "token_id": 29690,
+          "val": 1.2107
+        }
+      ],
+      "input_top_tokens": [
+        {
+          "token": " to",
+          "token_id": 284,
+          "act_sum": 24.3098
+        },
+        {
+          "token": " is",
+          "token_id": 318,
+          "act_sum": 23.8659
+        },
+        {
+          "token": "rays",
+          "token_id": 20477,
+          "act_sum": 19.9519
+        },
+        {
+          "token": "$",
+          "token_id": 3,
+          "act_sum": 0.0
+        },
+        {
+          "token": "\"",
+          "token_id": 1,
+          "act_sum": 0.0
+        }
+      ],
+      "total_activations": 3
+    },
+    {
+      "feature_id": 6126,
+      "geo_max_sim": 0.9973,
+      "geo_top_tokens": [
+        {
+          "token": " application",
+          "token_id": 3586,
+          "sim": 0.9973
+        },
+        {
+          "token": " Application",
+          "token_id": 15678,
+          "sim": 0.7974
+        },
+        {
+          "token": " applications",
+          "token_id": 5479,
+          "sim": 0.7911
+        },
+        {
+          "token": "application",
+          "token_id": 31438,
+          "sim": 0.7021
+        },
+        {
+          "token": "Application",
+          "token_id": 23416,
+          "sim": 0.6669
+        }
+      ],
+      "logit_top_tokens": [
+        {
+          "token": " application",
+          "token_id": 3586,
+          "val": 1.786
+        },
+        {
+          "token": "application",
+          "token_id": 31438,
+          "val": 1.5438
+        },
+        {
+          "token": " Application",
+          "token_id": 15678,
+          "val": 1.5081
+        },
+        {
+          "token": " applications",
+          "token_id": 5479,
+          "val": 1.4883
+        },
+        {
+          "token": "Application",
+          "token_id": 23416,
+          "val": 1.4735
+        }
+      ],
+      "input_top_tokens": [
+        {
+          "token": " charge",
+          "token_id": 3877,
+          "act_sum": 20.6036
+        },
+        {
+          "token": " wife",
+          "token_id": 3656,
+          "act_sum": 20.1677
+        },
+        {
+          "token": " part",
+          "token_id": 636,
+          "act_sum": 18.9581
+        },
+        {
+          "token": "$",
+          "token_id": 3,
+          "act_sum": 0.0
+        },
+        {
+          "token": "\"",
+          "token_id": 1,
+          "act_sum": 0.0
+        }
+      ],
+      "total_activations": 3
+    },
+    {
+      "feature_id": 2994,
+      "geo_max_sim": 0.9973,
+      "geo_top_tokens": [
+        {
+          "token": " Ill",
+          "token_id": 5821,
+          "sim": 0.9973
+        },
+        {
+          "token": "Ill",
+          "token_id": 21478,
+          "sim": 0.6678
+        },
+        {
+          "token": " ill",
+          "token_id": 2801,
+          "sim": 0.5496
+        },
+        {
+          "token": " Illinois",
+          "token_id": 9486,
+          "sim": 0.512
+        },
+        {
+          "token": " illness",
+          "token_id": 8526,
+          "sim": 0.4766
+        }
+      ],
+      "logit_top_tokens": [
+        {
+          "token": " Ill",
+          "token_id": 5821,
+          "val": 1.9511
+        },
+        {
+          "token": "Ill",
+          "token_id": 21478,
+          "val": 1.4169
+        },
+        {
+          "token": "Il",
+          "token_id": 33666,
+          "val": 1.0104
+        },
+        {
+          "token": " Malf",
+          "token_id": 32197,
+          "val": 0.9979
+        },
+        {
+          "token": " Dise",
+          "token_id": 14865,
+          "val": 0.9943
+        }
+      ],
+      "input_top_tokens": [
+        {
+          "token": " charge",
+          "token_id": 3877,
+          "act_sum": 19.2155
+        },
+        {
+          "token": "\"",
+          "token_id": 1,
+          "act_sum": 0.0
+        },
+        {
+          "token": "$",
+          "token_id": 3,
+          "act_sum": 0.0
+        },
+        {
+          "token": "%",
+          "token_id": 4,
+          "act_sum": 0.0
+        },
+        {
+          "token": "!",
+          "token_id": 0,
+          "act_sum": 0.0
+        }
+      ],
+      "total_activations": 1
+    },
+    {
+      "feature_id": 1334,
+      "geo_max_sim": 0.9973,
+      "geo_top_tokens": [
+        {
+          "token": " SIG",
+          "token_id": 33993,
+          "sim": 0.9973
+        },
+        {
+          "token": " sig",
+          "token_id": 43237,
+          "sim": 0.5382
+        },
+        {
+          "token": " Sig",
+          "token_id": 21984,
+          "sim": 0.5246
+        },
+        {
+          "token": "IG",
+          "token_id": 3528,
+          "sim": 0.4389
+        },
+        {
+          "token": "�",
+          "token_id": 187,
+          "sim": 0.4367
+        }
+      ],
+      "logit_top_tokens": [
+        {
+          "token": " SIG",
+          "token_id": 33993,
+          "val": 2.2538
+        },
+        {
+          "token": " sig",
+          "token_id": 43237,
+          "val": 1.1256
+        },
+        {
+          "token": " glim",
+          "token_id": 16323,
+          "val": 1.0989
+        },
+        {
+          "token": " contrace",
+          "token_id": 17473,
+          "val": 1.0861
+        },
+        {
+          "token": " Sig",
+          "token_id": 21984,
+          "val": 1.0847
+        }
+      ],
+      "input_top_tokens": [
+        {
+          "token": " a",
+          "token_id": 257,
+          "act_sum": 19.9261
+        },
+        {
+          "token": " Prim",
+          "token_id": 11460,
+          "act_sum": 17.9502
+        },
+        {
+          "token": " cos",
+          "token_id": 8615,
+          "act_sum": 14.3647
+        },
+        {
+          "token": "$",
+          "token_id": 3,
+          "act_sum": 0.0
+        },
+        {
+          "token": "\"",
+          "token_id": 1,
+          "act_sum": 0.0
+        }
+      ],
+      "total_activations": 3,
+      "causal_top_tokens": [
+        {
+          "token": " SIG",
+          "token_id": 33993
+        },
+        {
+          "token": " glim",
+          "token_id": 16323
+        },
+        {
+          "token": " agre",
+          "token_id": 2477
+        },
+        {
+          "token": " contrace",
+          "token_id": 17473
+        },
+        {
+          "token": " enthusi",
+          "token_id": 11273
+        }
+      ]
+    },
+    {
+      "feature_id": 1065,
+      "geo_max_sim": 0.9973,
+      "geo_top_tokens": [
+        {
+          "token": " pt",
+          "token_id": 42975,
+          "sim": 0.9973
+        },
+        {
+          "token": " Pt",
+          "token_id": 34352,
+          "sim": 0.6105
+        },
+        {
+          "token": " pts",
+          "token_id": 43344,
+          "sim": 0.521
+        },
+        {
+          "token": "pt",
+          "token_id": 457,
+          "sim": 0.4802
+        },
+        {
+          "token": " pp",
+          "token_id": 9788,
+          "sim": 0.4374
+        }
+      ],
+      "logit_top_tokens": [
+        {
+          "token": " pt",
+          "token_id": 42975,
+          "val": 2.2407
+        },
+        {
+          "token": " Pt",
+          "token_id": 34352,
+          "val": 1.3893
+        },
+        {
+          "token": " pts",
+          "token_id": 43344,
+          "val": 1.2196
+        },
+        {
+          "token": "tnc",
+          "token_id": 26642,
+          "val": 1.0463
+        },
+        {
+          "token": "pt",
+          "token_id": 457,
+          "val": 1.0311
+        }
+      ],
+      "input_top_tokens": [
+        {
+          "token": " a",
+          "token_id": 257,
+          "act_sum": 19.854
+        },
+        {
+          "token": "\"",
+          "token_id": 1,
+          "act_sum": 0.0
+        },
+        {
+          "token": "$",
+          "token_id": 3,
+          "act_sum": 0.0
+        },
+        {
+          "token": "%",
+          "token_id": 4,
+          "act_sum": 0.0
+        },
+        {
+          "token": "!",
+          "token_id": 0,
+          "act_sum": 0.0
+        }
+      ],
+      "total_activations": 1
+    },
+    {
+      "feature_id": 3022,
+      "geo_max_sim": 0.9973,
+      "geo_top_tokens": [
+        {
+          "token": " fractured",
+          "token_id": 34051,
+          "sim": 0.9973
+        },
+        {
+          "token": " fractures",
+          "token_id": 39381,
+          "sim": 0.6989
+        },
+        {
+          "token": " fragmented",
+          "token_id": 41630,
+          "sim": 0.6892
+        },
+        {
+          "token": " fracture",
+          "token_id": 31846,
+          "sim": 0.6766
+        },
+        {
+          "token": " fracturing",
+          "token_id": 48690,
+          "sim": 0.6624
+        }
+      ],
+      "logit_top_tokens": [
+        {
+          "token": " fractured",
+          "token_id": 34051,
+          "val": 2.044
+        },
+        {
+          "token": " fractures",
+          "token_id": 39381,
+          "val": 1.5782
+        },
+        {
+          "token": " fracturing",
+          "token_id": 48690,
+          "val": 1.5359
+        },
+        {
+          "token": " fracture",
+          "token_id": 31846,
+          "val": 1.4888
+        },
+        {
+          "token": " fragmented",
+          "token_id": 41630,
+          "val": 1.4499
+        }
+      ],
+      "input_top_tokens": [
+        {
+          "token": " wife",
+          "token_id": 3656,
+          "act_sum": 20.4731
+        },
+        {
+          "token": " start",
+          "token_id": 923,
+          "act_sum": 17.048
+        },
+        {
+          "token": "$",
+          "token_id": 3,
+          "act_sum": 0.0
+        },
+        {
+          "token": "\"",
+          "token_id": 1,
+          "act_sum": 0.0
+        },
+        {
+          "token": "%",
+          "token_id": 4,
+          "act_sum": 0.0
+        }
+      ],
+      "total_activations": 2
+    },
+    {
+      "feature_id": 3205,
+      "geo_max_sim": 0.9973,
+      "geo_top_tokens": [
+        {
+          "token": " Vers",
+          "token_id": 18535,
+          "sim": 0.9973
+        },
+        {
+          "token": "Vers",
+          "token_id": 34947,
+          "sim": 0.6243
+        },
+        {
+          "token": " VERS",
+          "token_id": 44156,
+          "sim": 0.4741
+        },
+        {
+          "token": " Version",
+          "token_id": 10628,
+          "sim": 0.4535
+        },
+        {
+          "token": " versions",
+          "token_id": 6300,
+          "sim": 0.4304
+        }
+      ],
+      "logit_top_tokens": [
+        {
+          "token": " Vers",
+          "token_id": 18535,
+          "val": 2.2089
+        },
+        {
+          "token": "Vers",
+          "token_id": 34947,
+          "val": 1.5182
+        },
+        {
+          "token": " VERS",
+          "token_id": 44156,
+          "val": 1.0615
+        },
+        {
+          "token": " Verse",
+          "token_id": 38641,
+          "val": 1.0066
+        },
+        {
+          "token": " Seym",
+          "token_id": 42543,
+          "val": 0.9223
+        }
+      ],
+      "input_top_tokens": [
+        {
+          "token": " can",
+          "token_id": 460,
+          "act_sum": 24.2633
+        },
+        {
+          "token": " not",
+          "token_id": 407,
+          "act_sum": 22.8837
+        },
+        {
+          "token": "$",
+          "token_id": 3,
+          "act_sum": 0.0
+        },
+        {
+          "token": "\"",
+          "token_id": 1,
+          "act_sum": 0.0
+        },
+        {
+          "token": "%",
+          "token_id": 4,
+          "act_sum": 0.0
+        }
+      ],
+      "total_activations": 2,
+      "causal_top_tokens": [
+        {
+          "token": " Vers",
+          "token_id": 18535
+        },
+        {
+          "token": "Vers",
+          "token_id": 34947
+        },
+        {
+          "token": " unden",
+          "token_id": 26712
+        },
+        {
+          "token": " VERS",
+          "token_id": 44156
+        },
+        {
+          "token": " seiz",
+          "token_id": 15038
+        }
+      ]
+    },
+    {
+      "feature_id": 4049,
+      "geo_max_sim": 0.9973,
+      "geo_top_tokens": [
+        {
+          "token": "opa",
+          "token_id": 26186,
+          "sim": 0.9973
+        },
+        {
+          "token": "OPA",
+          "token_id": 43345,
+          "sim": 0.5244
+        },
+        {
+          "token": "\u001d",
+          "token_id": 217,
+          "sim": 0.4354
+        },
+        {
+          "token": "�",
+          "token_id": 183,
+          "sim": 0.4351
+        },
+        {
+          "token": "龍�",
+          "token_id": 39820,
+          "sim": 0.4351
+        }
+      ],
+      "logit_top_tokens": [
+        {
+          "token": "opa",
+          "token_id": 26186,
+          "val": 2.5827
+        },
+        {
+          "token": "OPA",
+          "token_id": 43345,
+          "val": 1.3835
+        },
+        {
+          "token": "soDeliveryDate",
+          "token_id": 39811,
+          "val": 1.076
+        },
+        {
+          "token": "paio",
+          "token_id": 43491,
+          "val": 1.0688
+        },
+        {
+          "token": "Magikarp",
+          "token_id": 41538,
+          "val": 1.0477
+        }
+      ],
+      "input_top_tokens": [
+        {
+          "token": " military",
+          "token_id": 2422,
+          "act_sum": 24.0112
+        },
+        {
+          "token": " ammunition",
+          "token_id": 14271,
+          "act_sum": 22.5263
+        },
+        {
+          "token": "aments",
+          "token_id": 12604,
+          "act_sum": 22.5053
+        },
+        {
+          "token": " composed",
+          "token_id": 13160,
+          "act_sum": 21.7981
+        },
+        {
+          "token": " command",
+          "token_id": 3141,
+          "act_sum": 21.4222
+        }
+      ],
+      "total_activations": 7,
+      "causal_top_tokens": [
+        {
+          "token": "opa",
+          "token_id": 26186
+        },
+        {
+          "token": "OPA",
+          "token_id": 43345
+        },
+        {
+          "token": " rul",
+          "token_id": 2155
+        },
+        {
+          "token": " corrid",
+          "token_id": 16080
+        },
+        {
+          "token": " occas",
+          "token_id": 7782
+        }
+      ]
+    },
+    {
+      "feature_id": 2350,
+      "geo_max_sim": 0.9973,
+      "geo_top_tokens": [
+        {
+          "token": "elect",
+          "token_id": 9509,
+          "sim": 0.9973
+        },
+        {
+          "token": "Elect",
+          "token_id": 19453,
+          "sim": 0.787
+        },
+        {
+          "token": " ELECT",
+          "token_id": 46323,
+          "sim": 0.642
+        },
+        {
+          "token": " Elect",
+          "token_id": 5903,
+          "sim": 0.6305
+        },
+        {
+          "token": " elect",
+          "token_id": 1742,
+          "sim": 0.5912
+        }
+      ],
+      "logit_top_tokens": [
+        {
+          "token": "elect",
+          "token_id": 9509,
+          "val": 2.223
+        },
+        {
+          "token": "Elect",
+          "token_id": 19453,
+          "val": 1.7143
+        },
+        {
+          "token": " ELECT",
+          "token_id": 46323,
+          "val": 1.3892
+        },
+        {
+          "token": " Elect",
+          "token_id": 5903,
+          "val": 1.2984
+        },
+        {
+          "token": "election",
+          "token_id": 14300,
+          "val": 1.287
+        }
+      ],
+      "input_top_tokens": [
+        {
+          "token": " 12",
+          "token_id": 1105,
+          "act_sum": 19.3074
+        },
+        {
+          "token": " Staples",
+          "token_id": 44419,
+          "act_sum": 15.4628
+        },
+        {
+          "token": " Todd",
+          "token_id": 14377,
+          "act_sum": 14.9965
+        },
+        {
+          "token": " Scott",
+          "token_id": 4746,
+          "act_sum": 14.317
+        },
+        {
+          "token": "$",
+          "token_id": 3,
+          "act_sum": 0.0
+        }
+      ],
+      "total_activations": 4
+    },
+    {
+      "feature_id": 1036,
+      "geo_max_sim": 0.9972,
+      "geo_top_tokens": [
+        {
+          "token": "ks",
+          "token_id": 591,
+          "sim": 0.9972
+        },
+        {
+          "token": "KS",
+          "token_id": 27015,
+          "sim": 0.5596
+        },
+        {
+          "token": "ked",
+          "token_id": 9091,
+          "sim": 0.5255
+        },
+        {
+          "token": "k",
+          "token_id": 74,
+          "sim": 0.513
+        },
+        {
+          "token": "king",
+          "token_id": 3364,
+          "sim": 0.5066
+        }
+      ],
+      "logit_top_tokens": [
+        {
+          "token": "ks",
+          "token_id": 591,
+          "val": 2.1905
+        },
+        {
+          "token": "KS",
+          "token_id": 27015,
+          "val": 1.2966
+        },
+        {
+          "token": "kson",
+          "token_id": 46505,
+          "val": 1.2695
+        },
+        {
+          "token": "ksh",
+          "token_id": 50133,
+          "val": 1.2425
+        },
+        {
+          "token": "ked",
+          "token_id": 9091,
+          "val": 1.2086
+        }
+      ],
+      "input_top_tokens": [
+        {
+          "token": " Red",
+          "token_id": 2297,
+          "act_sum": 15.5739
+        },
+        {
+          "token": "\"",
+          "token_id": 1,
+          "act_sum": 0.0
+        },
+        {
+          "token": "$",
+          "token_id": 3,
+          "act_sum": 0.0
+        },
+        {
+          "token": "%",
+          "token_id": 4,
+          "act_sum": 0.0
+        },
+        {
+          "token": "!",
+          "token_id": 0,
+          "act_sum": 0.0
+        }
+      ],
+      "total_activations": 1
+    },
+    {
+      "feature_id": 4864,
+      "geo_max_sim": 0.9972,
+      "geo_top_tokens": [
+        {
+          "token": " cul",
+          "token_id": 10845,
+          "sim": 0.9972
+        },
+        {
+          "token": " Cul",
+          "token_id": 32559,
+          "sim": 0.5062
+        },
+        {
+          "token": "\u001a",
+          "token_id": 214,
+          "sim": 0.4516
+        },
+        {
+          "token": "�",
+          "token_id": 178,
+          "sim": 0.4508
+        },
+        {
+          "token": " TheNitrome",
+          "token_id": 42089,
+          "sim": 0.4506
+        }
+      ],
+      "logit_top_tokens": [
+        {
+          "token": " cul",
+          "token_id": 10845,
+          "val": 2.2169
+        },
+        {
+          "token": " acknow",
+          "token_id": 5571,
+          "val": 1.137
+        },
+        {
+          "token": " misunder",
+          "token_id": 16782,
+          "val": 1.119
+        },
+        {
+          "token": " corrid",
+          "token_id": 16080,
+          "val": 1.1033
+        },
+        {
+          "token": " juven",
+          "token_id": 18686,
+          "val": 1.0883
+        }
+      ],
+      "input_top_tokens": [
+        {
+          "token": " existence",
+          "token_id": 6224,
+          "act_sum": 34.6833
+        },
+        {
+          "token": " part",
+          "token_id": 636,
+          "act_sum": 19.8946
+        },
+        {
+          "token": "$",
+          "token_id": 3,
+          "act_sum": 0.0
+        },
+        {
+          "token": "\"",
+          "token_id": 1,
+          "act_sum": 0.0
+        },
+        {
+          "token": "%",
+          "token_id": 4,
+          "act_sum": 0.0
+        }
+      ],
+      "total_activations": 3,
+      "causal_top_tokens": [
+        {
+          "token": " cul",
+          "token_id": 10845
+        },
+        {
+          "token": " corrid",
+          "token_id": 16080
+        },
+        {
+          "token": " conduc",
+          "token_id": 45201
+        },
+        {
+          "token": " tiss",
+          "token_id": 8815
+        },
+        {
+          "token": " misunder",
+          "token_id": 16782
+        }
+      ]
+    },
+    {
+      "feature_id": 654,
+      "geo_max_sim": 0.9972,
+      "geo_top_tokens": [
+        {
+          "token": " Cass",
+          "token_id": 14154,
+          "sim": 0.9972
+        },
+        {
+          "token": "Cass",
+          "token_id": 43529,
+          "sim": 0.7398
+        },
+        {
+          "token": " cass",
+          "token_id": 30606,
+          "sim": 0.5972
+        },
+        {
+          "token": " Cassandra",
+          "token_id": 46750,
+          "sim": 0.4917
+        },
+        {
+          "token": " cassette",
+          "token_id": 42812,
+          "sim": 0.471
+        }
+      ],
+      "logit_top_tokens": [
+        {
+          "token": " Cass",
+          "token_id": 14154,
+          "val": 2.0205
+        },
+        {
+          "token": "Cass",
+          "token_id": 43529,
+          "val": 1.7504
+        },
+        {
+          "token": " cass",
+          "token_id": 30606,
+          "val": 1.3498
+        },
+        {
+          "token": " Cassandra",
+          "token_id": 46750,
+          "val": 1.0647
+        },
+        {
+          "token": " cassette",
+          "token_id": 42812,
+          "val": 1.0281
+        }
+      ],
+      "input_top_tokens": [
+        {
+          "token": " World",
+          "token_id": 2159,
+          "act_sum": 13.7239
+        },
+        {
+          "token": "\"",
+          "token_id": 1,
+          "act_sum": 0.0
+        },
+        {
+          "token": "$",
+          "token_id": 3,
+          "act_sum": 0.0
+        },
+        {
+          "token": "%",
+          "token_id": 4,
+          "act_sum": 0.0
+        },
+        {
+          "token": "!",
+          "token_id": 0,
+          "act_sum": 0.0
+        }
+      ],
+      "total_activations": 1
+    },
+    {
+      "feature_id": 4524,
+      "geo_max_sim": 0.9972,
+      "geo_top_tokens": [
+        {
+          "token": " 00",
+          "token_id": 3571,
+          "sim": 0.9972
+        },
+        {
+          "token": " 01",
+          "token_id": 5534,
+          "sim": 0.7265
+        },
+        {
+          "token": " 02",
+          "token_id": 7816,
+          "sim": 0.6491
+        },
+        {
+          "token": " 04",
+          "token_id": 8702,
+          "sim": 0.6242
+        },
+        {
+          "token": " 03",
+          "token_id": 7643,
+          "sim": 0.6206
+        }
+      ],
+      "logit_top_tokens": [
+        {
+          "token": " 00",
+          "token_id": 3571,
+          "val": 1.8196
+        },
+        {
+          "token": " 01",
+          "token_id": 5534,
+          "val": 1.2599
+        },
+        {
+          "token": " 02",
+          "token_id": 7816,
+          "val": 1.1713
+        },
+        {
+          "token": " 0000",
+          "token_id": 17643,
+          "val": 1.1564
+        },
+        {
+          "token": " 000",
+          "token_id": 12877,
+          "val": 1.1373
+        }
+      ],
+      "input_top_tokens": [
+        {
+          "token": "em",
+          "token_id": 368,
+          "act_sum": 11.9592
+        },
+        {
+          "token": "\"",
+          "token_id": 1,
+          "act_sum": 0.0
+        },
+        {
+          "token": "$",
+          "token_id": 3,
+          "act_sum": 0.0
+        },
+        {
+          "token": "%",
+          "token_id": 4,
+          "act_sum": 0.0
+        },
+        {
+          "token": "!",
+          "token_id": 0,
+          "act_sum": 0.0
+        }
+      ],
+      "total_activations": 1
+    },
+    {
+      "feature_id": 668,
+      "geo_max_sim": 0.9972,
+      "geo_top_tokens": [
+        {
+          "token": "SHIP",
+          "token_id": 49423,
+          "sim": 0.9972
+        },
+        {
+          "token": "ship",
+          "token_id": 6720,
+          "sim": 0.5026
+        },
+        {
+          "token": "SH",
+          "token_id": 9693,
+          "sim": 0.4657
+        },
+        {
+          "token": "\u0007",
+          "token_id": 195,
+          "sim": 0.4556
+        },
+        {
+          "token": "�",
+          "token_id": 187,
+          "sim": 0.455
+        }
+      ],
+      "logit_top_tokens": [
+        {
+          "token": "SHIP",
+          "token_id": 49423,
+          "val": 2.8735
+        },
+        {
+          "token": "ship",
+          "token_id": 6720,
+          "val": 1.2268
+        },
+        {
+          "token": "hips",
+          "token_id": 5748,
+          "val": 1.2175
+        },
+        {
+          "token": "ships",
+          "token_id": 26313,
+          "val": 1.1909
+        },
+        {
+          "token": "hip",
+          "token_id": 1056,
+          "val": 1.0888
+        }
+      ],
+      "input_top_tokens": [
+        {
+          "token": " his",
+          "token_id": 465,
+          "act_sum": 21.5446
+        },
+        {
+          "token": " 2",
+          "token_id": 362,
+          "act_sum": 18.095
+        },
+        {
+          "token": "$",
+          "token_id": 3,
+          "act_sum": 0.0
+        },
+        {
+          "token": "\"",
+          "token_id": 1,
+          "act_sum": 0.0
+        },
+        {
+          "token": "%",
+          "token_id": 4,
+          "act_sum": 0.0
+        }
+      ],
+      "total_activations": 2,
+      "causal_top_tokens": [
+        {
+          "token": "SHIP",
+          "token_id": 49423
+        },
+        {
+          "token": "ship",
+          "token_id": 6720
+        },
+        {
+          "token": "hips",
+          "token_id": 5748
+        },
+        {
+          "token": " arrang",
+          "token_id": 9020
+        },
+        {
+          "token": " destro",
+          "token_id": 11411
+        }
+      ]
+    },
+    {
+      "feature_id": 3959,
+      "geo_max_sim": 0.9972,
+      "geo_top_tokens": [
+        {
+          "token": "idden",
+          "token_id": 4651,
+          "sim": 0.9972
+        },
+        {
+          "token": "embedreportprint",
+          "token_id": 30898,
+          "sim": 0.4834
+        },
+        {
+          "token": "�",
+          "token_id": 187,
+          "sim": 0.4828
+        },
+        {
+          "token": "龍�",
+          "token_id": 39820,
+          "sim": 0.4822
+        },
+        {
+          "token": "\u0007",
+          "token_id": 195,
+          "sim": 0.482
+        }
+      ],
+      "logit_top_tokens": [
+        {
+          "token": "idden",
+          "token_id": 4651,
+          "val": 2.4221
+        },
+        {
+          "token": "soever",
+          "token_id": 15485,
+          "val": 1.1114
+        },
+        {
+          "token": "uled",
+          "token_id": 6309,
+          "val": 1.099
+        },
+        {
+          "token": "ゼウス",
+          "token_id": 43361,
+          "val": 1.0764
+        },
+        {
+          "token": "Interstitial",
+          "token_id": 29447,
+          "val": 1.0649
+        }
+      ],
+      "input_top_tokens": [
+        {
+          "token": " Star",
+          "token_id": 2907,
+          "act_sum": 18.396
+        },
+        {
+          "token": "\"",
+          "token_id": 1,
+          "act_sum": 0.0
+        },
+        {
+          "token": "$",
+          "token_id": 3,
+          "act_sum": 0.0
+        },
+        {
+          "token": "%",
+          "token_id": 4,
+          "act_sum": 0.0
+        },
+        {
+          "token": "!",
+          "token_id": 0,
+          "act_sum": 0.0
+        }
+      ],
+      "total_activations": 1
+    },
+    {
+      "feature_id": 3746,
+      "geo_max_sim": 0.9972,
+      "geo_top_tokens": [
+        {
+          "token": "termination",
+          "token_id": 41382,
+          "sim": 0.9972
+        },
+        {
+          "token": " termination",
+          "token_id": 19883,
+          "sim": 0.6156
+        },
+        {
+          "token": "termin",
+          "token_id": 23705,
+          "sim": 0.6108
+        },
+        {
+          "token": " extermination",
+          "token_id": 48495,
+          "sim": 0.5881
+        },
+        {
+          "token": " terminate",
+          "token_id": 23654,
+          "sim": 0.5485
+        }
+      ],
+      "logit_top_tokens": [
+        {
+          "token": "termination",
+          "token_id": 41382,
+          "val": 2.4955
+        },
+        {
+          "token": "termin",
+          "token_id": 23705,
+          "val": 1.4263
+        },
+        {
+          "token": " extermination",
+          "token_id": 48495,
+          "val": 1.3278
+        },
+        {
+          "token": "ワン",
+          "token_id": 42983,
+          "val": 1.2358
+        },
+        {
+          "token": " termination",
+          "token_id": 19883,
+          "val": 1.2217
+        }
+      ],
+      "input_top_tokens": [
+        {
+          "token": " Dun",
+          "token_id": 5648,
+          "act_sum": 65.1268
+        },
+        {
+          "token": " Blue",
+          "token_id": 4518,
+          "act_sum": 20.7485
+        },
+        {
+          "token": "$",
+          "token_id": 3,
+          "act_sum": 0.0
+        },
+        {
+          "token": "\"",
+          "token_id": 1,
+          "act_sum": 0.0
+        },
+        {
+          "token": "%",
+          "token_id": 4,
+          "act_sum": 0.0
+        }
+      ],
+      "total_activations": 4,
+      "causal_top_tokens": [
+        {
+          "token": "termination",
+          "token_id": 41382
+        },
+        {
+          "token": "termin",
+          "token_id": 23705
+        },
+        {
+          "token": " extermination",
+          "token_id": 48495
+        },
+        {
+          "token": " mathemat",
+          "token_id": 11896
+        },
+        {
+          "token": " confir",
+          "token_id": 4322
+        }
+      ]
+    },
+    {
+      "feature_id": 2792,
+      "geo_max_sim": 0.9971,
+      "geo_top_tokens": [
+        {
+          "token": " �",
+          "token_id": 13305,
+          "sim": 0.9971
+        },
+        {
+          "token": " ├──",
+          "token_id": 35306,
+          "sim": 0.5936
+        },
+        {
+          "token": "─",
+          "token_id": 7280,
+          "sim": 0.5779
+        },
+        {
+          "token": "�",
+          "token_id": 6552,
+          "sim": 0.5771
+        },
+        {
+          "token": " │",
+          "token_id": 19421,
+          "sim": 0.5682
+        }
+      ],
+      "logit_top_tokens": [
+        {
+          "token": " �",
+          "token_id": 13305,
+          "val": 2.2115
+        },
+        {
+          "token": " ├",
+          "token_id": 33468,
+          "val": 1.4455
+        },
+        {
+          "token": "─",
+          "token_id": 7280,
+          "val": 1.4451
+        },
+        {
+          "token": "──",
+          "token_id": 8418,
+          "val": 1.4422
+        },
+        {
+          "token": " ├──",
+          "token_id": 35306,
+          "val": 1.4091
+        }
+      ],
+      "input_top_tokens": [
+        {
+          "token": "s",
+          "token_id": 82,
+          "act_sum": 13.9382
+        },
+        {
+          "token": "\"",
+          "token_id": 1,
+          "act_sum": 0.0
+        },
+        {
+          "token": "$",
+          "token_id": 3,
+          "act_sum": 0.0
+        },
+        {
+          "token": "%",
+          "token_id": 4,
+          "act_sum": 0.0
+        },
+        {
+          "token": "!",
+          "token_id": 0,
+          "act_sum": 0.0
+        }
+      ],
+      "total_activations": 1
+    },
+    {
+      "feature_id": 3700,
+      "geo_max_sim": 0.9971,
+      "geo_top_tokens": [
+        {
+          "token": "··",
+          "token_id": 35147,
+          "sim": 0.9971
+        },
+        {
+          "token": "••••",
+          "token_id": 39967,
+          "sim": 0.4927
+        },
+        {
+          "token": "ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ",
+          "token_id": 14827,
+          "sim": 0.4794
+        },
+        {
+          "token": "―",
+          "token_id": 31857,
+          "sim": 0.47
+        },
+        {
+          "token": "……",
+          "token_id": 7398,
+          "sim": 0.4695
+        }
+      ],
+      "logit_top_tokens": [
+        {
+          "token": "··",
+          "token_id": 35147,
+          "val": 2.6831
+        },
+        {
+          "token": "SPONSORED",
+          "token_id": 37190,
+          "val": 1.266
+        },
+        {
+          "token": "••••",
+          "token_id": 39967,
+          "val": 1.2591
+        },
+        {
+          "token": "••",
+          "token_id": 22838,
+          "val": 1.2152
+        },
+        {
+          "token": "──",
+          "token_id": 8418,
+          "val": 1.2116
+        }
+      ],
+      "input_top_tokens": [
+        {
+          "token": " lower",
+          "token_id": 2793,
+          "act_sum": 21.357
+        },
+        {
+          "token": " caught",
+          "token_id": 4978,
+          "act_sum": 20.7102
+        },
+        {
+          "token": " trips",
+          "token_id": 13229,
+          "act_sum": 19.0841
+        },
+        {
+          "token": " evening",
+          "token_id": 6180,
+          "act_sum": 17.7817
+        },
+        {
+          "token": "$",
+          "token_id": 3,
+          "act_sum": 0.0
+        }
+      ],
+      "total_activations": 4
+    }
+  ]
+}

@@ -1,0 +1,65 @@
+{
+  "config": {
+    "sae_path": "/scratch/b5bq/pu22650.b5bq/VASAE_out/010_soft_align/010_soft_gpt2_L2_k32_a1e-4",
+    "model_name": "gpt2",
+    "layer_idx": 2,
+    "n_samples": 500,
+    "context_window": 5
+  },
+  "feature_stats": {
+    "n_features": 6144,
+    "n_alive": 1128,
+    "alive_pct": 18.359375,
+    "total_positions": 18158
+  },
+  "analysis_3_mean_direction": {
+    "tgeo_eq_tmean_count": 17,
+    "tgeo_eq_tmean_pct": 1.5070921985815602,
+    "cos_d_mu_mean": 0.07985801249742508,
+    "cos_d_mu_median": 0.021610122174024582,
+    "cos_d_mu_std": 0.18144358694553375,
+    "cos_d_mu_q25": -0.0758550614118576,
+    "cos_d_mu_q75": 0.24784919619560242
+  },
+  "analysis_4_context_position": {
+    "position_match_rates_pct": {
+      "offset_-5": 0.11089845138731091,
+      "offset_-4": 0.11471486413954493,
+      "offset_-3": 0.10595052011692875,
+      "offset_-2": 0.11259281542795982,
+      "offset_-1": 0.104213047232044,
+      "offset_0": 0.5357537319885547,
+      "offset_1": 0.2074600193002272,
+      "offset_2": 0.12073231106178202,
+      "offset_3": 0.1239884685751446,
+      "offset_4": 0.19453277719738918,
+      "offset_5": 0.10034649080060164
+    },
+    "random_baseline_match_rates_pct": {
+      "offset_-5": 0.013593481101037485,
+      "offset_-4": 0.00847180195006282,
+      "offset_-3": 0.016655286910674274,
+      "offset_-2": 0.01217052460191063,
+      "offset_-1": 0.01173982312089729,
+      "offset_0": 0.007878594835116574,
+      "offset_1": 0.012608746189238924,
+      "offset_2": 0.010286963030511043,
+      "offset_3": 0.013882392919091852,
+      "offset_4": 0.018666372421313134,
+      "offset_5": 0.015050825327505169
+    },
+    "window_offsets": [
+      -5,
+      -4,
+      -3,
+      -2,
+      -1,
+      0,
+      1,
+      2,
+      3,
+      4,
+      5
+    ]
+  }
+}
