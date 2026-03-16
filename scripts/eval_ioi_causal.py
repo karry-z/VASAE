@@ -36,13 +36,14 @@ from typing import Dict, Iterable, List
 import torch
 from nnsight import NNsight
 
+from vasae.data.ioi_redwood_adapter import load_redwood_ioi_examples
 from vasae.engine.intervention import extract_activations, patch_and_forward
 from vasae.models.factory import load_model
 from vasae.models.sae import SAEModel
 from vasae.utils.seed import set_seed
 
 
-#  dataset example
+@dataclass
 class IOIExample:
     clean_text: str
     corrupted_text: str
@@ -95,6 +96,68 @@ def load_jsonl_dataset(path: Path) -> List[IOIExample]:
     return examples
 
 
+def normalize_answer_text(text: str) -> str:
+    return text if text.startswith(" ") else f" {text}"
+
+
+def load_hf_ioi_dataset(name: str, split: str, counterfactual_key: str) -> List[IOIExample]:
+    from datasets import load_dataset
+
+    ds = load_dataset(name, split=split)
+    examples = []
+    for ex in ds:
+        choices = ex["choices"]
+        answer_idx = int(ex["answerKey"])
+        if len(choices) != 2 or answer_idx not in (0, 1):
+            continue
+        wrong_idx = 1 - answer_idx
+        cf = ex[counterfactual_key]
+        if not isinstance(cf, dict) or "prompt" not in cf:
+            continue
+        examples.append(
+            IOIExample(
+                clean_text=ex["prompt"],
+                corrupted_text=cf["prompt"],
+                correct=normalize_answer_text(choices[answer_idx]),
+                wrong=normalize_answer_text(choices[wrong_idx]),
+            )
+        )
+    return examples
+
+
+def load_examples(args, tokenizer) -> List[IOIExample]:
+    if args.dataset_source == "jsonl":
+        if not args.dataset_jsonl:
+            raise ValueError("--dataset-source jsonl requires --dataset-jsonl")
+        return load_jsonl_dataset(Path(args.dataset_jsonl))
+    if args.dataset_source == "builtin":
+        return build_builtin_ioi_dataset()
+    if args.dataset_source == "hf_ioi":
+        return load_hf_ioi_dataset(
+            args.hf_dataset_name,
+            args.hf_split,
+            args.hf_counterfactual_key,
+        )
+
+    redwood_examples = load_redwood_ioi_examples(
+        tokenizer=tokenizer,
+        n_prompts=args.redwood_n_prompts,
+        seed=args.redwood_seed,
+        prompt_type=args.redwood_prompt_type,
+        nb_templates=args.redwood_nb_templates,
+        prefixes=args.redwood_prefixes,
+    )
+    return [
+        IOIExample(
+            clean_text=ex.clean_text,
+            corrupted_text=ex.corrupted_text,
+            correct=ex.correct,
+            wrong=ex.wrong,
+        )
+        for ex in redwood_examples
+    ]
+
+
 def parse_args():
     p = argparse.ArgumentParser(description="Causal IOI evaluation for VASAE features")
     p.add_argument("--sae-path", type=str, required=True, help="Path to save_pretrained SAE dir")
@@ -102,7 +165,35 @@ def parse_args():
     p.add_argument("--layer-idx", type=int, required=True)
     p.add_argument("--device", type=str, default="cuda")
     p.add_argument("--dtype", type=str, default=None, choices=["float16", "bfloat16", "float32"])
+    p.add_argument(
+        "--dataset-source",
+        type=str,
+        default="redwood_vendored",
+        choices=["redwood_vendored", "hf_ioi", "jsonl", "builtin"],
+    )
     p.add_argument("--dataset-jsonl", type=str, default=None)
+    p.add_argument("--hf-dataset-name", type=str, default="danaarad/ioi_dataset")
+    p.add_argument("--hf-split", type=str, default="test")
+    p.add_argument(
+        "--hf-counterfactual-key",
+        type=str,
+        default="s2_io_flip_counterfactual",
+        choices=[
+            "abc_counterfactual",
+            "random_names_counterfactual",
+            "s1_io_flip_counterfactual",
+            "s2_io_flip_counterfactual",
+            "random_names_s1_ioi_flip_counterfactual",
+            "random_names_s2_ioi_flip_counterfactual",
+            "s1_ioi_flip_s2_ioi_flip_counterfactual",
+            "random_names_s1_ioi_flip_s2_ioi_flip_counterfactual",
+        ],
+    )
+    p.add_argument("--redwood-n-prompts", type=int, default=64)
+    p.add_argument("--redwood-seed", type=int, default=42)
+    p.add_argument("--redwood-prompt-type", type=str, default="mixed")
+    p.add_argument("--redwood-nb-templates", type=int, default=None)
+    p.add_argument("--redwood-prefixes", type=str, nargs="*", default=None)
     p.add_argument("--max-examples", type=int, default=0)
     p.add_argument("--batch-size", type=int, default=4)
     p.add_argument("--seed", type=int, default=42)
@@ -371,20 +462,17 @@ def main():
     set_seed(args.seed)
     device = torch.device(args.device)
 
-    if args.dataset_jsonl:
-        examples = load_jsonl_dataset(Path(args.dataset_jsonl))
-    else:
-        examples = build_builtin_ioi_dataset()
-    if args.max_examples > 0:
-        examples = examples[:args.max_examples]
-    if not examples:
-        raise ValueError("No IOI examples available.")
-
     dtype = get_dtype(args.dtype)
     llm, tokenizer = load_model(args.model_name, device=str(device), dtype=dtype)
     nn_model = NNsight(llm)
     sae_model = SAEModel.from_pretrained(args.sae_path).to(device)
     sae_model.eval()
+
+    examples = load_examples(args, tokenizer)
+    if args.max_examples > 0:
+        examples = examples[:args.max_examples]
+    if not examples:
+        raise ValueError("No IOI examples available.")
 
     validate_answer_tokens(tokenizer, examples)
     z_clean_all, z_corr_all = collect_dataset_latents(
