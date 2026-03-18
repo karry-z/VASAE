@@ -30,10 +30,15 @@ def normalize_answer_text(text: str) -> str:
 
 
 def _is_single_token_name(tokenizer, name: str) -> bool:
-    return len(tokenizer.encode(normalize_answer_text(name), add_special_tokens=False)) == 1
+    return (
+        len(tokenizer.encode(normalize_answer_text(name), add_special_tokens=False))
+        == 1
+    )
 
 
-def _iter_examples_from_pair(clean_ds: IOIDataset, corr_ds: IOIDataset, tokenizer) -> Iterable[RedwoodIOIExample]:
+def _iter_examples_from_pair(
+    clean_ds: IOIDataset, corr_ds: IOIDataset, tokenizer
+) -> Iterable[RedwoodIOIExample]:
     for clean_prompt, corr_prompt, pattern in zip(
         clean_ds.ioi_prompts,
         corr_ds.ioi_prompts,
@@ -41,7 +46,10 @@ def _iter_examples_from_pair(clean_ds: IOIDataset, corr_ds: IOIDataset, tokenize
     ):
         correct = clean_prompt["IO"]
         wrong = clean_prompt["S"]
-        if not (_is_single_token_name(tokenizer, correct) and _is_single_token_name(tokenizer, wrong)):
+        if not (
+            _is_single_token_name(tokenizer, correct)
+            and _is_single_token_name(tokenizer, wrong)
+        ):
             continue
         yield RedwoodIOIExample(
             clean_text=clean_prompt["text"],
