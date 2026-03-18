@@ -26,6 +26,15 @@ Example:
 
 from __future__ import annotations
 
+import logging
+import os
+
+# Disable progress bars and third-party verbose logging before imports
+os.environ["TQDM_DISABLE"] = "1"
+os.environ["HF_HUB_DISABLE_PROGRESS_BARS"] = "1"
+for _name in ("transformers", "huggingface_hub", "nnsight", "datasets"):
+    logging.getLogger(_name).setLevel(logging.WARNING)
+
 import argparse
 import json
 import random
@@ -36,11 +45,14 @@ from typing import Dict, Iterable, List
 import torch
 from nnsight import NNsight
 
-from vasae.data.ioi_redwood_adapter import load_redwood_ioi_examples
+from easy_transformer.ioi_redwood_adapter import load_redwood_ioi_examples
 from vasae.engine.intervention import extract_activations, patch_and_forward
 from vasae.models.factory import load_model
 from vasae.models.sae import SAEModel
+from vasae.utils.log import get_logger
 from vasae.utils.seed import set_seed
+
+logger = get_logger("eval_ioi_causal")
 
 
 @dataclass
@@ -163,7 +175,7 @@ def parse_args():
     p.add_argument("--sae-path", type=str, required=True, help="Path to save_pretrained SAE dir")
     p.add_argument("--model-name", type=str, default="gpt2")
     p.add_argument("--layer-idx", type=int, required=True)
-    p.add_argument("--device", type=str, default="cuda")
+    p.add_argument("--device", type=str, default="cuda" if torch.cuda.is_available() else "cpu")
     p.add_argument("--dtype", type=str, default=None, choices=["float16", "bfloat16", "float32"])
     p.add_argument(
         "--dataset-source",
@@ -463,9 +475,12 @@ def main():
     device = torch.device(args.device)
 
     dtype = get_dtype(args.dtype)
+    logger.info("Loading LLM %s on %s", args.model_name, device)
     llm, tokenizer = load_model(args.model_name, device=str(device), dtype=dtype)
     nn_model = NNsight(llm)
-    sae_model = SAEModel.from_pretrained(args.sae_path).to(device)
+    sae_path = str(Path(args.sae_path).resolve())
+    logger.info("Loading SAE from %s", sae_path)
+    sae_model = SAEModel.from_pretrained(sae_path).to(device)
     sae_model.eval()
 
     examples = load_examples(args, tokenizer)
@@ -473,13 +488,16 @@ def main():
         examples = examples[:args.max_examples]
     if not examples:
         raise ValueError("No IOI examples available.")
+    logger.info("Loaded %d examples (source=%s)", len(examples), args.dataset_source)
 
     validate_answer_tokens(tokenizer, examples)
+    logger.info("Collecting dataset latents (layer=%d)", args.layer_idx)
     z_clean_all, z_corr_all = collect_dataset_latents(
         nn_model, sae_model, tokenizer, args.layer_idx, examples, device, args.batch_size
     )
     feature_ids = select_feature_ids(z_clean_all, z_corr_all, args)
     control_ids = random_feature_ids(z_clean_all.size(-1), len(feature_ids), args.random_control_seed)
+    logger.info("Selected features: %s, control: %s", feature_ids, control_ids)
 
     agg: Dict[str, List[torch.Tensor]] = {
         "clean_baseline": [],
@@ -538,12 +556,13 @@ def main():
         "per_example": per_example,
     }
 
-    print(json.dumps(summary, indent=2))
+    logger.info("Results:\n%s", json.dumps(summary, indent=2))
     if args.output_path:
         out_path = Path(args.output_path)
         out_path.parent.mkdir(parents=True, exist_ok=True)
         with out_path.open("w") as f:
             json.dump(summary, f, indent=2)
+        logger.info("Saved to %s", out_path)
 
 
 if __name__ == "__main__":

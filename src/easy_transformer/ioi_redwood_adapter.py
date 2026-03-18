@@ -7,24 +7,10 @@ clean_text / corrupted_text / correct / wrong.
 
 from __future__ import annotations
 
-import importlib.util
 from dataclasses import dataclass
-from pathlib import Path
 from typing import Iterable
 
-
-def _load_ioi_dataset_class():
-    repo_root = Path(__file__).resolve().parents[3]
-    module_path = repo_root / "third_party" / "easy_transformer" / "ioi_dataset.py"
-    spec = importlib.util.spec_from_file_location("vendored_easy_transformer_ioi_dataset", module_path)
-    if spec is None or spec.loader is None:
-        raise ImportError(f"Could not load vendored IOI dataset from {module_path}")
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    return module.IOIDataset
-
-
-IOIDataset = _load_ioi_dataset_class()
+from .ioi_dataset import IOIDataset
 
 
 @dataclass
