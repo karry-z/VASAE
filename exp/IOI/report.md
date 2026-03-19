@@ -30,7 +30,7 @@ $$\text{Recovery}^{(f)} = \frac{\Delta u_{\text{clean}} - \Delta u_{\text{clean,
 - Feature ID：VASAE 特征编号
 - Layer：特征所在层
 - Feature Strength：该特征在 clean 样本上的激活强度
-- Effect：\Delta u_{\text{clean}} - \Delta u_{\text{clean, intervened}}
+- Effect：$\Delta u_{\text{clean}} - \Delta u_{\text{clean, intervened}}$
 - Recovery：归一化靠近 corrupted 的程度
 - Specificity Score：在 IOI 效果与非 IOI 破坏之间的比值或其他特异性指标。	IOI 效应：Recovery，副作用：KL divergence。最终：$\text{Specificity}^{(f)} = \frac{\text{Recovery}^{(f)}}{D_{\text{KL}}(P_{\text{clean}} \| P_{\text{intervened}}) + \epsilon}$
     - 高 Recovery + 低 Damage → 高 Specificity
