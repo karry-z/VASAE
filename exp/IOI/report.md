@@ -22,9 +22,11 @@ $$\text{Recovery}^{(f)} = \frac{\Delta u_{\text{clean}} - \Delta u_{\text{clean,
 # 结果
 ## 表：代表性特征的干预效果
 
+<!-- Auto-generated: paste from exp/IOI/figures/top_features_table.md after running plot_ioi_feature_sweep.py -->
+
 | Feature ID | Layer | Feature Strength | $\Delta u_{\text{clean}}$ | $\Delta u_{\text{corr}}$ | $\Delta u_{\text{clean, intervened}}$ | Effect | Recovery | Specificity Score |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| - | - | - | - | - | - | - | - | - |
+| (pending sweep results) | - | - | - | - | - | - | - | - |
 
 其中：
 - Feature ID：VASAE 特征编号
@@ -48,4 +50,10 @@ $$\text{Recovery}^{(f)} = \frac{\Delta u_{\text{clean}} - \Delta u_{\text{clean,
 
 ## 图：$\max_{f,p} \text{Recovery}(l,f,p)$ 随 $l$ 的曲线
 
+![Max Recovery vs Layer](figures/max_recovery_vs_layer.pdf)
+
 ## 图：上一个图最高的 $l$，$ \text{Recovery}(f,p)$ 随 $f,p$ 的热力图
+
+![Recovery Heatmap](figures/recovery_heatmap_layer8.pdf)
+
+<!-- Note: figure filename assumes best layer is 8; update if sweep results differ -->
