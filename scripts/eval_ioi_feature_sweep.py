@@ -181,6 +181,14 @@ def sweep_single_example(
     active_feats = get_active_features(z_clean, clean_enc["attention_mask"].squeeze(0))
     K = active_feats.numel()
 
+    # --- SAE reconstruction baseline (no ablation) ---
+    h_recon = sae_model.decode(z_clean).unsqueeze(0)  # (1, seq, dim_input)
+    logits_recon = patch_and_forward(
+        nn_model, clean_enc["input_ids"], clean_enc["attention_mask"],
+        layer_idx, lambda h, _hr=h_recon: _hr,
+    )
+    du_recon = compute_logit_diff(logits_recon, clean_enc["attention_mask"], correct_ids, wrong_ids).item()
+
     if K == 0:
         return {
             "clean_text": example.clean_text,
@@ -189,6 +197,7 @@ def sweep_single_example(
             "wrong": example.wrong,
             "du_clean": du_clean,
             "du_corr": du_corr,
+            "du_recon": du_recon,
             "features": [],
         }
 
@@ -213,9 +222,10 @@ def sweep_single_example(
         attn_i = clean_enc["attention_mask"]
 
         du_interv = compute_logit_diff(logits_i, attn_i, correct_ids, wrong_ids).item()
-        effect = du_clean - du_interv
+        # Use du_recon (not du_clean) as numerator baseline to isolate feature effect
+        effect = du_recon - du_interv
         recovery = effect / (gap + EPSILON) if abs(gap) > EPSILON else 0.0
-        kl = kl_div_at_last_pos(logits_clean, logits_i, attn_i).item()
+        kl = kl_div_at_last_pos(logits_recon, logits_i, attn_i).item()
         specificity = recovery / (kl + EPSILON) if kl > EPSILON else 0.0
 
         feature_results.append({
@@ -223,6 +233,7 @@ def sweep_single_example(
             "strength": float(z_last[fid].item()),
             "du_clean": du_clean,
             "du_corr": du_corr,
+            "du_recon": du_recon,
             "du_intervened": du_interv,
             "effect": effect,
             "recovery": recovery,
@@ -237,6 +248,7 @@ def sweep_single_example(
         "wrong": example.wrong,
         "du_clean": du_clean,
         "du_corr": du_corr,
+        "du_recon": du_recon,
         "features": feature_results,
     }
 
@@ -248,6 +260,8 @@ def parse_args():
     p.add_argument("--sae-root", type=str, required=True,
                    help="Root dir containing 010_soft_gpt2_L{layer}_k32_a1e-3 subdirs")
     p.add_argument("--n-prompts", type=int, default=100)
+    p.add_argument("--min-gap", type=float, default=0.5,
+                   help="Minimum |du_clean - du_corr| to include a prompt")
     p.add_argument("--seed", type=int, default=42)
     p.add_argument("--device", type=str, default="cuda" if torch.cuda.is_available() else "cpu")
     p.add_argument("--output-dir", type=str, required=True)
@@ -275,9 +289,36 @@ def main():
     validate_answer_tokens(tokenizer, examples)
     logger.info("Loaded %d examples", len(examples))
 
-    results = []
+    # Pre-filter: compute baselines and skip prompts with small gap or du_clean <= 0
+    valid_examples = []
     for idx, ex in enumerate(examples):
-        logger.info("Processing example %d/%d", idx + 1, len(examples))
+        clean_enc = tokenize_texts(tokenizer, [ex.clean_text], device)
+        corr_enc = tokenize_texts(tokenizer, [ex.corrupted_text], device)
+        correct_ids, wrong_ids = answer_token_ids(tokenizer, [ex], device)
+        with torch.no_grad():
+            logits_clean = patch_and_forward(
+                nn_model, clean_enc["input_ids"], clean_enc["attention_mask"],
+                args.layer_idx, lambda h: h,
+            )
+            logits_corr = patch_and_forward(
+                nn_model, corr_enc["input_ids"], corr_enc["attention_mask"],
+                args.layer_idx, lambda h: h,
+            )
+        du_clean = compute_logit_diff(logits_clean, clean_enc["attention_mask"], correct_ids, wrong_ids).item()
+        du_corr = compute_logit_diff(logits_corr, corr_enc["attention_mask"], correct_ids, wrong_ids).item()
+        gap = du_clean - du_corr
+        if du_clean <= 0:
+            logger.info("Skipping example %d: du_clean=%.4f <= 0", idx, du_clean)
+            continue
+        if abs(gap) < args.min_gap:
+            logger.info("Skipping example %d: |gap|=%.4f < %.2f", idx, abs(gap), args.min_gap)
+            continue
+        valid_examples.append(ex)
+    logger.info("Valid examples after filtering: %d / %d", len(valid_examples), len(examples))
+
+    results = []
+    for idx, ex in enumerate(valid_examples):
+        logger.info("Processing example %d/%d", idx + 1, len(valid_examples))
         res = sweep_single_example(nn_model, sae_model, tokenizer, args.layer_idx, ex, device)
         results.append(res)
 
@@ -287,7 +328,8 @@ def main():
     with out_path.open("w") as f:
         json.dump({
             "layer_idx": args.layer_idx,
-            "n_prompts": len(examples),
+            "n_prompts": len(valid_examples),
+            "n_prompts_total": len(examples),
             "model_name": args.model_name,
             "sae_path": sae_path,
             "examples": results,
