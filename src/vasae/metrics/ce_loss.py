@@ -60,7 +60,7 @@ class CELossRecovered(IMetric):
         # CE(sae): SAE reconstruction
         logits_sae = patch_and_forward(
             self.model, input_ids, attention_mask,
-            self.layer_idx, lambda h: sae_model(h).hidden_states_recon,
+            self.layer_idx, lambda h: sae_model(h.float()).hidden_states_recon.to(h.dtype),
         )
         ce_sae = cross_entropy(logits_sae, input_ids, attention_mask)
 
