@@ -4,10 +4,14 @@ For each clean IOI prompt, ablate every active VASAE feature one-at-a-time
 and measure Recovery (shift toward corrupted baseline) and Specificity
 (Recovery / KL divergence).
 
+Uses vocab-aligned SAE (dim_sparse=vocab_size) so each feature has an
+aligned token t(i) = argmax_v cos(d_i, e_v).
+
 Example (local test):
     uv run python scripts/eval_ioi_feature_sweep.py \
         --layer-idx 8 --n-prompts 4 --device cpu \
-        --sae-root /scratch/b5bq/pu22650.b5bq/VASAE_out/010_soft_align \
+        --sae-root /scratch/b5bq/pu22650.b5bq/VASAE_out/001_F_Benchmarking \
+        --sae-pattern '001F_gpt2_L{layer}_soft' \
         --output-dir /tmp/ioi_sweep_test
 """
 
@@ -33,7 +37,7 @@ from nnsight import NNsight
 
 from easy_transformer.ioi_redwood_adapter import load_redwood_ioi_examples
 from vasae.engine.intervention import extract_activations, patch_and_forward
-from vasae.models.factory import load_model
+from vasae.models.factory import load_model, get_embedding
 from vasae.models.sae import SAEModel
 from vasae.utils.log import get_logger
 from vasae.utils.seed import set_seed
@@ -154,6 +158,8 @@ def sweep_single_example(
     layer_idx: int,
     example: IOIExample,
     device: torch.device,
+    top1_tokens: torch.Tensor | None = None,
+    max_sims: torch.Tensor | None = None,
 ) -> dict:
     """Run one-at-a-time feature ablation for a single IOI example."""
 
@@ -228,7 +234,7 @@ def sweep_single_example(
         kl = kl_div_at_last_pos(logits_recon, logits_i, attn_i).item()
         specificity = recovery / (kl + EPSILON) if kl > EPSILON else 0.0
 
-        feature_results.append({
+        entry = {
             "feature_id": fid,
             "strength": float(z_last[fid].item()),
             "du_clean": du_clean,
@@ -239,7 +245,12 @@ def sweep_single_example(
             "recovery": recovery,
             "kl_divergence": kl,
             "specificity": specificity,
-        })
+        }
+        if top1_tokens is not None:
+            entry["aligned_token_id"] = int(top1_tokens[fid].item())
+            entry["aligned_token"] = tokenizer.decode([int(top1_tokens[fid].item())])
+            entry["max_sim"] = float(max_sims[fid].item())
+        feature_results.append(entry)
 
     return {
         "clean_text": example.clean_text,
@@ -258,7 +269,9 @@ def parse_args():
     p.add_argument("--layer-idx", type=int, required=True)
     p.add_argument("--model-name", type=str, default="gpt2")
     p.add_argument("--sae-root", type=str, required=True,
-                   help="Root dir containing 010_soft_gpt2_L{layer}_k32_a1e-3 subdirs")
+                   help="Root dir containing SAE checkpoint subdirs")
+    p.add_argument("--sae-pattern", type=str, default="001F_gpt2_L{layer}_soft",
+                   help="Pattern for SAE subdir name ({layer} is replaced)")
     p.add_argument("--n-prompts", type=int, default=100)
     p.add_argument("--min-gap", type=float, default=0.5,
                    help="Minimum |du_clean - du_corr| to include a prompt")
@@ -277,11 +290,32 @@ def main():
     llm, tokenizer = load_model(args.model_name, device=str(device))
     nn_model = NNsight(llm)
 
-    sae_dir = Path(args.sae_root) / f"010_soft_gpt2_L{args.layer_idx}_k32_a1e-3"
+    sae_dir = Path(args.sae_root) / args.sae_pattern.format(layer=args.layer_idx)
     sae_path = str(sae_dir.resolve())
     logger.info("Loading SAE from %s", sae_path)
-    sae_model = SAEModel.from_pretrained(sae_path).to(device)
-    sae_model.eval()
+    sae_model = SAEModel.from_pretrained(sae_path).eval()
+    if not sae_model.config.use_lowrank:
+        del sae_model.decoder_lowrank, sae_model.learnable_lowrank_coeff
+    sae_model = sae_model.to(device)
+
+    # Precompute aligned token for each feature: t(i) = argmax_v cos(d_i, e_v)
+    W_E = get_embedding(llm).weight.data
+    D = sae_model.decoder.weight.data.T.float()  # (n_features, dim_input)
+    E = W_E.float().to(D.device)
+    D_norm = F.normalize(D, dim=1)
+    E_norm = F.normalize(E, dim=1)
+    # Chunk to avoid OOM
+    top1_tokens = torch.zeros(D.shape[0], dtype=torch.long, device=D.device)
+    max_sims = torch.zeros(D.shape[0], device=D.device)
+    for i in range(0, D.shape[0], 512):
+        end = min(i + 512, D.shape[0])
+        sim = D_norm[i:end] @ E_norm.T
+        ms, t1 = sim.max(dim=1)
+        max_sims[i:end] = ms
+        top1_tokens[i:end] = t1
+    del D, E, D_norm, E_norm
+    logger.info("Aligned tokens computed: %d features, mean max_sim=%.3f",
+                top1_tokens.shape[0], max_sims.mean().item())
 
     examples = load_examples(tokenizer, args.n_prompts, args.seed)
     if not examples:
@@ -319,7 +353,8 @@ def main():
     results = []
     for idx, ex in enumerate(valid_examples):
         logger.info("Processing example %d/%d", idx + 1, len(valid_examples))
-        res = sweep_single_example(nn_model, sae_model, tokenizer, args.layer_idx, ex, device)
+        res = sweep_single_example(nn_model, sae_model, tokenizer, args.layer_idx, ex, device,
+                                    top1_tokens=top1_tokens, max_sims=max_sims)
         results.append(res)
 
     output_dir = Path(args.output_dir)
