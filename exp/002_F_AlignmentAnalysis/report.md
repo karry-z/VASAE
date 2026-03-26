@@ -101,3 +101,11 @@ Figure 3 将输出控制 match rate 与 alive+aligned feature 数叠加展示。
 这说明输出控制型 feature 编码了特定词汇族的输出倾向，ablation 影响的不仅是对齐 token 本身，还有其形态变体和语义近邻。
 
 **无功能型**（~85%）。几何对齐但不满足上述任一条件。这些 feature 的功能角色可能更复杂，编码上下文相关的组合信息而非单一 token 级别的检测或促进。
+
+## Llama-3.1-8B
+
+Llama 的 001_F checkpoint 使用了相同的 anchor loss 配置（anchor_mode=hard, anchor_coeff=0.0001），但**全部 32 层的对齐率均为 0.0%**——几乎没有 feature 达到 $s(i) \geq 0.8$ 的阈值（L0 仅 2 个，其余层为 0）。作为对照，plain SAE 同样为 0.0%。
+
+这一结果表明当前的 anchor loss 强度（coeff=0.0001）对 Llama-3.1-8B 不足以驱动 decoder 方向对齐到 token embedding。可能的原因包括：(1) Llama 的 embedding 空间（dim=4096）与 hidden state 空间的关系比 GPT-2（dim=768）更复杂；(2) anchor 系数相对于 Llama 的 MSE loss 量级过小。后续实验可尝试增大 anchor_coeff 或采用不同的 anchor mode 进行验证。
+
+由于几何对齐未发生，Llama 的功能分类分析无法有意义地进行，本实验对 Llama 仅报告几何对齐的负面结果。

@@ -118,11 +118,11 @@ def plot_category_distribution(results: dict, model_label: str, output_dir: Path
     data = {k: [] for k in cat_keys}
     for l in layers:
         cats = results[l]["categories"]
-        # Use n_categorized if available, else fall back to n_ablated (the
-        # number of features that were actually tested for output control).
-        n_tested = results[l].get(
-            "n_categorized",
-            results[l]["output_control"]["n_ablated"])
+        # Use sum of categories as denominator — this handles both old results
+        # (where n_categorized was not saved) and new results correctly.
+        n_tested = results[l].get("n_categorized", 0)
+        if n_tested == 0:
+            n_tested = sum(cats.get(k, 0) for k in cat_keys)
         for k in cat_keys:
             count = cats.get(k, 0)
             data[k].append(count / max(n_tested, 1) * 100)
