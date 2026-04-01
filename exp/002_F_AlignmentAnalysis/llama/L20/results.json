@@ -1,0 +1,37 @@
+{
+  "layer_idx": 20,
+  "n_features": 128256,
+  "n_alive": 4177,
+  "n_aligned": 0,
+  "n_alive_aligned": 0,
+  "geometric": {
+    "aligned_pct": 0.0,
+    "unique_tokens_covered": 0,
+    "coverage_pct": 0.0,
+    "max_sim_mean": 0.0908,
+    "max_sim_median": 0.0876
+  },
+  "input_detection": {
+    "detection_rate": 0.0,
+    "P_values": []
+  },
+  "output_control": {
+    "n_ablated": 0,
+    "top1_match_rate": 0.0,
+    "top5_match_rate": 0.0
+  },
+  "n_categorized": 0,
+  "categories": {
+    "dual": 0,
+    "input_detector": 0,
+    "output_controller": 0,
+    "non_functional": 0
+  },
+  "examples": [],
+  "total_positions": 309031,
+  "geometric_baseline": {
+    "aligned_pct": 0.0,
+    "max_sim_mean": 0.0696,
+    "max_sim_median": 0.0685
+  }
+}
