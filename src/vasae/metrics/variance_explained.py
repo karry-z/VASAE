@@ -18,8 +18,8 @@ class VarianceExplained(IMetric):
     """
 
     def compute(self, context: Dict[str, Any]) -> Dict[str, float]:
-        x = context["hidden_states"]
-        x_recon = context["hidden_states_recon"]
+        x: torch.Tensor = context["hidden_states"]
+        x_recon: torch.Tensor = context["hidden_states_recon"]
 
         # Flatten to (N, D)
         x_flat = x.reshape(-1, x.size(-1))

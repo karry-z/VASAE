@@ -48,6 +48,7 @@ class SAEConfig(PretrainedConfig):
         anchor_coeff: float = 0.0,  # weak token-anchoring regularizer coefficient
         anchor_mode: str = "hard",  # "hard" | "logsumexp" | "softmax"
         anchor_topk: int = 10,  # top-k for soft anchor modes
+        anchor_every: int = 1,  # compute anchor loss every N forward passes (1 = every batch)
         **kwargs,
     ):
         super().__init__(**kwargs)
@@ -69,6 +70,7 @@ class SAEConfig(PretrainedConfig):
         self.anchor_coeff = float(anchor_coeff)
         self.anchor_mode = anchor_mode
         self.anchor_topk = int(anchor_topk)
+        self.anchor_every = int(anchor_every)
 
         self._validate()
 
@@ -121,21 +123,28 @@ class SAEModel(PreTrainedModel):
             config.dim_sparse, config.dim_input, bias=(not config.tied_decoder)
         )
 
-        self.decoder_lowrank = nn.Sequential(
-            nn.Linear(config.dim_sparse, config.dim_sparse // 2),
-            nn.Linear(config.dim_sparse // 2, config.dim_input),
-        )
+        if config.use_lowrank:
+            self.decoder_lowrank = nn.Sequential(
+                nn.Linear(config.dim_sparse, config.dim_sparse // 2),
+                nn.Linear(config.dim_sparse // 2, config.dim_input),
+            )
+        else:
+            self.decoder_lowrank = None
 
         # Store as plain attributes (not nn.Module submodules) to avoid
         # interfering with save_pretrained tied-weight detection.
         object.__setattr__(self, "_tied_embedding", None)
         object.__setattr__(self, "_anchor_embedding", None)
+        object.__setattr__(self, "_anchor_step_counter", 0)
         if config.tied_decoder:
             self.decoder.weight.requires_grad_(False)
             if self.decoder.bias is not None:
                 self.decoder.bias.requires_grad_(False)
 
-        self.learnable_lowrank_coeff = nn.Parameter(torch.randn(config.dim_input))
+        if config.use_lowrank:
+            self.learnable_lowrank_coeff = nn.Parameter(torch.randn(config.dim_input))
+        else:
+            self.learnable_lowrank_coeff = None
 
         self.post_init()
 
@@ -207,11 +216,19 @@ class SAEModel(PreTrainedModel):
             total_loss = total_loss + self.config.l1_coeff * l1_loss
             l1_loss = l1_loss.detach().cpu().item()
 
-        # anchor loss
+        # anchor loss — only during training; skip in eval (not needed for metrics)
         loss_anchor = None
-        if self.config.anchor_coeff > 0 and self._anchor_embedding is not None:
+        if self.config.anchor_coeff > 0 and self._anchor_embedding is not None and self.training:
+            self._anchor_step_counter += 1
+            _compute_anchor = (
+                self.config.anchor_every <= 1
+                or self._anchor_step_counter % self.config.anchor_every == 0
+            )
+        else:
+            _compute_anchor = False
+        if _compute_anchor:
             d_norm = F.normalize(self.decoder.weight.T, dim=1)
-            e_norm = F.normalize(self._anchor_embedding.weight, dim=1)
+            e_norm = F.normalize(self._anchor_embedding.weight.to(d_norm.dtype), dim=1)
             chunk_size = 2048
             max_sims = []
             for i in range(0, d_norm.size(0), chunk_size):
