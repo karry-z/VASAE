@@ -26,13 +26,19 @@ class Trainer:
         self.sae_model = sae_model
         self.optimizer = optimizer
         self.metrics = metrics
-        self.eval_metrics = eval_metrics or metrics
+        self.eval_metrics = (
+            eval_metrics or metrics
+        )  # eval metric are used for eval stage, may different from metrics used in training
         self.device = device
         self.logger = logger
 
     def train_epoch(
-        self, data_source, max_batches: int = 0, log_every: int = 10,
-        epoch: int = 0, num_epochs: int = 0,
+        self,
+        data_source,
+        max_batches: int = 0,
+        log_every: int = 10,
+        epoch: int = 0,
+        num_epochs: int = 0,
     ) -> dict:
         """Train for one epoch.
 
@@ -48,7 +54,12 @@ class Trainer:
         n_total = len(data_source) if hasattr(data_source, "__len__") else "?"
 
         for batch_i, batch in enumerate(data_source):
-            activations = batch["activations"].to(self.device)
+            activations = batch["activations"].to(self.device).float()
+
+            # Filter out padding positions so SAE only trains on real tokens
+            mask = batch.get("attention_mask")
+            if mask is not None:
+                activations = activations[mask.bool()]  # [N_valid, D]
 
             self.optimizer.zero_grad()
             output: SAEOutput = self.sae_model(activations)
@@ -98,7 +109,7 @@ class Trainer:
         return aggregator.compute()
 
     @torch.no_grad()
-    def evaluate(self, data_source, max_batches: int = 0) -> dict:
+    def evaluate(self, data_source, max_batches: int = 0, log_every: int = 0) -> dict:
         """Evaluate on a data source.
 
         Supports both offline metrics (logitlens) and online metrics
@@ -110,7 +121,13 @@ class Trainer:
         n_total = len(data_source) if hasattr(data_source, "__len__") else "?"
 
         for batch_i, batch in enumerate(data_source):
-            activations = batch["activations"].to(self.device)
+            activations = batch["activations"].to(self.device).float()
+
+            # Filter out padding positions for SAE and geometric metrics
+            mask = batch.get("attention_mask")
+            if mask is not None:
+                activations = activations[mask.bool()]  # [N_valid, D]
+
             output: SAEOutput = self.sae_model(activations)
 
             context = {
@@ -118,6 +135,7 @@ class Trainer:
                 "hidden_states_recon": output.hidden_states_recon,
                 "sparse_activations": output.sparse_activations,
                 "sae_model": self.sae_model,
+                # CE metric needs original batch structure for nnsight forward pass
                 "input_ids": batch.get("input_ids"),
                 "attention_mask": batch.get("attention_mask"),
             }
@@ -133,6 +151,9 @@ class Trainer:
                 },
                 activations.size(0),
             )
+
+            if log_every > 0 and self.logger is not None and (batch_i + 1) % log_every == 0:
+                self.logger.info(f"[Eval] batch {batch_i + 1}/{n_total}")
 
             if max_batches > 0 and batch_i >= max_batches:
                 break

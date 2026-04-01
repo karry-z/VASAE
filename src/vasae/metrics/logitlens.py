@@ -13,7 +13,7 @@ class LogitLens:
         self.ln = ln
 
     def unembed(self, activation: torch.Tensor) -> torch.Tensor:
-        activation = activation.to(self.unembed_layer.weight.device)
+        activation = activation.to(device=self.unembed_layer.weight.device, dtype=self.unembed_layer.weight.dtype)
         if self.ln is not None:
             activation = self.ln(activation)
         with torch.no_grad():
