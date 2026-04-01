@@ -17,6 +17,7 @@ import json
 from pathlib import Path
 
 import matplotlib
+
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import numpy as np
@@ -29,10 +30,15 @@ log = get_logger(__name__)
 
 def parse_args():
     p = argparse.ArgumentParser(description="Plot 002_F alignment quality figures")
-    p.add_argument("--input-dir", type=str, required=True,
-                   help="Directory with per-layer results (L0/, L1/, ...)")
-    p.add_argument("--model-label", type=str, default="GPT-2",
-                   help="Model label for figure titles")
+    p.add_argument(
+        "--input-dir",
+        type=str,
+        required=True,
+        help="Directory with per-layer results (L0/, L1/, ...)",
+    )
+    p.add_argument(
+        "--model-label", type=str, default="GPT-2", help="Model label for figure titles"
+    )
     p.add_argument("--output-dir", type=str, required=True)
     return p.parse_args()
 
@@ -66,8 +72,9 @@ def select_representative_layers(layers: list[int], n: int = 3):
     return [layers[i] for i in indices]
 
 
-def plot_geometric_histograms(results: dict, input_dir: Path,
-                               model_label: str, output_dir: Path):
+def plot_geometric_histograms(
+    results: dict, input_dir: Path, model_label: str, output_dir: Path
+):
     """Figure 1: s(i) distribution histograms for representative layers."""
     layers = sorted(results.keys())
     rep_layers = select_representative_layers(layers)
@@ -85,13 +92,25 @@ def plot_geometric_histograms(results: dict, input_dir: Path,
             continue
 
         sims = pt_data["max_sims"].numpy()
-        ax.hist(sims, bins=bins, alpha=0.7, color="#4C72B0", label="VASAE-Soft",
-                edgecolor="none")
+        ax.hist(
+            sims,
+            bins=bins,
+            alpha=0.7,
+            color="#4C72B0",
+            label="VASAE-Soft",
+            edgecolor="none",
+        )
 
         if "baseline_max_sims" in pt_data:
             bl_sims = pt_data["baseline_max_sims"].numpy()
-            ax.hist(bl_sims, bins=bins, alpha=0.5, color="#AAAAAA", label="Plain SAE",
-                    edgecolor="none")
+            ax.hist(
+                bl_sims,
+                bins=bins,
+                alpha=0.5,
+                color="#AAAAAA",
+                label="Plain SAE",
+                edgecolor="none",
+            )
 
         ax.set_xlabel("$s(i) = \\max_v \\cos(d_i, e_v)$")
         ax.set_ylabel("Feature count")
@@ -102,7 +121,9 @@ def plot_geometric_histograms(results: dict, input_dir: Path,
     fig.suptitle(f"{model_label}: Geometric Alignment Distribution", y=1.02)
     fig.tight_layout()
     fig.savefig(output_dir / "fig1_geometric_distribution.pdf", bbox_inches="tight")
-    fig.savefig(output_dir / "fig1_geometric_distribution.png", dpi=150, bbox_inches="tight")
+    fig.savefig(
+        output_dir / "fig1_geometric_distribution.png", dpi=150, bbox_inches="tight"
+    )
     plt.close(fig)
     log.info("Saved fig1_geometric_distribution")
 
@@ -132,8 +153,14 @@ def plot_category_distribution(results: dict, model_label: str, output_dir: Path
     bottoms = np.zeros(len(layers))
     for k, label, color in zip(cat_keys, cat_labels, cat_colors):
         vals = np.array(data[k])
-        ax.bar(range(len(layers)), vals, bottom=bottoms, label=label,
-               color=color, alpha=0.85)
+        ax.bar(
+            range(len(layers)),
+            vals,
+            bottom=bottoms,
+            label=label,
+            color=color,
+            alpha=0.85,
+        )
         bottoms += vals
 
     ax.set_xticks(range(len(layers)))
@@ -145,7 +172,9 @@ def plot_category_distribution(results: dict, model_label: str, output_dir: Path
 
     fig.tight_layout()
     fig.savefig(output_dir / "fig2_category_distribution.pdf", bbox_inches="tight")
-    fig.savefig(output_dir / "fig2_category_distribution.png", dpi=150, bbox_inches="tight")
+    fig.savefig(
+        output_dir / "fig2_category_distribution.png", dpi=150, bbox_inches="tight"
+    )
     plt.close(fig)
     log.info("Saved fig2_category_distribution")
 
@@ -160,16 +189,36 @@ def plot_functional_rates(results: dict, model_label: str, output_dir: Path):
     fig, ax1 = plt.subplots(figsize=(max(7, len(layers) * 0.6), 4.5))
 
     # Left axis: rates
-    ax1.plot(range(len(layers)), top1, "o-", color="#C44E52", label="Top-1 Match", markersize=5)
-    ax1.plot(range(len(layers)), top5, "s--", color="#C44E52", alpha=0.6,
-             label="Top-5 Match", markersize=4)
+    ax1.plot(
+        range(len(layers)),
+        top1,
+        "o-",
+        color="#C44E52",
+        label="Top-1 Match",
+        markersize=5,
+    )
+    ax1.plot(
+        range(len(layers)),
+        top5,
+        "s--",
+        color="#C44E52",
+        alpha=0.6,
+        label="Top-5 Match",
+        markersize=4,
+    )
     ax1.set_ylabel("Output Control Match Rate (%)", color="#C44E52")
     ax1.tick_params(axis="y", labelcolor="#C44E52")
     ax1.set_ylim(0, max(top5) * 1.3)
 
     # Right axis: alive+aligned count
     ax2 = ax1.twinx()
-    ax2.bar(range(len(layers)), alive_aligned, color="#4C72B0", alpha=0.25, label="Alive+Aligned")
+    ax2.bar(
+        range(len(layers)),
+        alive_aligned,
+        color="#4C72B0",
+        alpha=0.25,
+        label="Alive+Aligned",
+    )
     ax2.set_ylabel("Alive+Aligned Feature Count", color="#4C72B0")
     ax2.tick_params(axis="y", labelcolor="#4C72B0")
 
@@ -194,34 +243,54 @@ def print_summary_table(results: dict, model_label: str):
     """Print cross-layer summary table."""
     layers = sorted(results.keys())
     log.info("\n=== %s Cross-Layer Summary ===", model_label)
-    log.info("%-5s %8s %8s %10s %10s %10s",
-             "Layer", "Align%", "Alive%", "InputDet%", "OutTop1%", "OutTop5%")
+    log.info(
+        "%-5s %8s %8s %10s %10s %10s",
+        "Layer",
+        "Align%",
+        "Alive%",
+        "InputDet%",
+        "OutTop1%",
+        "OutTop5%",
+    )
     for l in layers:
         r = results[l]
-        log.info("L%-4d %7.1f%% %7.1f%% %9.1f%% %9.1f%% %9.1f%%",
-                 l,
-                 r["geometric"]["aligned_pct"],
-                 r["n_alive"] / r["n_features"] * 100,
-                 r["input_detection"]["detection_rate"],
-                 r["output_control"]["top1_match_rate"],
-                 r["output_control"]["top5_match_rate"])
+        log.info(
+            "L%-4d %7.1f%% %7.1f%% %9.1f%% %9.1f%% %9.1f%%",
+            l,
+            r["geometric"]["aligned_pct"],
+            r["n_alive"] / r["n_features"] * 100,
+            r["input_detection"]["detection_rate"],
+            r["output_control"]["top1_match_rate"],
+            r["output_control"]["top5_match_rate"],
+        )
 
 
 def print_case_studies(results: dict, model_label: str):
     """Print case study examples as markdown."""
     log.info("\n### %s Case Studies\n", model_label)
-    log.info("| Layer | Feature | Category | Token | s(i) | P_i | Top-1 Match | Ablation Top-5 |")
-    log.info("| ----- | ------- | -------- | ----- | ---- | --- | ----------- | -------------- |")
+    log.info(
+        "| Layer | Feature | Category | Token | s(i) | P_i | Top-1 Match | Ablation Top-5 |"
+    )
+    log.info(
+        "| ----- | ------- | -------- | ----- | ---- | --- | ----------- | -------------- |"
+    )
 
     for layer_idx in sorted(results.keys()):
         examples = results[layer_idx].get("examples", [])
         for ex in examples:
             tok = f"`{ex['aligned_token']}`"
             ablation = ", ".join(f"`{t}`" for t in ex.get("ablation_top5", []))
-            log.info("| L%d | %d | %s | %s | %.2f | %.2f | %s | %s |",
-                     ex["layer"], ex["feature_id"], ex["category"],
-                     tok, ex["geo_max_sim"], ex["P_i"],
-                     "Y" if ex["top1_match"] else "N", ablation)
+            log.info(
+                "| L%d | %d | %s | %s | %.2f | %.2f | %s | %s |",
+                ex["layer"],
+                ex["feature_id"],
+                ex["category"],
+                tok,
+                ex["geo_max_sim"],
+                ex["P_i"],
+                "Y" if ex["top1_match"] else "N",
+                ablation,
+            )
 
 
 def main():
@@ -247,4 +316,5 @@ def main():
 
 
 if __name__ == "__main__":
+    main()
     main()

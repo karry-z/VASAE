@@ -1,20 +1,23 @@
-"""Post-processing for the per-feature IOI causal intervention sweep.
+"""Plot IOI feature sweep results from vocab-aligned SAE.
 
-Reads layer_*.json files produced by eval_ioi_feature_sweep.py and generates:
-1. Markdown table of top-20 features by mean Recovery
-2. Plot 1: max Recovery vs layer (line chart)
-3. Plot 2: Recovery heatmap (features × prompts) at best layer
+Reads per-layer JSON files and produces:
+  - Figure 1: Max/Mean CR vs layer + causal feature count
+  - Figure 2: CR heatmap for a selected layer (top features x prompts)
+  - Figure 3: Alignment (max_sim) vs causal effect (mean CR) scatter
+  - Figure 4: Inhibitory features (negative CR) fraction
+  - Table: Top causal features with aligned token info
 
-Example:
+Usage:
     uv run python scripts/plot_ioi_feature_sweep.py \
-        --input-dir /scratch/b5bq/pu22650.b5bq/VASAE_out/ioi_feature_sweep \
-        --output-dir exp/IOI/figures
+        --input-dir /scratch/b5bq/pu22650.b5bq/VASAE_out/021_ioi_feature_sweep \
+        --output-dir exp/021_IOI/figures
 """
 
 from __future__ import annotations
 
 import argparse
 import json
+from collections import defaultdict
 from pathlib import Path
 
 import matplotlib
@@ -22,184 +25,257 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import numpy as np
 
-from vasae.utils.log import get_logger
-
-logger = get_logger("plot_ioi_feature_sweep")
-
-
-def load_all_layers(input_dir: Path) -> dict[int, dict]:
-    """Load layer_*.json files, return {layer_idx: data}."""
-    layers = {}
-    for p in sorted(input_dir.glob("layer_*.json")):
-        with p.open() as f:
-            data = json.load(f)
-        layers[data["layer_idx"]] = data
-    return layers
+plt.rcParams.update({
+    "font.size": 10,
+    "axes.titlesize": 11,
+    "figure.dpi": 150,
+})
 
 
-def flatten_features(data: dict) -> list[dict]:
-    """Flatten per-example features into a list with example index."""
-    rows = []
-    for ex_idx, ex in enumerate(data["examples"]):
-        for feat in ex["features"]:
-            rows.append({**feat, "example_idx": ex_idx})
-    return rows
+def load_all_layers(input_dir: Path, n_layers: int = 12):
+    data = {}
+    for layer in range(n_layers):
+        p = input_dir / f"layer_{layer}.json"
+        if p.exists():
+            with p.open() as f:
+                data[layer] = json.load(f)
+    return data
 
 
-def top_features_table(all_layers: dict[int, dict], top_k: int = 20) -> str:
-    """Build markdown table of top features by mean Recovery across all layers."""
-    # Aggregate: (layer, feature_id) -> list of recovery values and other stats
-    agg: dict[tuple[int, int], list[dict]] = {}
-    for layer_idx, data in all_layers.items():
-        for row in flatten_features(data):
-            key = (layer_idx, row["feature_id"])
-            agg.setdefault(key, []).append(row)
-
-    # Compute mean recovery per (layer, feature)
-    summary = []
-    for (layer_idx, fid), rows in agg.items():
-        recoveries = [r["recovery"] for r in rows]
-        mean_rec = np.mean(recoveries)
-        mean_strength = np.mean([r["strength"] for r in rows])
-        mean_du_clean = np.mean([r["du_clean"] for r in rows])
-        mean_du_corr = np.mean([r["du_corr"] for r in rows])
-        mean_du_interv = np.mean([r["du_intervened"] for r in rows])
-        mean_effect = np.mean([r["effect"] for r in rows])
-        mean_specificity = np.mean([r["specificity"] for r in rows])
-        summary.append({
-            "feature_id": fid,
-            "layer": layer_idx,
-            "strength": mean_strength,
-            "du_clean": mean_du_clean,
-            "du_corr": mean_du_corr,
-            "du_intervened": mean_du_interv,
-            "effect": mean_effect,
-            "recovery": mean_rec,
-            "specificity": mean_specificity,
+def aggregate_features(data: dict) -> dict:
+    """Per-layer: aggregate per-feature stats across prompts."""
+    layer_stats = {}
+    for layer, d in sorted(data.items()):
+        by_feat = defaultdict(lambda: {
+            "crs": [], "kls": [], "specs": [], "strengths": [],
+            "sim": 0.0, "tok": "", "tok_id": -1, "n_prompts": 0,
         })
+        for ex in d["examples"]:
+            for feat in ex["features"]:
+                fid = feat["feature_id"]
+                info = by_feat[fid]
+                info["crs"].append(feat["recovery"])
+                info["kls"].append(feat["kl_divergence"])
+                info["specs"].append(feat["specificity"])
+                info["strengths"].append(feat["strength"])
+                info["sim"] = feat.get("max_sim", 0.0)
+                info["tok"] = feat.get("aligned_token", "?")
+                info["tok_id"] = feat.get("aligned_token_id", -1)
+                info["n_prompts"] += 1
+        summary = {}
+        for fid, info in by_feat.items():
+            summary[fid] = {
+                "mean_cr": np.mean(info["crs"]),
+                "std_cr": np.std(info["crs"]),
+                "mean_kl": np.mean(info["kls"]),
+                "mean_spec": np.mean(info["specs"]),
+                "mean_strength": np.mean(info["strengths"]),
+                "max_sim": info["sim"],
+                "aligned_token": info["tok"],
+                "aligned_token_id": info["tok_id"],
+                "n_prompts": info["n_prompts"],
+            }
+        layer_stats[layer] = summary
+    return layer_stats
 
-    summary.sort(key=lambda x: x["recovery"], reverse=True)
-    top = summary[:top_k]
+
+def plot_cr_vs_layer(layer_stats: dict, output_dir: Path):
+    """Figure 1: Max CR and causal feature count vs layer."""
+    layers = sorted(layer_stats.keys())
+    max_crs = []
+    n_causal_03 = []
+    n_causal_05 = []
+
+    for layer in layers:
+        feats = layer_stats[layer]
+        crs = [f["mean_cr"] for f in feats.values()]
+        max_crs.append(max(crs) if crs else 0)
+        n_causal_03.append(sum(1 for c in crs if c >= 0.3))
+        n_causal_05.append(sum(1 for c in crs if c >= 0.5))
+
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(10, 4))
+
+    ax1.plot(layers, max_crs, "o-", color="C0", label="Max CR")
+    ax1.axhline(1.0, color="gray", linestyle="--", alpha=0.5, label="CR = 1")
+    ax1.set_xlabel("Layer")
+    ax1.set_ylabel("Max mean CR")
+    ax1.set_title("Max Corruption Recovery vs Layer")
+    ax1.legend()
+    ax1.set_xticks(layers)
+
+    ax2.bar([l - 0.15 for l in layers], n_causal_03, width=0.3, color="C1",
+            label=r"CR $\geq$ 0.3", alpha=0.8)
+    ax2.bar([l + 0.15 for l in layers], n_causal_05, width=0.3, color="C3",
+            label=r"CR $\geq$ 0.5", alpha=0.8)
+    ax2.set_xlabel("Layer")
+    ax2.set_ylabel("Number of features")
+    ax2.set_title("Causal Feature Count vs Layer")
+    ax2.legend()
+    ax2.set_xticks(layers)
+
+    fig.tight_layout()
+    for ext in ("pdf", "png"):
+        fig.savefig(output_dir / f"fig1_cr_vs_layer.{ext}", bbox_inches="tight")
+    plt.close(fig)
+    print("Saved fig1_cr_vs_layer")
+
+
+def plot_heatmap(data: dict, layer_stats: dict, layer: int, output_dir: Path,
+                 n_features: int = 50):
+    """Figure 2: CR heatmap for top features at a given layer."""
+    d = data[layer]
+    feats = layer_stats[layer]
+
+    sorted_feats = sorted(feats.items(), key=lambda x: -x[1]["mean_cr"])[:n_features]
+    feat_ids = [fid for fid, _ in sorted_feats]
+    feat_id_set = set(feat_ids)
+
+    n_prompts = len(d["examples"])
+    matrix = np.full((len(feat_ids), n_prompts), np.nan)
+    feat_idx_map = {fid: i for i, fid in enumerate(feat_ids)}
+
+    for pi, ex in enumerate(d["examples"]):
+        for feat in ex["features"]:
+            fid = feat["feature_id"]
+            if fid in feat_idx_map:
+                matrix[feat_idx_map[fid], pi] = feat["recovery"]
+
+    fig, ax = plt.subplots(figsize=(12, 8))
+    im = ax.imshow(matrix, aspect="auto", cmap="RdBu_r", vmin=-1, vmax=2,
+                   interpolation="nearest")
+
+    ylabels = []
+    for fid in feat_ids:
+        tok = feats[fid]["aligned_token"]
+        sim = feats[fid]["max_sim"]
+        ylabels.append(f"F{fid} ({tok.strip()}, s={sim:.2f})")
+
+    ax.set_yticks(range(len(feat_ids)))
+    ax.set_yticklabels(ylabels, fontsize=6)
+    ax.set_xlabel("Prompt index")
+    ax.set_ylabel("Feature (sorted by mean CR)")
+    ax.set_title(f"Corruption Recovery Heatmap — L{layer} (top {n_features} features)")
+
+    cbar = fig.colorbar(im, ax=ax, shrink=0.8)
+    cbar.set_label("Corruption Recovery")
+
+    fig.tight_layout()
+    for ext in ("pdf", "png"):
+        fig.savefig(output_dir / f"fig2_heatmap_L{layer}.{ext}", bbox_inches="tight")
+    plt.close(fig)
+    print(f"Saved fig2_heatmap_L{layer}")
+
+
+def plot_sim_vs_cr(layer_stats: dict, output_dir: Path):
+    """Figure 3: Geometric alignment (max_sim) vs causal effect scatter."""
+    fig, axes = plt.subplots(2, 3, figsize=(12, 8))
+    selected_layers = [0, 2, 5, 7, 9, 11]
+
+    for ax, layer in zip(axes.flat, selected_layers):
+        feats = layer_stats.get(layer, {})
+        sims = [f["max_sim"] for f in feats.values()]
+        crs = [f["mean_cr"] for f in feats.values()]
+
+        ax.scatter(sims, crs, s=8, alpha=0.5, c="C0", edgecolors="none")
+        ax.axhline(0, color="gray", linestyle="-", alpha=0.3)
+        ax.axhline(0.3, color="red", linestyle="--", alpha=0.3, label="CR=0.3")
+        ax.axvline(0.8, color="green", linestyle="--", alpha=0.3, label="sim=0.8")
+        ax.set_xlabel(r"max cos sim $s(i)$")
+        ax.set_ylabel("mean CR")
+        ax.set_title(f"Layer {layer}")
+        ax.set_xlim(-0.05, 1.05)
+
+    axes[0, 0].legend(fontsize=7)
+    fig.suptitle("Geometric Alignment vs Causal Effect", fontsize=13)
+    fig.tight_layout()
+    for ext in ("pdf", "png"):
+        fig.savefig(output_dir / f"fig3_sim_vs_cr.{ext}", bbox_inches="tight")
+    plt.close(fig)
+    print("Saved fig3_sim_vs_cr")
+
+
+def plot_negative_cr(layer_stats: dict, output_dir: Path):
+    """Figure 4: Fraction of features with negative CR vs layer."""
+    layers = sorted(layer_stats.keys())
+    neg_frac = []
+    neg_strong_frac = []
+
+    for layer in layers:
+        feats = layer_stats[layer]
+        total = len(feats)
+        neg = sum(1 for f in feats.values() if f["mean_cr"] < 0)
+        neg_strong = sum(1 for f in feats.values() if f["mean_cr"] < -0.1)
+        neg_frac.append(neg / total * 100 if total > 0 else 0)
+        neg_strong_frac.append(neg_strong / total * 100 if total > 0 else 0)
+
+    fig, ax = plt.subplots(figsize=(6, 4))
+    ax.bar([l - 0.15 for l in layers], neg_frac, width=0.3, color="C0",
+           label="CR < 0", alpha=0.7)
+    ax.bar([l + 0.15 for l in layers], neg_strong_frac, width=0.3, color="C3",
+           label=r"CR < $-$0.1", alpha=0.7)
+    ax.set_xlabel("Layer")
+    ax.set_ylabel("Fraction of active features (%)")
+    ax.set_title("Inhibitory Features (negative CR)")
+    ax.legend()
+    ax.set_xticks(layers)
+    fig.tight_layout()
+    for ext in ("pdf", "png"):
+        fig.savefig(output_dir / f"fig4_negative_cr.{ext}", bbox_inches="tight")
+    plt.close(fig)
+    print("Saved fig4_negative_cr")
+
+
+def write_top_features_table(layer_stats: dict, output_dir: Path, top_n: int = 20):
+    """Write markdown table of top causal features across all layers."""
+    all_feats = []
+    for layer, feats in layer_stats.items():
+        for fid, info in feats.items():
+            all_feats.append((layer, fid, info))
+
+    all_feats.sort(key=lambda x: -x[2]["mean_cr"])
 
     lines = [
-        "| Feature ID | Layer | Feature Strength | $\\Delta u_{\\text{clean}}$ | $\\Delta u_{\\text{corr}}$ | $\\Delta u_{\\text{clean, intervened}}$ | Effect | Recovery | Specificity Score |",
-        "| --- | --- | --- | --- | --- | --- | --- | --- | --- |",
+        "| Layer | Feature | Aligned Token | $s(i)$ | Mean CR | Std CR | Specificity | Active Prompts |",
+        "|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|",
     ]
-    for row in top:
+    for layer, fid, info in all_feats[:top_n]:
+        tok = info["aligned_token"].strip()
         lines.append(
-            f"| {row['feature_id']} | {row['layer']} | {row['strength']:.4f} "
-            f"| {row['du_clean']:.4f} | {row['du_corr']:.4f} "
-            f"| {row['du_intervened']:.4f} | {row['effect']:.4f} "
-            f"| {row['recovery']:.4f} | {row['specificity']:.4f} |"
+            f"| L{layer} | {fid} | {tok!r} | {info['max_sim']:.2f} | "
+            f"{info['mean_cr']:.2f} | {info['std_cr']:.2f} | "
+            f"{info['mean_spec']:.1f} | {info['n_prompts']}/73 |"
         )
-    return "\n".join(lines)
 
-
-def plot_max_recovery_vs_layer(all_layers: dict[int, dict], output_path: Path):
-    """Line chart: max_{f,p} Recovery(l,f,p) vs layer l."""
-    layers_sorted = sorted(all_layers.keys())
-    max_recoveries = []
-    for l in layers_sorted:
-        features = flatten_features(all_layers[l])
-        if features:
-            max_rec = max(r["recovery"] for r in features)
-        else:
-            max_rec = 0.0
-        max_recoveries.append(max_rec)
-
-    fig, ax = plt.subplots(figsize=(8, 5))
-    ax.plot(layers_sorted, max_recoveries, marker="o", linewidth=2)
-    ax.set_xlabel("Layer")
-    ax.set_ylabel("Max Recovery")
-    ax.set_title("Max Recovery by Layer")
-    ax.set_xticks(layers_sorted)
-    ax.grid(True, alpha=0.3)
-    fig.tight_layout()
-    fig.savefig(output_path, dpi=150)
-    plt.close(fig)
-    logger.info("Saved max recovery plot to %s", output_path)
-
-
-def plot_recovery_heatmap(data: dict, layer_idx: int, output_path: Path, top_n: int = 50):
-    """Heatmap: Recovery(f, p) at given layer, top features by mean recovery."""
-    features = flatten_features(data)
-    if not features:
-        logger.warning("No features found for layer %d, skipping heatmap", layer_idx)
-        return
-
-    # Get all unique feature IDs and their mean recovery
-    from collections import defaultdict
-    feat_recoveries: dict[int, list[float]] = defaultdict(list)
-    for r in features:
-        feat_recoveries[r["feature_id"]].append(r["recovery"])
-
-    feat_mean = {fid: np.mean(recs) for fid, recs in feat_recoveries.items()}
-    top_feats = sorted(feat_mean, key=feat_mean.get, reverse=True)[:top_n]
-    feat_to_row = {fid: i for i, fid in enumerate(top_feats)}
-
-    n_examples = data["n_prompts"]
-    matrix = np.full((len(top_feats), n_examples), np.nan)
-
-    for r in features:
-        fid = r["feature_id"]
-        if fid in feat_to_row:
-            matrix[feat_to_row[fid], r["example_idx"]] = r["recovery"]
-
-    fig, ax = plt.subplots(figsize=(max(10, n_examples * 0.15), max(6, len(top_feats) * 0.2)))
-    im = ax.imshow(matrix, aspect="auto", cmap="RdYlBu_r", vmin=0, vmax=1)
-    ax.set_xlabel("Prompt Index")
-    ax.set_ylabel("Feature ID")
-    ax.set_yticks(range(len(top_feats)))
-    ax.set_yticklabels(top_feats, fontsize=6)
-    ax.set_title(f"Recovery Heatmap — Layer {layer_idx} (top {len(top_feats)} features)")
-    fig.colorbar(im, ax=ax, label="Recovery")
-    fig.tight_layout()
-    fig.savefig(output_path, dpi=150)
-    plt.close(fig)
-    logger.info("Saved heatmap to %s", output_path)
-
-
-def parse_args():
-    p = argparse.ArgumentParser(description="Plot IOI feature sweep results")
-    p.add_argument("--input-dir", type=str, required=True, help="Dir with layer_*.json files")
-    p.add_argument("--output-dir", type=str, required=True, help="Dir for figures and table")
-    p.add_argument("--top-k", type=int, default=20, help="Top features for table")
-    p.add_argument("--heatmap-top-n", type=int, default=50, help="Top features for heatmap")
-    return p.parse_args()
+    table = "\n".join(lines)
+    (output_dir / "top_features_table.md").write_text(table)
+    print("Saved top_features_table.md")
+    return table
 
 
 def main():
-    args = parse_args()
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--input-dir", type=str, required=True)
+    parser.add_argument("--output-dir", type=str, required=True)
+    parser.add_argument("--n-layers", type=int, default=12)
+    parser.add_argument("--heatmap-layer", type=int, default=1)
+    args = parser.parse_args()
+
     input_dir = Path(args.input_dir)
     output_dir = Path(args.output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
 
-    all_layers = load_all_layers(input_dir)
-    if not all_layers:
-        raise ValueError(f"No layer_*.json files found in {input_dir}")
-    logger.info("Loaded %d layers: %s", len(all_layers), sorted(all_layers.keys()))
+    data = load_all_layers(input_dir, args.n_layers)
+    print(f"Loaded {len(data)} layers")
 
-    # Table
-    table_md = top_features_table(all_layers, top_k=args.top_k)
-    table_path = output_dir / "top_features_table.md"
-    table_path.write_text(table_md)
-    logger.info("Table:\n%s", table_md)
+    layer_stats = aggregate_features(data)
 
-    # Plot 1: max recovery vs layer
-    plot_max_recovery_vs_layer(all_layers, output_dir / "max_recovery_vs_layer.pdf")
-
-    # Plot 2: heatmap at best layer
-    best_layer = max(all_layers.keys(), key=lambda l: max(
-        (r["recovery"] for r in flatten_features(all_layers[l])), default=0.0
-    ))
-    logger.info("Best layer by max recovery: %d", best_layer)
-    plot_recovery_heatmap(
-        all_layers[best_layer], best_layer,
-        output_dir / f"recovery_heatmap_layer{best_layer}.pdf",
-        top_n=args.heatmap_top_n,
-    )
-
-    logger.info("Done. Figures saved to %s", output_dir)
+    plot_cr_vs_layer(layer_stats, output_dir)
+    plot_heatmap(data, layer_stats, args.heatmap_layer, output_dir)
+    plot_sim_vs_cr(layer_stats, output_dir)
+    plot_negative_cr(layer_stats, output_dir)
+    table = write_top_features_table(layer_stats, output_dir)
+    print("\nTop features:\n")
+    print(table)
 
 
 if __name__ == "__main__":
