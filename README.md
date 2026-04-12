@@ -21,7 +21,7 @@ uv sync
 Extract GPT-2 layer activations to memory-mapped files:
 
 ```bash
-uv run python scripts/collect_gpt2_activations.py
+uv run python scripts/collect/collect_gpt2_activations.py
 ```
 
 ### Training
@@ -29,36 +29,23 @@ uv run python scripts/collect_gpt2_activations.py
 Train an offline SAE on pre-collected activations:
 
 ```bash
-uv run python scripts/train_sae_offline.py
+uv run python scripts/training/train_sae_offline.py
 ```
 
 Train an online SAE with activations computed on the fly:
 
 ```bash
-uv run python scripts/train_sae_online.py
-```
-
-Train model variants:
-
-```bash
-# Dual-path SAE
-uv run python scripts/train_dualpath_sae.py
-
-# Decomposition SAE
-uv run python scripts/train_decompose_sae.py
+uv run python scripts/training/train_sae_online.py
 ```
 
 ### Evaluation
 
 ```bash
-# Evaluate loss recovered
-uv run python scripts/eval_loss_recovered.py
-
 # Evaluate with online SAE
-uv run python scripts/eval_sae_online.py
+uv run python scripts/eval/eval_sae_online.py
 
 # IOI causal intervention
-uv run python scripts/eval_ioi_causal.py
+uv run python scripts/eval/eval_ioi_causal.py
 ```
 
 ### Analysis
@@ -66,11 +53,11 @@ uv run python scripts/eval_ioi_causal.py
 A suite of analysis scripts is provided for feature-level interpretability:
 
 ```bash
-uv run python scripts/analyze_feature_vocab_alignment.py
-uv run python scripts/analyze_feature_io_decomposition.py
-uv run python scripts/analyze_context_interpretability.py
-uv run python scripts/analyze_logit_attribution_sparsity.py
-uv run python scripts/analyze_token_frequency.py
+uv run python scripts/analyze/alignment/analyze_feature_vocab_alignment.py
+uv run python scripts/analyze/interp/analyze_feature_io_decomposition.py
+uv run python scripts/analyze/interp/analyze_context_interpretability.py
+uv run python scripts/analyze/interp/analyze_logit_attribution_sparsity.py
+uv run python scripts/analyze/alignment/analyze_token_frequency.py
 ```
 
 ## Model Overview
@@ -84,21 +71,13 @@ uv run python scripts/analyze_token_frequency.py
 <td>SAEModel</td>
 <td>Core sparse auto-encoder with configurable encoder, sparsity, and decoder. HuggingFace <code>PreTrainedModel</code> compatible.</td>
 </tr>
-<tr>
-<td>DualPathSAE</td>
-<td>Dual-path variant separating vocab-aligned and residual subspaces.</td>
-</tr>
-<tr>
-<td>DecomposeSAE</td>
-<td>Decomposition variant for analyzing feature structure.</td>
-</tr>
 </table>
 
 **Encoder variants:** Linear, MLP
 
 **Sparsity modules:** TopK, BatchTopK, Identity/L1
 
-**Decoder modes:** Standard, Vocab-Tied (to GPT-2 unembedding), Low-Rank decomposition
+**Decoder modes:** Standard, Vocab-Tied (to GPT-2 unembedding)
 
 ## Metrics
 
@@ -115,7 +94,8 @@ VASAE/
 ├── scripts/                # Entry points: training, evaluation, analysis
 ├── src/
 │   ├── vasae/              # Core package
-│   │   ├── models/         # SAE, DualPathSAE, DecomposeSAE, encoders, sparsity
+│   │   ├── models/         # SAE model, encoders, sparsity, factory
+│   │   ├── analysis/       # Shared analysis utilities (alignment, hooks, stats, I/O)
 │   │   ├── data/           # Dataset, activation sources, schema
 │   │   ├── engine/         # Trainer, train/eval loops, intervention, configs
 │   │   ├── metrics/        # Logit lens, CE loss, variance explained

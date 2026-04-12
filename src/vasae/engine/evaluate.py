@@ -29,7 +29,6 @@ def evaluate(
                 "loss_reconst": output.recon_loss,
                 "loss_l1": output.l1_loss,
                 "logitlens_acc": eval_outcomes["logitlens_acc"],
-                "loss_lowrank": output.loss_lowrank,
             },
             batchsize,
         )

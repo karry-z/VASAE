@@ -193,7 +193,6 @@ class TestTiedDecoder:
             dim_input=DIM_INPUT,
             dim_sparse=vocab_size,
             tied_decoder=True,
-            use_lowrank=False,
         )
         model = SAEModel(cfg)
         emb = nn.Embedding(vocab_size, DIM_INPUT)

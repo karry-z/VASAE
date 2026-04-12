@@ -38,7 +38,6 @@ def train_one_epoch(
                 "l1_loss": output.l1_loss,
                 "loss_reconst": output.recon_loss,
                 "logitlens_acc": eval_outcomes["logitlens_acc"],
-                "loss_lowrank": output.loss_lowrank,
                 "loss_anchor": output.loss_anchor,
             },
             activations.size(0),

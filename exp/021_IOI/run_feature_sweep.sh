@@ -27,7 +27,7 @@ mkdir -p "$OUTPUT_DIR"
 
 echo "=== 021_IOI feature sweep: layer ${LAYER} ==="
 
-uv run python scripts/eval_ioi_feature_sweep.py \
+uv run python scripts/eval/eval_ioi_feature_sweep.py \
     --layer-idx "$LAYER" \
     --model-name gpt2 \
     --sae-root "$SAE_ROOT" \

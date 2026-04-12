@@ -8,6 +8,8 @@ import torch.nn.functional as F
 from transformers import PretrainedConfig, PreTrainedModel
 from transformers.utils import ModelOutput
 
+from vasae.losses import AnchorLoss
+
 from .encoders import LinearEncoder, MLPEncoder
 from .sparsity import BatchTopKSparse, IdentitySparsity, TopKSparse
 
@@ -131,6 +133,15 @@ class SAEModel(PreTrainedModel):
         else:
             self.decoder_lowrank = None
 
+        # anchor loss
+        if config.anchor_coeff > 0:
+            self.anchor_loss_fn = AnchorLoss(
+                mode=config.anchor_mode,
+                topk=config.anchor_topk,
+            )
+        else:
+            self.anchor_loss_fn = None
+
         # Store as plain attributes (not nn.Module submodules) to avoid
         # interfering with save_pretrained tied-weight detection.
         object.__setattr__(self, "_tied_embedding", None)
@@ -218,33 +229,17 @@ class SAEModel(PreTrainedModel):
 
         # anchor loss — only during training; skip in eval (not needed for metrics)
         loss_anchor = None
-        if self.config.anchor_coeff > 0 and self._anchor_embedding is not None and self.training:
+        if self.anchor_loss_fn is not None and self._anchor_embedding is not None and self.training:
             self._anchor_step_counter += 1
-            _compute_anchor = (
+            if (
                 self.config.anchor_every <= 1
                 or self._anchor_step_counter % self.config.anchor_every == 0
-            )
-        else:
-            _compute_anchor = False
-        if _compute_anchor:
-            d_norm = F.normalize(self.decoder.weight.T, dim=1)
-            e_norm = F.normalize(self._anchor_embedding.weight.to(d_norm.dtype), dim=1)
-            chunk_size = 2048
-            max_sims = []
-            for i in range(0, d_norm.size(0), chunk_size):
-                chunk = d_norm[i:i + chunk_size]
-                sim = chunk @ e_norm.T
-                if self.config.anchor_mode == "hard":
-                    max_sims.append(sim.max(dim=1)[0])
-                elif self.config.anchor_mode == "logsumexp":
-                    topk_sim = sim.topk(self.config.anchor_topk, dim=1)[0]
-                    max_sims.append(torch.logsumexp(topk_sim, dim=1))
-                elif self.config.anchor_mode == "softmax":
-                    topk_sim = sim.topk(self.config.anchor_topk, dim=1)[0]
-                    w = F.softmax(topk_sim, dim=1)
-                    max_sims.append((w * topk_sim).sum(dim=1))
-            loss_anchor = -torch.cat(max_sims).mean()
-            total_loss = total_loss + self.config.anchor_coeff * loss_anchor
+            ):
+                loss_anchor = self.anchor_loss_fn(
+                    self.decoder.weight.T,
+                    self._anchor_embedding.weight,
+                )
+                total_loss = total_loss + self.config.anchor_coeff * loss_anchor
 
         if not return_dict:
             outs = (recon, z)

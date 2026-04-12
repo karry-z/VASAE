@@ -16,14 +16,6 @@ def test_import_models_init():
     from vasae.models import SAEConfig, SAEModel, SAEOutput
 
 
-def test_import_decompose_sae():
-    from vasae.models.decompose_sae import DecomposeSAEModel, DecomposeSAEOutput
-
-
-def test_import_dualpath_sae():
-    from vasae.models.dualpath_sae import DualPathSAE, DualPathSAEOutput
-
-
 def test_import_factory():
     from vasae.models.factory import (
         load_model,
@@ -96,8 +88,38 @@ def test_import_activation_source():
     from vasae.data.activation_source import OnlineActivationSource
 
 
+# -- losses -------------------------------------------------------------------
+
+def test_import_losses_init():
+    from vasae.losses import AnchorLoss, chunked_cosine_sim
+
+
+def test_import_losses_canonical():
+    from vasae.losses.anchor import AnchorLoss
+    from vasae.losses.cosine_sim import chunked_cosine_sim
+
+
 # -- utils --------------------------------------------------------------------
 
 def test_import_utils():
     from vasae.utils.log import get_logger
     from vasae.utils.seed import set_seed
+
+
+# -- analysis -----------------------------------------------------------------
+
+def test_import_analysis():
+    from vasae.analysis import (
+        compute_geometric_alignment,
+        compute_logit_attribution,
+        make_intervention_hook,
+        run_with_hook,
+        load_sae_for_analysis,
+        get_decoder_features,
+        summarize_tensor,
+        discover_checkpoints,
+        load_layer_results,
+        save_results,
+        save_figure,
+        setup_matplotlib,
+    )

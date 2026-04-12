@@ -55,7 +55,7 @@ sbatch exp/021_IOI/run_feature_sweep.sh
 **Step 2：汇总与绘图**。
 
 ```bash
-uv run python scripts/plot_ioi_feature_sweep.py \
+uv run python scripts/plot/plot_ioi_feature_sweep.py \
     --input-dir /scratch/b5bq/pu22650.b5bq/VASAE_out/021_ioi_feature_sweep \
     --output-dir exp/021_IOI/figures
 ```

@@ -25,7 +25,7 @@ Runs on **Isambard-AI** (aarch64). Jobs are submitted via **Slurm**.
 
 ## Architecture
 
-- **`scripts/`** — Entry point scripts (training, evaluation, analysis)
+- **`scripts/`** — Entry point scripts, organized by function into nested subdirectories: `training/`, `collect/`, `eval/`, `analyze/{alignment,tgeo,interp,ioi}/`, `plot/`, `aggregate/`, `utils/`. Every script is referenced by at least one `exp/**/*.sh` or `exp/**/report.md`.
 - **`exp/`** — Experiment directories, each containing Slurm job scripts and logs
 - **`notebooks/`** — Jupyter notebooks
 - **`tests/`** — Tests
@@ -35,9 +35,7 @@ Runs on **Isambard-AI** (aarch64). Jobs are submitted via **Slurm**.
 
 #### `src/vasae/` — Core VASAE package
 
-- **`models/sae.py`** — Core SAE model (HuggingFace `PreTrainedModel`). `SAEModel` and `SAEConfig` with encoder variants, sparsity modules, and optional low-rank decoder decomposition. Decoder can be "tied" to GPT-2 vocab embeddings.
-- **`models/dualpath_sae.py`** — Dual-path SAE variant.
-- **`models/decompose_sae.py`** — Decomposition SAE variant.
+- **`models/sae.py`** — Core SAE model (HuggingFace `PreTrainedModel`). `SAEModel` and `SAEConfig` with encoder variants, sparsity modules. Decoder can be "tied" to GPT-2 vocab embeddings.
 - **`models/encoders.py`** — Encoder architectures (Linear, MLP).
 - **`models/sparsity.py`** — Sparsity modules (TopK, BatchTopK, Identity/L1).
 - **`models/factory.py`** — Factory functions for creating SAE models and loading GPT-2 components.
@@ -55,6 +53,11 @@ Runs on **Isambard-AI** (aarch64). Jobs are submitted via **Slurm**.
 - **`metrics/variance_explained.py`** — Variance explained metric.
 - **`utils/log.py`** — Logger setup. Use this logger, not `print`.
 - **`utils/seed.py`** — Random seed utilities.
+- **`analysis/alignment.py`** — Geometric alignment (cosine sim) and logit attribution utilities.
+- **`analysis/hooks.py`** — PyTorch forward-hook utilities for activation patching/ablation.
+- **`analysis/sae_loader.py`** — Convenience SAE loading for analysis scripts.
+- **`analysis/stats.py`** — Tensor summary statistics.
+- **`analysis/io.py`** — Checkpoint discovery, result saving, plot setup utilities.
 
 #### `src/shared_utils/` — Shared utilities across projects
 

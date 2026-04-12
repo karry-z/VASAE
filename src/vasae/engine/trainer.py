@@ -76,7 +76,6 @@ class Trainer:
                     "loss": output.loss,
                     "l1_loss": output.l1_loss,
                     "loss_reconst": output.recon_loss,
-                    "loss_lowrank": output.loss_lowrank,
                     "loss_anchor": output.loss_anchor,
                     **eval_outcomes,
                 },
@@ -95,8 +94,6 @@ class Trainer:
                 ]
                 if output.loss_anchor:
                     parts.append(f"anchor={output.loss_anchor:.4f}")
-                if output.loss_lowrank:
-                    parts.append(f"lowrank={output.loss_lowrank:.4f}")
                 if output.l1_loss:
                     parts.append(f"l1={output.l1_loss:.4f}")
                 for k, v in eval_outcomes.items():
@@ -146,7 +143,6 @@ class Trainer:
                     "loss": output.loss.detach().cpu().item(),
                     "loss_reconst": output.recon_loss,
                     "loss_l1": output.l1_loss,
-                    "loss_lowrank": output.loss_lowrank,
                     **eval_outcomes,
                 },
                 activations.size(0),
