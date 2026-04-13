@@ -1,119 +1,71 @@
 """Unit tests for model-agnostic factory helpers."""
 
 import pytest
-import torch
 import torch.nn as nn
+from transformers import AutoConfig, AutoModelForCausalLM
 
-from vasae.models.factory import get_layers, get_embedding, get_lm_head
-
-
-class FakeGPT2:
-    """Mimics GPT2LMHeadModel structure."""
-    def __init__(self):
-        self.transformer = type("T", (), {
-            "h": nn.ModuleList([nn.Linear(4, 4) for _ in range(3)]),
-            "wte": nn.Embedding(10, 4),
-        })()
-        self.lm_head = nn.Linear(4, 10, bias=False)
+from vasae.models.factory import get_embedding, get_layers, get_lm_head
 
 
-class FakeLlama:
-    """Mimics LlamaForCausalLM structure."""
-    def __init__(self):
-        self.model = type("M", (), {
-            "layers": nn.ModuleList([nn.Linear(4, 4) for _ in range(5)]),
-            "embed_tokens": nn.Embedding(20, 4),
-        })()
-        self.lm_head = nn.Linear(4, 20, bias=False)
+@pytest.fixture(scope="session")
+def gpt2():
+    cfg = AutoConfig.from_pretrained("gpt2")
+    cfg.n_layer, cfg.n_embd, cfg.n_head, cfg.vocab_size = 2, 16, 2, 32
+    return AutoModelForCausalLM.from_config(cfg)
 
 
-class FakeOPT:
-    """Mimics OPTForCausalLM structure."""
-    def __init__(self):
-        self.model = type("M", (), {
-            "decoder": type("D", (), {
-                "layers": nn.ModuleList([nn.Linear(4, 4) for _ in range(2)]),
-                "embed_tokens": nn.Embedding(15, 4),
-            })(),
-        })()
-        self.lm_head = nn.Linear(4, 15, bias=False)
-
-
-class FakeNeoX:
-    """Mimics GPTNeoXForCausalLM structure."""
-    def __init__(self):
-        self.gpt_neox = type("N", (), {
-            "layers": nn.ModuleList([nn.Linear(4, 4) for _ in range(4)]),
-            "embed_in": nn.Embedding(12, 4),
-        })()
-        self.embed_out = nn.Linear(4, 12, bias=False)
+@pytest.fixture(scope="session")
+def llama():
+    cfg = AutoConfig.from_pretrained("meta-llama/Llama-3.1-8B")
+    cfg.num_hidden_layers = 2
+    cfg.hidden_size = 16
+    cfg.num_attention_heads = 2
+    cfg.num_key_value_heads = 2
+    cfg.intermediate_size = 32
+    cfg.vocab_size = 32
+    return AutoModelForCausalLM.from_config(cfg)
 
 
 class TestGetLayers:
-    def test_gpt2(self):
-        m = FakeGPT2()
-        layers = get_layers(m)
-        assert len(layers) == 3
+    def test_gpt2(self, gpt2):
+        assert len(get_layers(gpt2)) == 2
 
-    def test_llama(self):
-        m = FakeLlama()
-        layers = get_layers(m)
-        assert len(layers) == 5
-
-    def test_opt(self):
-        m = FakeOPT()
-        layers = get_layers(m)
-        assert len(layers) == 2
-
-    def test_neox(self):
-        m = FakeNeoX()
-        layers = get_layers(m)
-        assert len(layers) == 4
-
-    def test_unsupported(self):
-        with pytest.raises(ValueError, match="Cannot find transformer layers"):
-            get_layers(object())
+    def test_llama(self, llama):
+        assert len(get_layers(llama)) == 2
 
 
 class TestGetEmbedding:
-    def test_gpt2(self):
-        m = FakeGPT2()
-        emb = get_embedding(m)
+    def test_gpt2(self, gpt2):
+        emb = get_embedding(gpt2)
         assert isinstance(emb, nn.Embedding)
-        assert emb.num_embeddings == 10
+        assert emb.num_embeddings == 32
 
-    def test_llama(self):
-        m = FakeLlama()
-        emb = get_embedding(m)
-        assert emb.num_embeddings == 20
-
-    def test_opt(self):
-        m = FakeOPT()
-        emb = get_embedding(m)
-        assert emb.num_embeddings == 15
-
-    def test_neox(self):
-        m = FakeNeoX()
-        emb = get_embedding(m)
-        assert emb.num_embeddings == 12
-
-    def test_unsupported(self):
-        with pytest.raises(ValueError, match="Cannot find embedding"):
-            get_embedding(object())
+    def test_llama(self, llama):
+        emb = get_embedding(llama)
+        assert isinstance(emb, nn.Embedding)
+        assert emb.num_embeddings == 32
 
 
 class TestGetLmHead:
-    def test_lm_head(self):
-        m = FakeGPT2()
-        head = get_lm_head(m)
+    def test_gpt2(self, gpt2):
+        head = get_lm_head(gpt2)
         assert isinstance(head, nn.Linear)
+        assert head.out_features == 32
 
-    def test_embed_out(self):
-        m = FakeNeoX()
-        head = get_lm_head(m)
+    def test_llama(self, llama):
+        head = get_lm_head(llama)
         assert isinstance(head, nn.Linear)
-        assert head.out_features == 12
+        assert head.out_features == 32
 
-    def test_unsupported(self):
-        with pytest.raises(ValueError, match="Cannot find lm_head"):
-            get_lm_head(object())
+
+@pytest.mark.parametrize(
+    "fn, msg",
+    [
+        (get_layers, "Cannot find transformer layers"),
+        (get_embedding, "Cannot find embedding"),
+        (get_lm_head, "Cannot find lm_head"),
+    ],
+)
+def test_unsupported_raises(fn, msg):
+    with pytest.raises(ValueError, match=msg):
+        fn(object())

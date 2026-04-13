@@ -13,7 +13,10 @@ class LogitLens:
         self.ln = ln
 
     def unembed(self, activation: torch.Tensor) -> torch.Tensor:
-        activation = activation.to(device=self.unembed_layer.weight.device, dtype=self.unembed_layer.weight.dtype)
+        activation = activation.to(
+            device=self.unembed_layer.weight.device,
+            dtype=self.unembed_layer.weight.dtype,
+        )
         if self.ln is not None:
             activation = self.ln(activation)
         with torch.no_grad():
@@ -31,15 +34,14 @@ class LogitLens:
         }
 
 
-class LogitLensAccuracy:
-    def compute(self, reconstruct_tokens, tokens):
-        reconstruct_tokens = np.array(reconstruct_tokens)
-        tokens = np.array(tokens)
-        correct = reconstruct_tokens == tokens
-        return np.mean(correct).item()
+def compute_token_prediction_acc(reconstruct_tokens, tokens):
+    reconstruct_tokens = np.array(reconstruct_tokens)
+    tokens = np.array(tokens)
+    correct = reconstruct_tokens == tokens
+    return np.mean(correct).item()
 
 
-class LogitLensMetric(IMetric):
+class LogitLensAccMetric(IMetric):
     """Logit lens accuracy metric.
 
     Expects context keys:
@@ -47,9 +49,8 @@ class LogitLensMetric(IMetric):
     - "hidden_states_recon": SAE reconstruction
     """
 
-    def __init__(self, logitlens: LogitLens, logitlens_acc: LogitLensAccuracy = None):
+    def __init__(self, logitlens: LogitLens):
         self.logitlens = logitlens
-        self.logitlens_acc = logitlens_acc or LogitLensAccuracy()
 
     def compute(self, context: Dict[str, Any]) -> Dict[str, float]:
         data = context["hidden_states"]
@@ -58,7 +59,7 @@ class LogitLensMetric(IMetric):
         data_ids = self.logitlens.top1(data)["token_ids"].cpu()
         recons_ids = self.logitlens.top1(decoded)["token_ids"].cpu()
 
-        acc = self.logitlens_acc.compute(
+        acc = compute_token_prediction_acc(
             data_ids.flatten().tolist(),
             recons_ids.flatten().tolist(),
         )

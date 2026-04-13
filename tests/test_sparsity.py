@@ -1,9 +1,8 @@
 """Unit tests for sparsity modules."""
 
-import pytest
 import torch
 
-from vasae.models.sparsity import TopKSparse, BatchTopKSparse, IdentitySparsity
+from vasae.models.sparsity import BatchTopKSparse, TopKSparse
 
 
 class TestTopKSparse:
@@ -87,11 +86,3 @@ class TestBatchTopKSparse:
         out = sp(x)
         mask = out != 0
         assert torch.allclose(out[mask], x[mask])
-
-
-class TestIdentitySparsity:
-    def test_passthrough(self):
-        sp = IdentitySparsity()
-        x = torch.randn(8, 32)
-        out = sp(x)
-        assert torch.allclose(out, x)

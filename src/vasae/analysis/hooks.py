@@ -54,9 +54,7 @@ def run_with_hook(
     Returns:
         logits: ``(B, S, vocab_size)`` detached.
     """
-    handle = target_layer.register_forward_hook(
-        make_intervention_hook(intervention_fn)
-    )
+    handle = target_layer.register_forward_hook(make_intervention_hook(intervention_fn))
     try:
         out = model(input_ids=input_ids, attention_mask=attention_mask)
         return out.logits.detach()

@@ -34,18 +34,18 @@ class AnchorLoss(nn.Module):
         super().__init__()
         if mode not in {"hard", "logsumexp", "softmax"}:
             raise ValueError(f"mode must be 'hard'|'logsumexp'|'softmax', got {mode}")
-        self.mode = mode
+        self._mode = mode
         self.topk = topk
         self.chunk_size = chunk_size
 
     def _reduce(self, sim: torch.Tensor) -> torch.Tensor:
         """Reduce a (chunk, n_refs) similarity matrix to (chunk,)."""
-        if self.mode == "hard":
+        if self._mode == "hard":
             return sim.max(dim=1)[0]
         topk_sim = sim.topk(self.topk, dim=1)[0]
-        if self.mode == "logsumexp":
+        if self._mode == "logsumexp":
             return torch.logsumexp(topk_sim, dim=1)
-        # softmax
+        # softmax; mode has been verified before
         w = F.softmax(topk_sim, dim=1)
         return (w * topk_sim).sum(dim=1)
 
@@ -64,7 +64,8 @@ class AnchorLoss(nn.Module):
             Scalar loss (lower = better aligned).
         """
         sims = chunked_cosine_sim(
-            features, references,
+            features,
+            references,
             reduce_fn=self._reduce,
             chunk_size=self.chunk_size,
         )

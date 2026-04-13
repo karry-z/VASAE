@@ -32,7 +32,7 @@ class SAEConfig(PretrainedConfig):
 
     def __init__(
         self,
-        dim_input: int = 768,
+        dim_model: int = 768,
         dim_sparse: int = 8192,
         encoder_type: str = "linear",  # "linear" | "mlp"
         sparsity_type: str = "none",  # "none" | "topk" | "batch_topk"
@@ -54,7 +54,7 @@ class SAEConfig(PretrainedConfig):
         **kwargs,
     ):
         super().__init__(**kwargs)
-        self.dim_input = int(dim_input)
+        self.dim_model = int(dim_model)
         self.dim_sparse = int(dim_sparse)
         self.encoder_type = encoder_type
         self.sparsity_type = sparsity_type
@@ -89,7 +89,7 @@ class SAEConfig(PretrainedConfig):
             raise ValueError("k must be > 0 when using topk/batch_topk")
         if self.sparsity_type in {"topk", "batch_topk"} and self.l1_coeff > 0:
             raise ValueError("Do not use L1 with topk/batch_topk. Set l1_coeff=0.")
-        if self.dim_input <= 0 or self.dim_sparse <= 0:
+        if self.dim_model <= 0 or self.dim_sparse <= 0:
             raise ValueError("dim_input and dim_sparse must be positive.")
         if self.anchor_mode not in {"hard", "logsumexp", "softmax"}:
             raise ValueError(
@@ -106,9 +106,9 @@ class SAEModel(PreTrainedModel):
 
         # encoder
         if config.encoder_type == "linear":
-            self.encoder = LinearEncoder(config.dim_input, config.dim_sparse)
+            self.encoder = LinearEncoder(config.dim_model, config.dim_sparse)
         else:
-            self.encoder = MLPEncoder(config.dim_input, config.dim_sparse)
+            self.encoder = MLPEncoder(config.dim_model, config.dim_sparse)
 
         # sparsity
         if config.sparsity_type == "none":
@@ -117,18 +117,20 @@ class SAEModel(PreTrainedModel):
             self.sparsity = TopKSparse(config.k, use_abs=config.use_abs_topk)
         else:
             self.sparsity = BatchTopKSparse(
-                config.k, per_item_in_eval=config.per_item_in_eval, use_abs=config.use_abs_topk
+                config.k,
+                per_item_in_eval=config.per_item_in_eval,
+                use_abs=config.use_abs_topk,
             )
 
         # decoder
         self.decoder = nn.Linear(
-            config.dim_sparse, config.dim_input, bias=(not config.tied_decoder)
+            config.dim_sparse, config.dim_model, bias=(not config.tied_decoder)
         )
 
         if config.use_lowrank:
             self.decoder_lowrank = nn.Sequential(
                 nn.Linear(config.dim_sparse, config.dim_sparse // 2),
-                nn.Linear(config.dim_sparse // 2, config.dim_input),
+                nn.Linear(config.dim_sparse // 2, config.dim_model),
             )
         else:
             self.decoder_lowrank = None
@@ -153,7 +155,7 @@ class SAEModel(PreTrainedModel):
                 self.decoder.bias.requires_grad_(False)
 
         if config.use_lowrank:
-            self.learnable_lowrank_coeff = nn.Parameter(torch.randn(config.dim_input))
+            self.learnable_lowrank_coeff = nn.Parameter(torch.randn(config.dim_model))
         else:
             self.learnable_lowrank_coeff = None
 
@@ -203,7 +205,6 @@ class SAEModel(PreTrainedModel):
     def forward(
         self,
         hidden_states: torch.Tensor,
-        return_dict: bool = True,
         output_pre_activations: bool = False,
         output_loss_per_sample: bool = True,
     ) -> SAEOutput:
@@ -229,7 +230,11 @@ class SAEModel(PreTrainedModel):
 
         # anchor loss — only during training; skip in eval (not needed for metrics)
         loss_anchor = None
-        if self.anchor_loss_fn is not None and self._anchor_embedding is not None and self.training:
+        if (
+            self.anchor_loss_fn is not None
+            and self._anchor_embedding is not None
+            and self.training
+        ):
             self._anchor_step_counter += 1
             if (
                 self.config.anchor_every <= 1
@@ -240,12 +245,6 @@ class SAEModel(PreTrainedModel):
                     self._anchor_embedding.weight,
                 )
                 total_loss = total_loss + self.config.anchor_coeff * loss_anchor
-
-        if not return_dict:
-            outs = (recon, z)
-            if output_pre_activations:
-                outs = (pre,) + outs
-            return (total_loss,) + outs
 
         return SAEOutput(
             loss=total_loss,

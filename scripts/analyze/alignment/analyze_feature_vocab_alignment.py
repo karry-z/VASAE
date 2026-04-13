@@ -90,7 +90,7 @@ def load_sae(args) -> SAEModel:
 
     if suffix in {".pth", ".pt"}:
         cfg = SAEConfig(
-            dim_input=args.dim_input,
+            dim_model=args.dim_input,
             dim_sparse=args.dim_sparse,
             encoder_type="linear",
             sparsity_type=args.sparsity_type,
@@ -121,7 +121,7 @@ def compute_alignment(
     """Compute cosine similarity between decoder features and vocab embeddings."""
     features = decoder_weight.T  # (dim_sparse, dim_input)
     result = compute_geometric_alignment(
-        features, embedding_weight, top_k=top_k, batch_size=batch_size, device=device
+        features, embedding_weight, top_k=top_k, chunk_size=batch_size, device=device
     )
     return {
         "max_sims": result.max_sims,

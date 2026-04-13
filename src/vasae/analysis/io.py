@@ -9,46 +9,8 @@ import torch
 
 
 # ---------------------------------------------------------------------------
-# Checkpoint discovery
-# ---------------------------------------------------------------------------
-
-
-def discover_checkpoints(
-    results_dir: str | Path,
-    pattern: str | re.Pattern,
-    group_index: int = 1,
-) -> dict[int, Path]:
-    """Scan *results_dir* for sub-directories whose names match *pattern*.
-
-    Args:
-        results_dir: directory to scan.
-        pattern: regex with at least one capture group for the layer index.
-            Can be a compiled ``re.Pattern`` or a string.
-        group_index: which capture group contains the layer index (1-indexed).
-
-    Returns:
-        dict mapping ``layer_idx -> Path``.
-    """
-    results_path = Path(results_dir)
-    if isinstance(pattern, str):
-        pattern = re.compile(pattern)
-
-    checkpoints: dict[int, Path] = {}
-    for d in sorted(results_path.iterdir()):
-        if not d.is_dir():
-            continue
-        m = pattern.match(d.name)
-        if m:
-            layer = int(m.group(group_index))
-            checkpoints[layer] = d
-    return checkpoints
-
-
-# ---------------------------------------------------------------------------
 # Results I/O
 # ---------------------------------------------------------------------------
-
-
 def save_results(
     output_dir: str | Path,
     json_data: dict[str, Any],
@@ -90,8 +52,6 @@ def load_layer_results(input_dir: str | Path) -> dict[int, dict]:
 # ---------------------------------------------------------------------------
 # Plot setup
 # ---------------------------------------------------------------------------
-
-
 def setup_matplotlib():
     """Configure matplotlib for non-interactive (Agg) backend."""
     import matplotlib

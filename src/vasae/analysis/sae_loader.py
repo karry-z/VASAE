@@ -7,6 +7,7 @@ import torch
 from vasae.models.sae import SAEModel
 
 
+# TODO: remove
 def load_sae_for_analysis(
     path: str | Path,
     device: torch.device | str = "cpu",
@@ -26,6 +27,7 @@ def load_sae_for_analysis(
     return sae.to(device)
 
 
+# TODO: change dim_input
 def get_decoder_features(sae: SAEModel) -> torch.Tensor:
     """Return decoder features as ``(n_features, dim_input)`` tensor.
 

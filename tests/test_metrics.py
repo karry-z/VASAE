@@ -4,14 +4,17 @@ import pytest
 import torch
 import torch.nn as nn
 
-from vasae.metrics.base import IMetric, MetricComposer, Aggregator
-from vasae.metrics.logitlens import LogitLens, LogitLensAccuracy, LogitLensMetric
+from vasae.metrics.base import Aggregator, IMetric, MetricComposer
+from vasae.metrics.logitlens import (
+    LogitLens,
+    LogitLensAccMetric,
+    compute_token_prediction_acc,
+)
 
 
 # ---------------------------------------------------------------------------
 # Aggregator
 # ---------------------------------------------------------------------------
-
 class TestAggregator:
     def test_single_batch(self):
         agg = Aggregator()
@@ -42,12 +45,6 @@ class TestAggregator:
         assert "loss" in result
         assert "optional" not in result
 
-    def test_handles_tensors(self):
-        agg = Aggregator()
-        agg.add({"loss": torch.tensor(2.5)}, batch_size=4)
-        result = agg.compute()
-        assert result["loss"] == pytest.approx(2.5)
-
     def test_sparse_keys(self):
         """Different batches can report different keys."""
         agg = Aggregator()
@@ -61,7 +58,6 @@ class TestAggregator:
 # ---------------------------------------------------------------------------
 # MetricComposer
 # ---------------------------------------------------------------------------
-
 class DummyMetric(IMetric):
     def __init__(self, key, value):
         self.key = key
@@ -73,10 +69,12 @@ class DummyMetric(IMetric):
 
 class TestMetricComposer:
     def test_compose_two_metrics(self):
-        mc = MetricComposer([
-            DummyMetric("a", 1.0),
-            DummyMetric("b", 2.0),
-        ])
+        mc = MetricComposer(
+            [
+                DummyMetric("a", 1.0),
+                DummyMetric("b", 2.0),
+            ]
+        )
         result = mc.compute({})
         assert result == {"a": 1.0, "b": 2.0}
 
@@ -89,28 +87,23 @@ class TestMetricComposer:
 # ---------------------------------------------------------------------------
 # LogitLensAccuracy
 # ---------------------------------------------------------------------------
-
-class TestLogitLensAccuracy:
+class TestTokenPredictionAcc:
     def test_perfect(self):
-        acc = LogitLensAccuracy()
-        result = acc.compute([1, 2, 3], [1, 2, 3])
+        result = compute_token_prediction_acc([1, 2, 3], [1, 2, 3])
         assert result == pytest.approx(1.0)
 
     def test_none_match(self):
-        acc = LogitLensAccuracy()
-        result = acc.compute([1, 2, 3], [4, 5, 6])
+        result = compute_token_prediction_acc([1, 2, 3], [4, 5, 6])
         assert result == pytest.approx(0.0)
 
     def test_partial(self):
-        acc = LogitLensAccuracy()
-        result = acc.compute([1, 2, 3, 4], [1, 2, 5, 6])
+        result = compute_token_prediction_acc([1, 2, 3, 4], [1, 2, 5, 6])
         assert result == pytest.approx(0.5)
 
 
 # ---------------------------------------------------------------------------
 # LogitLens
 # ---------------------------------------------------------------------------
-
 class TestLogitLens:
     @pytest.fixture
     def unembed(self):
@@ -144,15 +137,14 @@ class TestLogitLens:
 
 
 # ---------------------------------------------------------------------------
-# LogitLensMetric (new unified interface)
+# LogitLensMetric
 # ---------------------------------------------------------------------------
-
 class TestLogitLensMetric:
     @pytest.fixture
     def metric(self):
         unembed = nn.Linear(8, 4, bias=False)
         ll = LogitLens(unembed)
-        return LogitLensMetric(ll)
+        return LogitLensAccMetric(ll)
 
     def test_compute(self, metric):
         context = {

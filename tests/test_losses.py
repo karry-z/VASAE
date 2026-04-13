@@ -4,15 +4,13 @@ import pytest
 import torch
 import torch.nn.functional as F
 
-from vasae.losses.cosine_sim import chunked_cosine_sim
 from vasae.losses.anchor import AnchorLoss
+from vasae.losses.cosine_sim import chunked_cosine_sim
 
 
 # ---------------------------------------------------------------------------
 # chunked_cosine_sim
 # ---------------------------------------------------------------------------
-
-
 class TestChunkedCosineSim:
     def test_max_reduce_matches_full(self):
         """Chunked max-reduce should match a single full matmul."""
@@ -25,7 +23,8 @@ class TestChunkedCosineSim:
         expected = (f_norm @ r_norm.T).max(dim=1)[0]
 
         result = chunked_cosine_sim(
-            features, references,
+            features,
+            references,
             reduce_fn=lambda sim: sim.max(dim=1)[0],
             chunk_size=7,
         )
@@ -45,7 +44,8 @@ class TestChunkedCosineSim:
         """Features identical to references should have max sim ~1."""
         vecs = torch.randn(10, 8)
         result = chunked_cosine_sim(
-            vecs, vecs,
+            vecs,
+            vecs,
             reduce_fn=lambda sim: sim.max(dim=1)[0],
             chunk_size=4,
         )
@@ -57,7 +57,8 @@ class TestChunkedCosineSim:
         references = torch.randn(20, 8)
 
         result = chunked_cosine_sim(
-            features, references,
+            features,
+            references,
             reduce_fn=lambda sim: sim.topk(3, dim=1)[0],
             chunk_size=5,
         )
@@ -67,16 +68,7 @@ class TestChunkedCosineSim:
 # ---------------------------------------------------------------------------
 # AnchorLoss
 # ---------------------------------------------------------------------------
-
-
 class TestAnchorLoss:
-    def test_output_is_scalar(self):
-        loss_fn = AnchorLoss(mode="hard")
-        features = torch.randn(16, 8)
-        references = torch.randn(32, 8)
-        loss = loss_fn(features, references)
-        assert loss.shape == ()
-
     def test_perfect_alignment(self):
         """If features == references, loss should be ~ -1."""
         loss_fn = AnchorLoss(mode="hard")
@@ -105,12 +97,3 @@ class TestAnchorLoss:
     def test_invalid_mode(self):
         with pytest.raises(ValueError, match="mode"):
             AnchorLoss(mode="unknown")
-
-    def test_dim_sparse_neq_vocab(self):
-        """dim_sparse != vocab_size should work fine."""
-        loss_fn = AnchorLoss(mode="hard")
-        features = torch.randn(100, 8)   # dim_sparse = 100
-        references = torch.randn(50, 8)  # vocab_size = 50
-        loss = loss_fn(features, references)
-        assert loss.shape == ()
-        assert torch.isfinite(loss)

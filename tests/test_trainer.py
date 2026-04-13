@@ -3,12 +3,11 @@
 import pytest
 import torch
 
-from vasae.metrics.base import IMetric, MetricComposer, Aggregator
-from vasae.models.sae import SAEConfig, SAEModel
 from vasae.engine.trainer import Trainer
+from vasae.metrics.base import Aggregator, IMetric, MetricComposer
+from vasae.models.sae import SAEConfig, SAEModel
 
-
-DIM_INPUT = 16
+DIM_MODEL = 16
 DIM_SPARSE = 64
 BATCH = 4
 SEQ_LEN = 10
@@ -23,14 +22,14 @@ class DummyMetric(IMetric):
 def _make_data_source(n_batches=N_BATCHES):
     """Simulate an offline DataLoader yielding dicts."""
     for _ in range(n_batches):
-        yield {"activations": torch.randn(BATCH, SEQ_LEN, DIM_INPUT)}
+        yield {"activations": torch.randn(BATCH, SEQ_LEN, DIM_MODEL)}
 
 
 def _make_online_data_source(n_batches=N_BATCHES):
     """Simulate an OnlineActivationSource yielding dicts with input_ids."""
     for _ in range(n_batches):
         yield {
-            "activations": torch.randn(BATCH, SEQ_LEN, DIM_INPUT),
+            "activations": torch.randn(BATCH, SEQ_LEN, DIM_MODEL),
             "input_ids": torch.randint(0, 100, (BATCH, SEQ_LEN)),
             "attention_mask": torch.ones(BATCH, SEQ_LEN, dtype=torch.long),
         }
@@ -39,7 +38,7 @@ def _make_online_data_source(n_batches=N_BATCHES):
 @pytest.fixture
 def trainer():
     cfg = SAEConfig(
-        dim_input=DIM_INPUT,
+        dim_model=DIM_MODEL,
         dim_sparse=DIM_SPARSE,
         sparsity_type="topk",
         k=4,
@@ -80,7 +79,11 @@ class TestTrainer:
 
     def test_train_updates_weights(self, trainer):
         # Snapshot initial weights
-        params_before = {n: p.clone() for n, p in trainer.sae_model.named_parameters() if p.requires_grad}
+        params_before = {
+            n: p.clone()
+            for n, p in trainer.sae_model.named_parameters()
+            if p.requires_grad
+        }
         trainer.train_epoch(_make_data_source())
         changed = False
         for n, p in trainer.sae_model.named_parameters():

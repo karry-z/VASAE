@@ -183,7 +183,7 @@ def main():
     from vasae.engine.trainer import Trainer
     from vasae.metrics.base import MetricComposer
     from vasae.metrics.ce_loss import CELossRecovered
-    from vasae.metrics.logitlens import LogitLens, LogitLensMetric
+    from vasae.metrics.logitlens import LogitLens, LogitLensAccMetric
     from vasae.metrics.variance_explained import VarianceExplained
     from vasae.models.factory import get_embedding, get_layers, get_lm_head, load_model
     from vasae.models.sae import SAEConfig, SAEModel
@@ -287,7 +287,7 @@ def main():
         dim_sparse = 8 * dim_input
 
     sae_cfg = SAEConfig(
-        dim_input=dim_input,
+        dim_model=dim_input,
         dim_sparse=dim_sparse,
         encoder_type=args.encoder_type,
         sparsity_type=args.sparsity_type,
@@ -320,7 +320,7 @@ def main():
     )
 
     # --- Metrics ---
-    logitlens_metric = LogitLensMetric(LogitLens(lm_head))
+    logitlens_metric = LogitLensAccMetric(LogitLens(lm_head))
     ve_metric = VarianceExplained()
     ce_metric = CELossRecovered(nn_model, layer_idx=args.layer_idx)
 

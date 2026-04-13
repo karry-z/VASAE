@@ -11,12 +11,12 @@ import torch
 import torch.optim as optim
 
 import wandb
-from vasae.data.schema import DataConfig
-from vasae.engine.config import TrainConfig
 from vasae.data.dataset import get_dataloader
+from vasae.data.schema import DataConfig
 from vasae.engine import evaluate, train
+from vasae.engine.config import TrainConfig
 from vasae.metrics.base import MetricComposer
-from vasae.metrics.logitlens import LogitLens, LogitLensAccuracy, LogitLensMetric
+from vasae.metrics.logitlens import LogitLens, LogitLensAccMetric
 from vasae.models.factory import (
     BlackBoxModelConfig,
     load_embedding_layer,
@@ -78,10 +78,18 @@ def parse_args():
     parser.add_argument("--valid-batchsize", type=int, default=128)
     parser.add_argument("--test-batchsize", type=int, default=128)
     parser.add_argument("--use-centralize", action="store_true")
-    parser.add_argument("--layer-name", type=str, required=True,
-                        help="Layer name in meta.json (e.g. transformer.h.11)")
-    parser.add_argument("--data-dir", type=str, required=True,
-                        help="Directory with meta.json and activation .dat files")
+    parser.add_argument(
+        "--layer-name",
+        type=str,
+        required=True,
+        help="Layer name in meta.json (e.g. transformer.h.11)",
+    )
+    parser.add_argument(
+        "--data-dir",
+        type=str,
+        required=True,
+        help="Directory with meta.json and activation .dat files",
+    )
 
     # sae config
     parser.add_argument("--dim-input", type=int, default=768)
@@ -95,19 +103,24 @@ def parse_args():
     parser.add_argument("--no-tied-decoder", action="store_true")
     parser.add_argument("--mse-reduction", type=str, default="mean")
     parser.add_argument(
-        "--sae-save-path", type=str,
+        "--sae-save-path",
+        type=str,
         default="/scratch/b5bq/pu22650.b5bq/VASAE_out/sae.pth",
     )
     parser.add_argument("--no-freeze-decoder", action="store_true")
     parser.add_argument("--use-abs-topk", action="store_true")
     parser.add_argument("--anchor-coeff", type=float, default=0.0)
     parser.add_argument(
-        "--anchor-mode", type=str, default="hard",
+        "--anchor-mode",
+        type=str,
+        default="hard",
         choices=["hard", "logsumexp", "softmax"],
     )
     parser.add_argument("--anchor-topk", type=int, default=10)
     parser.add_argument(
-        "--random-anchor", type=str, default="none",
+        "--random-anchor",
+        type=str,
+        default="none",
         choices=["none", "shuffle", "gaussian"],
     )
 
@@ -124,8 +137,12 @@ def parse_args():
 
     # blackbox model config
     parser.add_argument("--blackbox-model-name", type=str, default="gpt2")
-    parser.add_argument("--blackbox-model-dir", type=str, required=True,
-                        help="Directory with emb.pth and unemb.pth")
+    parser.add_argument(
+        "--blackbox-model-dir",
+        type=str,
+        required=True,
+        help="Directory with emb.pth and unemb.pth",
+    )
 
     # exp name
     parser.add_argument("--exp-name", type=str, required=True)
@@ -145,7 +162,7 @@ def main():
         data_dir=args.data_dir,
     )
     sae_cfg = SAEConfig(
-        dim_input=args.dim_input,
+        dim_model=args.dim_input,
         dim_sparse=args.dim_sparse,
         encoder_type=args.encoder_type,
         sparsity_type=args.sparsity_type,
@@ -187,7 +204,7 @@ def main():
     unemb = load_unembedding_layer(bbm_cfg).float()
 
     vocab_size, model_dim = emb.weight.shape
-    sae_cfg.dim_input = model_dim
+    sae_cfg.dim_model = model_dim
     sae_cfg.dim_sparse = vocab_size
     logger.info(vars(args))
     model = SAEModel(sae_cfg).to(device)
@@ -198,10 +215,16 @@ def main():
     if sae_cfg.anchor_coeff > 0 and not sae_cfg.tied_decoder:
         if args.random_anchor == "shuffle":
             perm = torch.randperm(emb.weight.size(0))
-            anchor_emb = torch.nn.Embedding.from_pretrained(emb.weight[perm], freeze=True)
+            anchor_emb = torch.nn.Embedding.from_pretrained(
+                emb.weight[perm], freeze=True
+            )
         elif args.random_anchor == "gaussian":
             rand_w = torch.randn_like(emb.weight)
-            rand_w = rand_w / rand_w.norm(dim=1, keepdim=True) * emb.weight.norm(dim=1, keepdim=True)
+            rand_w = (
+                rand_w
+                / rand_w.norm(dim=1, keepdim=True)
+                * emb.weight.norm(dim=1, keepdim=True)
+            )
             anchor_emb = torch.nn.Embedding.from_pretrained(rand_w, freeze=True)
         else:
             anchor_emb = emb
@@ -213,14 +236,15 @@ def main():
 
     # metrics
     logitlens = LogitLens(unemb)
-    logitlens_acc = LogitLensAccuracy()
-    metrics = MetricComposer([LogitLensMetric(logitlens, logitlens_acc)])
+    metrics = MetricComposer([LogitLensAccMetric(logitlens)])
 
     # wandb
     if not args.no_wandb:
         wandb.init(
-            project="VASAE", name=args.exp_name,
-            group=args.wandb_group, config=vars(args),
+            project="VASAE",
+            name=args.exp_name,
+            group=args.wandb_group,
+            config=vars(args),
         )
     else:
         wandb.init(mode="disabled")
