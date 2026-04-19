@@ -4,8 +4,7 @@ import torch
 from nnsight import NNsight
 
 
-
-def _get_layer_proxy(model: NNsight, layer_idx: int):
+def get_layer_proxy(model: NNsight, layer_idx: int):
     """Resolve the layer proxy inside an nnsight trace context.
 
     Must access through the nnsight model (not model._model) to get
@@ -16,7 +15,11 @@ def _get_layer_proxy(model: NNsight, layer_idx: int):
         return model.transformer.h[layer_idx]
     if hasattr(m, "model") and hasattr(m.model, "layers"):
         return model.model.layers[layer_idx]
-    if hasattr(m, "model") and hasattr(m.model, "decoder") and hasattr(m.model.decoder, "layers"):
+    if (
+        hasattr(m, "model")
+        and hasattr(m.model, "decoder")
+        and hasattr(m.model.decoder, "layers")
+    ):
         return model.model.decoder.layers[layer_idx]
     if hasattr(m, "gpt_neox") and hasattr(m.gpt_neox, "layers"):
         return model.gpt_neox.layers[layer_idx]
@@ -35,7 +38,7 @@ def extract_activations(
     directly (not a tuple), so we use layer.output without indexing.
     """
     with model.trace(input_ids):
-        layer = _get_layer_proxy(model, layer_idx)
+        layer = get_layer_proxy(model, layer_idx)
         h = layer.output.save()
     return h
 
@@ -49,7 +52,7 @@ def patch_and_forward(
 ) -> torch.Tensor:
     """Patch activations at a specific layer and return final logits (model-agnostic)."""
     with model.trace(input_ids, attention_mask=attention_mask):
-        layer = _get_layer_proxy(model, layer_idx)
+        layer = get_layer_proxy(model, layer_idx)
         h = layer.output
         layer.output = intervention_fn(h)
         logits = model.output.logits.save()

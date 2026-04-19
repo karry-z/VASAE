@@ -14,12 +14,12 @@ $$
 \newcommand{\a}{\mathbf{a}}
 \newcommand{\A}{\mathbf{A}}
 \newcommand{\da}{d_{\text{aligned}}}
-\newcommand{\dvec}{d} 
+\newcommand{\dvec}{d}
 \newcommand{\ds}{d_{\mathrm{sparse}}}
 \newcommand{\dv}{d_{\mathrm{vocab}}}
 \newcommand{\df}{\mathbf{d}}
 \newcommand{\E}{\mathbf{E}}
-\newcommand{\H}{\mathbf{H}} 
+\newcommand{\H}{\mathbf{H}}
 \newcommand{\R}{\mathbb{R}}
 \newcommand{\t}{\mathbf{t}}
 \newcommand{\WE}{\mathbf{W_E}}
@@ -84,7 +84,7 @@ VASAE decoder 字典记为 $\WD^{(\ell)}=[\df^{(\ell)}_1,\dots,\df_f^{(\ell)},\d
 $$\A^{(\ell)} = {\WDnorm^{(\ell)}}^\top \WEnorm^\top.$$
 
 
-这一层第 $f$ 个 feature 的对齐分数和对齐 token 为 
+这一层第 $f$ 个 feature 的对齐分数和对齐 token 为
 $$\a_f^{(\ell)}=\max_{v} \A_{v, f}^{(\ell)},$$
 $$\t_f^{(\ell)}=\arg\max_{v} \A_{v, f}^{(\ell)},$$
 对于第 $\ell$ 层, 我们令满足 $\a_f^{(\ell)} \geq 0.8$ 的 feature 为 aligned features.
@@ -116,7 +116,7 @@ $$\U_p^{(\ell)} = \cos\left(\H_p^{(0)},\, \E^{(\ell)}\right) \in \R^{B\times \da
 由于这 $\da$ 个特征都是 aligned features，它们对应的激活维度发生缩减。这是从原始 $\Z^{(\ell)}\in\R^{B\times S\times \ds}$ 中，在位置 $p$ 选取并仅保留 aligned feature 维后得到的子矩阵。记对位置 $p$ 处的输入，第 $\ell$ 层 VASAE 的这 $\da$ 个对齐特征在此处的激活张量为 $\Z_p^{(\ell)} \in \R^{B\times \da}.$
 
 然后沿着样本维（batch size dimension，$B$）计算 Pearson correlation，即可计算得到输入语义相关系数向量：
-$$\rho_{\text{in},p}^{(\ell)} = \operatorname{corr}_{b}\left(\Z_p^{(\ell)},\, \U_p^{(\ell)}\right) \in \R^{\da}.$$ 
+$$\rho_{\text{in},p}^{(\ell)} = \operatorname{corr}_{b}\left(\Z_p^{(\ell)},\, \U_p^{(\ell)}\right) \in \R^{\da}.$$
 
 ## 输出相关性检测
 本节检验几何对齐得到的 feature 是否也对应模型输出分布中的语义信息。核心问题是：对于一个已经对齐到 token $\t_f^{(\ell)}$ 的 feature，它在位置 p 上的激活，是否会随着该位置模型输出分布对 $\t_f^{(\ell)}$ 的语义偏向而变化。举个例子，若某个 feature 对齐到 “doctor”，那么当模型在位置 p 更倾向输出 “doctor”, “nurse”, “hospital” 等语义接近的 token 时，该 feature 的激活也应更高。
@@ -128,7 +128,7 @@ $$\rho_{\text{in},p}^{(\ell)} = \operatorname{corr}_{b}\left(\Z_p^{(\ell)},\, \U
 
 对第 $b$ 个样本，记其 top-M 输出 token 的 embedding 为 $\WE[V_{p,b,:}] \in \R^{M\times d}$.
 
-于是可构造该样本在位置 $p$ 处的输出语义向量 
+于是可构造该样本在位置 $p$ 处的输出语义向量
 $$\bar{\H}_{p,b}^{(0)}=\sum_{m=1}^{M} \tilde P_{p,b,m}\,\WE[V_{p,b,m}]\in\R^d.$$
 
 将所有样本堆叠后，得到输出语义向量矩阵 $\bar{\H}_p^{(0)}\in\R^{B\times d}$.
@@ -217,6 +217,31 @@ uv run python scripts/plot/casestudy_vasae.py \
 输出保存在 `exp/F002_AlignmentAnalysis/casestudy/{model}/`，每个 case 一个 PDF + PNG，外加一份 `manifest.json` 记录每格的 token 与概率。
 
 > 为避免 "the"、标点等高频 feature 在每个位置上都最大、压垮可视化，默认 `--mode relative`：每个 feature 先减去本句内各位置上的均值，再 argmax，从而显示"相对此句平均更活跃"的 feature。否则，需要直接选择最大激活使用`--mode softmax`。
+
+Consider a sequence of 4 tokens and 3 features. The original z is:
+        f0   f1   f2
+T0      10    1    0
+T1       9    2    0
+T2      11    1    5
+T3      10    2    0
+
+f0 is a feature that stays highly activated across all tokens, while f2 is activated only for input T2.
+
+If we use the original z scores and only take the maximum value for analysis, we will always get f0 regardless of the input token. In this case, however, f2 seems more meaningful when the input is T2.
+
+We compute the mean z of each feature as:
+f0: 10, f1: 1.5, f2: 1.25
+
+Then we use z - z_mean. In this way, the feature that is always highly activated will be suppressed, while the feature that is activated only at one position will stand out, because its mean stays low when it is 0 most of the time.
+
+The resulting z_relative is:
+        f0    f1     f2
+T0       0   -0.5   -1.25
+T1      -1    0.5   -1.25
+T2       1   -0.5    3.75
+T3       0    0.5   -1.25
+
+In real examples, “the”, “,”, etc., such tokens are the ones that always high as f0, and we don't want to see that.
 
 > 默认测试用例列表在 `scripts/plot/casestudy_vasae.py:DEFAULT_CASES` 中定义。如需自定义，传 `--cases-file path/to/cases.json`，格式为 `[{"slug": ..., "text": ...}, ...]`。
 
@@ -421,3 +446,17 @@ GPT-2 与 Llama 的差异可能源于 embedding space 的结构性不同：
 
 - **GPT-2**（dim=768）：token embedding 的 cosine similarity 集中在窄区间（0.1–0.3），语义区分度低。这导致无论用何种基于 cos similarity 的方法，都难以检测输入相关性。
 - **Llama**（dim=4096）：更高维的 embedding space 可能提供了更好的语义分离，使得 cos similarity 有更大的动态范围，从而使 correlation 方法能够捕捉到有意义的信号。
+
+### 当前相关性方法的局限性
+
+case study 用 per-sentence demean (`z_relative = z − 句内均值`, `scripts/plot/casestudy_vasae.py:353-361`) 在 `Townsend / Fey / Nicole / street / name` 等位置肉眼可见地看到对齐 feature 特异激活，说明信号是存在的。但 Pearson 相关法在同样的 checkpoint 上却报出 ≈0，因此 ≈0 更可能来自估计量本身，而不是"feature 与输入无关"这一真阴性。下面罗列当前方法的潜在问题，按影响优先级排序，作为后续方法改进的依据。
+
+1. **未做 per-sentence demean**（最直接的缺口）。实现 `scripts/analyze/alignment/analyze_alignment_quality.py:167-188, 196-325` 把同一 batch 内的所有 $(b,p)$ 拉平成一条样本流做 Pearson，句子层面的 baseline 差异（某句整体激活水平偏高、某句偏低）全部被吸进 $\operatorname{Var}(z)$ 分母，从而稀释了真正属于"同一句内位置 p 特异"的信号——而后者正是 case study 里可见的那部分。对应修法是先在每个句子内、每个 feature 上减去 `valid 位置均值` 再进入 Pearson（等价于带 sentence fixed-effect 的偏相关）。
+
+2. **Zero-inflation 压低 Pearson 天花板**。TopK 使 $z$ 在 ~99.8% 位置上精确等于 0。在全局池化下，即便一个"只在输入命中对齐 token 时才发射"的完美检测器，其 Pearson 也被 $\rho\approx\sqrt{k_\text{hit}/N}\cdot(1-\bar u)/\sigma_u$ 所限制；代入 GPT-2（$\sigma_u\approx 0.034$，$k_\text{hit}$ 每 feature 仅数次到数十次，$N=1.28\text{M}$）数量级就落在 0.01–0.1。这刚好与 `categorize_features` 的阈值 0.1 (`analyze_alignment_quality.py:337`) 重合，等于把判别线压在噪声水平上。前文"条件相关（$z>0$ only）"一节已经观察到在发射位置上 corr median 0.28，但被"cos 范围窄→假信号"一句否定；这个否定其实不严谨，因为命中位置 $u=1.0$ 与非命中 $u\in[0.15,0.30]$ 的对比仍然是可判别的。更稳妥的做法是同时报 `rho_raw / rho_demean / rho_active` 三口径。
+
+3. **Layer ℓ>0 的注意力泄漏**。`extract_activations`（`src/vasae/engine/intervention.py:29-40`）取 post-residual，ℓ≥1 时已经混入 attention，一个"Townsend" feature 可能在 "Townsend" 出现之后的若干位置继续发射（信息被 attention 搬运过去），而此刻 $u_{b,p}=\cos(W_E[\text{input}_p],W_E[t_f])$ 仍按"当前位置 token"算，构造出系统性的 (高 $z$, 中等 $u$) 样本对稀释相关性。前文"window max cos"的方向是反的：窗口越长，$u$ 在大多数位置都能取到接近上界的值，反而更没有区分度（报告观察到 `corr>0.1` 从 65.3% 掉到 35.8% 正印证此点）。更合理的是把 $u$ 侧也换到同层表征（logit-lens 风格，用 $H^{(\ell)}_p$ 过 unembedding 再与 $W_E$ 比较），或把诊断限制在 L0。
+
+4. **Decoder 几何对齐 ≠ Encoder 发射对齐**（结构性限制）。anchor loss 只约束 decoder 方向 $\mathbf d_f\approx W_E[t_f]$，encoder $\mathbf w_f$ 不受约束。"feature $f$ 对齐到 $t_f$"严格讲只说明 **发射时** 会往 $t_f$ 方向贡献重建，不保证 **输入是** $t_f$ 时就发射。这部分 ≈0 可能是真阴性，但与 1–3 混在一起目前无法区分。
+
+5. **报告公式与实现不一致**（次要）。L118–119 的定义 $\rho^{(\ell)}_{\text{in},p}=\operatorname{corr}_b(Z_p, U_p)\in\mathbb R^{d_a}$ 是"在固定位置 $p$ 上跨 batch 做相关"，但实现是把 $(b,p)$ 拉平后做全局 Pearson；两者语义不同，后续应统一。

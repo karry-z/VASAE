@@ -8,6 +8,9 @@ from vasae.metrics.variance_explained import VarianceExplained
 
 class TestVarianceExplained:
     def test_perfect_reconstruction(self):
+        """
+        perfect reconstruction produce VE=1
+        """
         x = torch.randn(8, 16)
         context = {"hidden_states": x, "hidden_states_recon": x}
         result = VarianceExplained().compute(context)

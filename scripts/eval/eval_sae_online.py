@@ -1,7 +1,10 @@
-"""Evaluate a pre-trained SAE model on wikitext test data.
+"""Evaluate a pre-trained SAE model on the same test split used at training time.
 
-Loads an SAE from HF format, extracts activations via nnsight,
-and computes: MSE, variance explained, logit lens accuracy, CE metrics.
+Mirrors the final-test section of `scripts/training/train_sae_online.py`:
+loads the saved SAE, rebuilds the OnlineActivationSource on the test split
+(offsets read from the training `results.json`), and runs Trainer.evaluate with
+the same metric composer (LogitLens + VarianceExplained + CELossRecovered),
+followed by dead-feature-rate / L0 over the test set.
 
 Example:
     python scripts/eval/eval_sae_online.py \
@@ -20,22 +23,42 @@ os.environ["TQDM_DISABLE"] = "1"
 from pathlib import Path
 
 import torch
-import torch.nn.functional as F
+import torch.optim as optim
+
+from vasae.utils.log import get_logger
+from vasae.utils.seed import set_seed
 
 
 def parse_args():
     p = argparse.ArgumentParser(description="Evaluate a pre-trained SAE model")
-    p.add_argument("--sae-path", type=str, required=True,
-                   help="Path to SAE model directory (config.json + model.safetensors)")
+    p.add_argument(
+        "--sae-path",
+        type=str,
+        required=True,
+        help="Path to SAE model directory (config.json + model.safetensors)",
+    )
     p.add_argument("--model-name", type=str, default="gpt2")
-    p.add_argument("--layer-idx", type=int, default=None,
-                   help="Layer index (if None, parse from directory name)")
-    p.add_argument("--n-samples", type=int, default=1000)
+    p.add_argument(
+        "--layer-idx",
+        type=int,
+        default=None,
+        help="Layer index (if None, parse from directory name)",
+    )
+    p.add_argument(
+        "--dtype", type=str, default=None, choices=["float16", "bfloat16", "float32"]
+    )
+    p.add_argument(
+        "--test-samples",
+        type=int,
+        default=None,
+        help="Override test_samples from training config",
+    )
     p.add_argument("--batch-size", type=int, default=32)
     p.add_argument("--max-length", type=int, default=128)
     p.add_argument("--device", type=str, default="cuda")
     p.add_argument("--dataset", type=str, default="wikitext")
     p.add_argument("--dataset-config", type=str, default="wikitext-103-raw-v1")
+    p.add_argument("--seed", type=int, default=42)
     return p.parse_args()
 
 
@@ -47,20 +70,41 @@ def parse_layer_from_dirname(dirname: str) -> int:
     raise ValueError(f"Cannot parse layer index from directory name: {dirname}")
 
 
-@torch.no_grad()
 def main():
     args = parse_args()
-    device = torch.device(args.device)
+    set_seed(args.seed)
+    logger = get_logger()
+    device = args.device
     sae_path = Path(args.sae_path)
 
-    # Determine layer index
     if args.layer_idx is not None:
         layer_idx = args.layer_idx
     else:
         layer_idx = parse_layer_from_dirname(sae_path.name)
 
-    print(f"Evaluating SAE: {sae_path}")
-    print(f"Layer: {layer_idx}, Model: {args.model_name}")
+    logger.info(f"Evaluating SAE: {sae_path}")
+    logger.info(f"Layer: {layer_idx}, Model: {args.model_name}")
+
+    # --- Read training config (for split offsets) ---
+    train_results_path = sae_path / "results.json"
+    if not train_results_path.exists():
+        raise FileNotFoundError(
+            f"{train_results_path} not found; cannot infer train/eval/test split. "
+            "Re-run training to produce results.json or pass split sizes explicitly."
+        )
+    with open(train_results_path) as f:
+        train_results = json.load(f)
+    train_cfg = train_results.get("config", {})
+    try:
+        n_train_split = int(train_cfg["train_samples"])
+        n_eval_split = int(train_cfg["eval_samples"])
+        n_test_cfg = int(train_cfg["test_samples"])
+    except KeyError as e:
+        raise KeyError(
+            f"Training config in {train_results_path} missing key {e!r}; "
+            "cannot align eval split with training."
+        )
+    n_test_request = args.test_samples if args.test_samples is not None else n_test_cfg
 
     # --- Lazy imports ---
     import datasets
@@ -71,205 +115,168 @@ def main():
     datasets.disable_progress_bars()
     transformers.logging.set_verbosity_error()
 
-    from vasae.engine.intervention import _get_layer_proxy
+    from vasae.data.activation_source import OnlineActivationSource
+    from vasae.engine.trainer import Trainer
+    from vasae.metrics.base import MetricComposer
+    from vasae.metrics.ce_loss import CELossRecovered
+    from vasae.metrics.logitlens import LogitLens, LogitLensAccMetric
+    from vasae.metrics.variance_explained import VarianceExplained
     from vasae.models.factory import get_embedding, get_layers, get_lm_head, load_model
-    from vasae.models.sae import SAEConfig, SAEModel
-
-    def extract_acts(nn_m, ids, lidx):
-        with nn_m.trace(ids):
-            layer = _get_layer_proxy(nn_m, lidx)
-            h = layer.output.save()
-        return h.detach()
-
-    def cross_entropy(logits, labels, mask):
-        shift_logits = logits[:, :-1].contiguous()
-        shift_labels = labels[:, 1:].contiguous()
-        shift_mask = mask[:, 1:].contiguous().bool()
-        loss = F.cross_entropy(shift_logits.view(-1, shift_logits.size(-1)),
-                               shift_labels.view(-1), reduction="none")
-        loss = loss.view(shift_labels.shape)
-        return (loss * shift_mask).sum() / shift_mask.sum()
+    from vasae.models.sae import SAEModel
 
     # --- Load LLM ---
-    print("Loading LLM...")
-    llm, tokenizer = load_model(args.model_name, device=str(device))
+    dtype_map = {
+        "float16": torch.float16,
+        "bfloat16": torch.bfloat16,
+        "float32": torch.float32,
+    }
+    dtype = dtype_map.get(args.dtype)
+
+    logger.info(f"Loading {args.model_name}...")
+    llm, tokenizer = load_model(args.model_name, device=device, dtype=dtype)
     nn_model = NNsight(llm)
     emb = get_embedding(llm)
     lm_head = get_lm_head(llm)
+    n_layers = len(get_layers(llm))
+    if layer_idx >= n_layers:
+        raise ValueError(f"layer_idx={layer_idx} >= n_layers={n_layers}")
 
     # --- Load SAE ---
-    print("Loading SAE...")
+    logger.info("Loading SAE...")
     sae_model = SAEModel.from_pretrained(sae_path).to(device)
     sae_model.eval()
 
-    # Attach embedding if tied decoder
     if sae_model.config.tied_decoder:
         sae_model.attach_embedding(emb, freeze=True)
-
     if sae_model.config.anchor_coeff > 0:
         sae_model.attach_anchor_embedding(emb)
+    sae_model = sae_model.float()
 
-    print(f"SAE config: dim_input={sae_model.config.dim_input}, "
-          f"dim_sparse={sae_model.config.dim_sparse}, "
-          f"tied={sae_model.config.tied_decoder}, k={sae_model.config.k}")
+    logger.info(
+        f"SAE config: dim_input={sae_model.config.dim_model}, "
+        f"dim_sparse={sae_model.config.dim_sparse}, "
+        f"tied={sae_model.config.tied_decoder}, k={sae_model.config.k}"
+    )
 
-    # --- Load dataset ---
-    print("Loading dataset...")
-    # Use shared cache consistent with train_sae_online.py
-    save_dir = sae_path.parent
-    ds_cache_name = f"{args.dataset}_{args.dataset_config or 'default'}".replace("/", "_")
-    data_cache_dir = save_dir / ".data_cache" / ds_cache_name
+    # --- Load dataset (shared cache, same naming as train_sae_online.py) ---
+    save_dir_root = sae_path.parent
+    ds_cache_name = f"{args.dataset}_{args.dataset_config or 'default'}".replace(
+        "/", "_"
+    )
+    data_cache_dir = save_dir_root / ".data_cache" / ds_cache_name
 
     if (data_cache_dir / "dataset_info.json").exists():
-        print(f"Loading cached dataset from {data_cache_dir}")
+        logger.info(f"Loading cached dataset from {data_cache_dir}")
         ds = load_from_disk(str(data_cache_dir))
     else:
-        print(f"Loading dataset {args.dataset}...")
+        logger.info(f"Loading dataset {args.dataset}...")
         ds = load_dataset(args.dataset, args.dataset_config, split="train")
         ds = ds.filter(lambda x: len(x["text"].strip()) > 50)
 
-    # Use the same split offsets as training: skip train+eval, take test
-    # train=4000, eval=1000, test=1000 (from 009 config)
+    # --- Same split layout as training: skip train+eval, take test ---
     n_total = len(ds)
-    n_skip = 5000  # train_samples + eval_samples from 009
-    n_test = min(args.n_samples, n_total - n_skip)
-    test_ds = ds.select(range(n_skip, n_skip + n_test))
-    print(f"Test samples: {n_test}")
-
-    # --- Tokenize ---
-    def tokenize_batch(texts):
-        return tokenizer(
-            texts, return_tensors="pt", padding=True,
-            truncation=True, max_length=args.max_length,
+    n_skip = n_train_split + n_eval_split
+    if n_skip >= n_total:
+        raise ValueError(
+            f"train+eval ({n_skip}) >= dataset size ({n_total}); no test samples left."
         )
+    n_test = min(n_test_request, n_total - n_skip)
+    test_ds = ds.select(range(n_skip, n_skip + n_test))
+    logger.info(
+        f"Data split: skip={n_skip} (train={n_train_split}+eval={n_eval_split}), "
+        f"test={n_test}"
+    )
 
-    # --- Evaluation loop ---
-    total_mse = 0.0
-    total_ve_mse = 0.0
-    total_ve_var = 0.0
-    total_ll_correct = 0
-    total_ll_total = 0
-    total_ce_id = 0.0
-    total_ce_sae = 0.0
-    total_ce_zero = 0.0
-    n_batches = 0
+    test_source = OnlineActivationSource(
+        model=nn_model,
+        tokenizer=tokenizer,
+        layer_idx=layer_idx,
+        text_dataset=test_ds,
+        batch_size=args.batch_size,
+        max_length=args.max_length,
+    )
 
-    from torch.utils.data import DataLoader
+    # --- Metrics (same composition as training final test) ---
+    test_metrics = MetricComposer(
+        [
+            LogitLensAccMetric(LogitLens(lm_head)),
+            VarianceExplained(),
+            CELossRecovered(nn_model, layer_idx=layer_idx),
+        ]
+    )
 
-    def collate_fn(batch):
-        texts = [item["text"] for item in batch]
-        return tokenize_batch(texts)
+    # Trainer.evaluate doesn't touch the optimizer, but constructor requires one.
+    dummy_optimizer = optim.SGD(
+        [p for p in sae_model.parameters() if p.requires_grad], lr=0.0
+    )
+    trainer = Trainer(
+        sae_model=sae_model,
+        optimizer=dummy_optimizer,
+        metrics=test_metrics,
+        eval_metrics=test_metrics,
+        device=device,
+        logger=logger,
+    )
 
-    dataloader = DataLoader(test_ds, batch_size=args.batch_size,
-                            shuffle=False, collate_fn=collate_fn)
+    logger.info("=== Test ===")
+    test_out = trainer.evaluate(test_source)
+    logger.info(
+        f"[Test] loss={test_out['loss']:.4f} "
+        f"VE={test_out.get('variance_explained', 0):.4f} "
+        f"logitlens={test_out.get('logitlens_acc', 0) * 100:.2f}% "
+        f"CE_recovered={test_out.get('loss_recovered', 0):.4f}"
+    )
 
-    for batch_i, batch in enumerate(dataloader):
-        input_ids = batch["input_ids"].to(device)
-        attention_mask = batch["attention_mask"].to(device)
+    # --- Dead feature rate & L0 over the test set ---
+    logger.info("Computing dead feature rate and L0 on test set...")
+    feature_counts = torch.zeros(sae_model.config.dim_sparse, device=device)
+    l0_sum = 0.0
+    n_samples = 0
+    sae_model.eval()
+    with torch.no_grad():
+        for batch in test_source:
+            activations = batch["activations"].to(device).float()
+            mask = batch.get("attention_mask")
+            if mask is not None:
+                activations = activations[mask.bool()]
+            _, z = sae_model.encode(activations)
+            nonzero = (z != 0).float()
+            feature_counts += nonzero.sum(dim=0)
+            l0_sum += nonzero.sum(dim=1).sum().item()
+            n_samples += activations.size(0)
 
-        # Extract activations
-        activations = extract_acts(nn_model, input_ids, layer_idx)
+    dead_rate = (feature_counts == 0).float().mean().item()
+    l0 = l0_sum / n_samples if n_samples > 0 else 0.0
+    logger.info(
+        f"Dead feature rate: {dead_rate:.4f}, L0: {l0:.2f} (over {n_samples} samples)"
+    )
 
-        # SAE forward
-        output = sae_model(activations)
-        recon = output.hidden_states_recon
-
-        # MSE
-        x_flat = activations.reshape(-1, activations.size(-1))
-        xr_flat = recon.reshape(-1, recon.size(-1))
-        mse = (x_flat - xr_flat).pow(2).mean().item()
-        total_mse += mse
-
-        # Variance explained components
-        batch_mse_sum = (x_flat - xr_flat).pow(2).sum().item()
-        batch_var_sum = (x_flat - x_flat.mean(dim=0, keepdim=True)).pow(2).sum().item()
-        total_ve_mse += batch_mse_sum
-        total_ve_var += batch_var_sum
-
-        # Logit lens accuracy
-        orig_logits = lm_head(activations)
-        recon_logits = lm_head(recon)
-        orig_tokens = orig_logits.argmax(dim=-1).flatten()
-        recon_tokens = recon_logits.argmax(dim=-1).flatten()
-        total_ll_correct += (orig_tokens == recon_tokens).sum().item()
-        total_ll_total += orig_tokens.numel()
-
-        # CE metrics using hooks
-        target_layer = get_layers(llm)[layer_idx]
-
-        # CE identity (no intervention)
-        logits_id = llm(input_ids=input_ids, attention_mask=attention_mask).logits
-        ce_id = cross_entropy(logits_id, input_ids, attention_mask).item()
-
-        # CE SAE (replace with SAE reconstruction)
-        recon_for_patch = recon.detach()
-        def sae_hook(mod, inp, out, _recon=recon_for_patch):
-            return (_recon,) + out[1:] if isinstance(out, tuple) else _recon
-        handle = target_layer.register_forward_hook(sae_hook)
-        logits_sae = llm(input_ids=input_ids, attention_mask=attention_mask).logits
-        handle.remove()
-        ce_sae = cross_entropy(logits_sae, input_ids, attention_mask).item()
-
-        # CE zero (replace with zeros)
-        def zero_hook(mod, inp, out):
-            h = out[0] if isinstance(out, tuple) else out
-            z = torch.zeros_like(h)
-            return (z,) + out[1:] if isinstance(out, tuple) else z
-        handle = target_layer.register_forward_hook(zero_hook)
-        logits_zero = llm(input_ids=input_ids, attention_mask=attention_mask).logits
-        handle.remove()
-        ce_zero = cross_entropy(logits_zero, input_ids, attention_mask).item()
-
-        total_ce_id += ce_id
-        total_ce_sae += ce_sae
-        total_ce_zero += ce_zero
-        n_batches += 1
-
-        if (batch_i + 1) % 5 == 0:
-            print(f"  Batch {batch_i + 1}/{len(dataloader)}")
-
-    # --- Aggregate ---
-    avg_mse = total_mse / n_batches
-    variance_explained = 1.0 - total_ve_mse / max(total_ve_var, 1e-8)
-    logitlens_acc = total_ll_correct / max(total_ll_total, 1)
-    avg_ce_id = total_ce_id / n_batches
-    avg_ce_sae = total_ce_sae / n_batches
-    avg_ce_zero = total_ce_zero / n_batches
-    loss_recovered = 1.0 - (avg_ce_sae - avg_ce_id) / (avg_ce_zero - avg_ce_id + 1e-8)
-
+    # --- Save ---
     results = {
         "config": {
             "sae_path": str(sae_path),
             "model_name": args.model_name,
             "layer_idx": layer_idx,
-            "n_samples": n_test,
+            "test_samples": n_test,
             "batch_size": args.batch_size,
             "max_length": args.max_length,
+            "dataset": args.dataset,
+            "dataset_config": args.dataset_config,
+            "seed": args.seed,
+            "split_train_samples": n_train_split,
+            "split_eval_samples": n_eval_split,
         },
         "test": {
-            "loss": avg_mse,
-            "variance_explained": variance_explained,
-            "logitlens_acc": logitlens_acc,
-            "ce_id": avg_ce_id,
-            "ce_sae": avg_ce_sae,
-            "ce_zero": avg_ce_zero,
-            "loss_recovered": loss_recovered,
+            k: float(v) if isinstance(v, (int, float)) else v
+            for k, v in test_out.items()
         },
+        "dead_rate": dead_rate,
+        "l0": l0,
     }
-
-    # Save
-    results_path = sae_path / "results.json"
+    results_path = sae_path / "results_eval.json"
     with open(results_path, "w") as f:
         json.dump(results, f, indent=2)
-
-    print(f"\nResults saved to {results_path}")
-    print(f"  MSE:                {avg_mse:.6f}")
-    print(f"  Variance Explained: {variance_explained:.4f}")
-    print(f"  LogitLens Acc:      {logitlens_acc * 100:.2f}%")
-    print(f"  CE(id):             {avg_ce_id:.4f}")
-    print(f"  CE(sae):            {avg_ce_sae:.4f}")
-    print(f"  CE(zero):           {avg_ce_zero:.4f}")
-    print(f"  Loss Recovered:     {loss_recovered:.4f}")
+    logger.info(f"Results saved to {results_path}")
 
 
 if __name__ == "__main__":

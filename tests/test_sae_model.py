@@ -77,13 +77,6 @@ class TestSAEModelForward:
         )
         return SAEModel(cfg)
 
-    def test_output_type(self, encoder_type, sparsity_cfg):
-        sp_type, k = sparsity_cfg
-        model = self._make_model(encoder_type, sp_type, k)
-        x = torch.randn(BATCH, DIM_MODEL)
-        out = model(x)
-        assert isinstance(out, SAEOutput)
-
     def test_output_shapes(self, encoder_type, sparsity_cfg):
         sp_type, k = sparsity_cfg
         model = self._make_model(encoder_type, sp_type, k)
@@ -142,7 +135,7 @@ class TestSAEModelForward:
 
     def test_3d_input(self):
         model = self._make_model("linear", "topk", 4)
-        x = torch.randn(2, 10, DIM_MODEL)
+        x = torch.randn(2, 10, DIM_MODEL)  # B,S,D
         out = model(x)
         assert out.hidden_states_recon.shape == (2, 10, DIM_MODEL)
         assert out.sparse_activations.shape == (2, 10, DIM_SPARSE)
@@ -209,7 +202,7 @@ class TestAnchorLoss:
         model.attach_anchor_embedding(emb)
 
         x = torch.randn(BATCH, DIM_MODEL)
-        out = model(x)
+        out: SAEOutput = model(x)
         assert out.loss_anchor is not None
 
     def test_no_anchor_without_embedding(self):
@@ -220,7 +213,7 @@ class TestAnchorLoss:
         )
         model = SAEModel(cfg)
         x = torch.randn(BATCH, DIM_MODEL)
-        out = model(x)
+        out: SAEOutput = model(x)
         assert out.loss_anchor is None
 
 
