@@ -26,10 +26,14 @@ COLORS = ["#1f77b4", "#ff7f0e", "#2ca02c", "#d62728", "#9467bd"]
 
 
 def load(name: str) -> dict | None:
-    p = RESULTS_DIR / name / "results.json"
+    p = RESULTS_DIR / name / "results_eval.json"
     if not p.is_file():
-        # follow symlink
+        p = RESULTS_DIR / name / "results.json"
+    if not p.is_file():
         p = p.resolve()
+        eval_path = p.with_name("results_eval.json")
+        if eval_path.is_file():
+            p = eval_path
     if not p.is_file():
         return None
     with open(p) as f:

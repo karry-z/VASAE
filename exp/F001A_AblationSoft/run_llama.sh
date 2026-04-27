@@ -102,32 +102,49 @@ if [ "$task_id" -lt 18 ] && [ "$lambda" = "1e-4" ]; then
     fi
 fi
 
-# Skip if results already exist
-if [ -f "${SCRATCH}/${exp_name}/results.json" ]; then
-    echo "Results already exist for ${exp_name}, skipping."
+RUN_DIR="${SCRATCH}/${exp_name}"
+
+# Skip if both train and eval outputs already exist
+if [ -f "${RUN_DIR}/results.json" ] && [ -f "${RUN_DIR}/results_eval.json" ]; then
+    echo "Train and eval results already exist for ${exp_name}, skipping."
     exit 0
 fi
 
-uv run python scripts/training/train_sae_online.py \
-    --model-name meta-llama/Llama-3.1-8B \
-    --dtype bfloat16 \
-    --layer-idx "$layer" \
-    --dataset wikitext \
-    --dataset-config wikitext-103-raw-v1 \
-    --max-length 128 \
-    --train-batchsize 8 \
-    --eval-batchsize 8 \
-    --train-samples 20000 \
-    --eval-samples 2000 \
-    --test-samples 5000 \
-    --sparsity-type topk \
-    --nonneg-latents \
-    --num-epochs 20 \
-    --patience 3 \
-    --lr 1e-3 \
-    --wandb-group "001AF_abl_llama" \
-    --save-dir "$SCRATCH" \
-    --exp-name "$exp_name" \
-    "${VARIANT_ARGS[@]}"
+if [ ! -f "${RUN_DIR}/results.json" ]; then
+    uv run python scripts/training/train_sae_online.py \
+        --model-name meta-llama/Llama-3.1-8B \
+        --dtype bfloat16 \
+        --layer-idx "$layer" \
+        --dataset wikitext \
+        --dataset-config wikitext-103-raw-v1 \
+        --max-length 128 \
+        --train-batchsize 8 \
+        --valid-batchsize 8 \
+        --train-samples 20000 \
+        --eval-samples 2000 \
+        --test-samples 5000 \
+        --sparsity-type topk \
+        --nonneg-latents \
+        --num-epochs 20 \
+        --patience 3 \
+        --lr 1e-3 \
+        --wandb-group "001AF_abl_llama" \
+        --save-dir "$SCRATCH" \
+        --exp-name "$exp_name" \
+        "${VARIANT_ARGS[@]}"
+fi
+
+if [ ! -f "${RUN_DIR}/results_eval.json" ]; then
+    uv run python scripts/eval/eval_sae_online.py \
+        --sae-path "$RUN_DIR" \
+        --model-name meta-llama/Llama-3.1-8B \
+        --layer-idx "$layer" \
+        --dtype bfloat16 \
+        --test-batchsize 8 \
+        --max-length 128 \
+        --dataset wikitext \
+        --dataset-config wikitext-103-raw-v1 \
+        --device cuda
+fi
 
 echo "done"

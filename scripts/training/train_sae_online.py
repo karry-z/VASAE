@@ -1,7 +1,7 @@
 """Online SAE training with nnsight — supports any HuggingFace causal LM.
 
 Extracts activations on-the-fly, trains a vocab-aligned SAE,
-and evaluates with Variance Explained, CE Loss Recovered, and LogitLens accuracy.
+and saves training/eval metrics for later test-time evaluation.
 
 Examples:
 
@@ -86,7 +86,8 @@ def parse_args():
     )
     p.add_argument("--max-length", type=int, default=128)
     p.add_argument("--train-batchsize", type=int, default=32)
-    p.add_argument("--eval-batchsize", type=int, default=32)
+    p.add_argument("--valid-batchsize", type=int, default=32)
+    p.add_argument("--test-batchsize", type=int, default=32)
     p.add_argument("--train-samples", type=int, default=8000)
     p.add_argument("--eval-samples", type=int, default=2000)
     p.add_argument("--test-samples", type=int, default=1000)
@@ -180,9 +181,9 @@ def main():
     transformers.logging.set_verbosity_error()
 
     from vasae.data.activation_source import OnlineActivationSource
+    from vasae.data.schema import DataConfig
     from vasae.engine.trainer import Trainer
     from vasae.metrics.base import MetricComposer
-    from vasae.metrics.ce_loss import CELossRecovered
     from vasae.metrics.logitlens import LogitLens, LogitLensAccMetric
     from vasae.metrics.variance_explained import VarianceExplained
     from vasae.models.factory import get_embedding, get_layers, get_lm_head, load_model
@@ -202,7 +203,6 @@ def main():
 
     n_layers = len(get_layers(llm))
     emb = get_embedding(llm)
-    lm_head = get_lm_head(llm)
     dim_input = emb.weight.size(1)
     vocab_size = emb.weight.size(0)
 
@@ -214,9 +214,20 @@ def main():
     if args.layer_idx >= n_layers:
         raise ValueError(f"layer_idx={args.layer_idx} >= n_layers={n_layers}")
 
+    # --- Data config ---
+    data_cfg = DataConfig(
+        dataset=args.dataset,
+        dataset_config=args.dataset_config,
+        text_column=args.text_column,
+        max_length=args.max_length,
+        train_batchsize=args.train_batchsize,
+        valid_batchsize=args.valid_batchsize,
+        test_batchsize=args.test_batchsize,
+    )
+
     # --- Load dataset (with shared cache) ---
-    ds_cache_name = f"{args.dataset}_{args.dataset_config or 'default'}".replace(
-        "/", "_"
+    ds_cache_name = (
+        f"{data_cfg.dataset}_{data_cfg.dataset_config or 'default'}".replace("/", "_")
     )
     data_cache_dir = Path(args.save_dir) / ".data_cache" / ds_cache_name
 
@@ -224,11 +235,11 @@ def main():
         logger.info(f"Loading cached dataset from {data_cache_dir}")
         ds = load_from_disk(str(data_cache_dir))
     else:
-        logger.info(f"Loading dataset {args.dataset} (first run, will cache)...")
-        ds = load_dataset(args.dataset, args.dataset_config, split="train")
+        logger.info(f"Loading dataset {data_cfg.dataset} (first run, will cache)...")
+        ds = load_dataset(data_cfg.dataset, data_cfg.dataset_config, split="train")
         # Rename text column if needed
-        if args.text_column != "text" and args.text_column in ds.column_names:
-            ds = ds.rename_column(args.text_column, "text")
+        if data_cfg.text_column != "text" and data_cfg.text_column in ds.column_names:
+            ds = ds.rename_column(data_cfg.text_column, "text")
         # Filter empty texts
         ds = ds.filter(lambda x: len(x["text"].strip()) > 50)
         # Save to shared cache (atomic via temp dir + rename)
@@ -249,8 +260,6 @@ def main():
     n_test = min(args.test_samples, n_total - n_train - n_eval)
     train_ds = ds.select(range(n_train))
     eval_ds = ds.select(range(n_train, n_train + n_eval))
-    test_ds = ds.select(range(n_train + n_eval, n_train + n_eval + n_test))
-
     logger.info(f"Data split: train={n_train}, eval={n_eval}, test={n_test}")
 
     train_source = OnlineActivationSource(
@@ -258,26 +267,17 @@ def main():
         tokenizer=tokenizer,
         layer_idx=args.layer_idx,
         text_dataset=train_ds,
-        batch_size=args.train_batchsize,
-        max_length=args.max_length,
+        batch_size=data_cfg.train_batchsize,
+        max_length=data_cfg.max_length,
     )
-    eval_source = OnlineActivationSource(
+    valid_source = OnlineActivationSource(
         model=nn_model,
         tokenizer=tokenizer,
         layer_idx=args.layer_idx,
         text_dataset=eval_ds,
-        batch_size=args.eval_batchsize,
-        max_length=args.max_length,
+        batch_size=data_cfg.valid_batchsize,
+        max_length=data_cfg.max_length,
     )
-    test_source = OnlineActivationSource(
-        model=nn_model,
-        tokenizer=tokenizer,
-        layer_idx=args.layer_idx,
-        text_dataset=test_ds,
-        batch_size=args.eval_batchsize,
-        max_length=args.max_length,
-    )
-
     # --- Build SAE ---
     if args.dim_sparse > 0:
         dim_sparse = args.dim_sparse
@@ -320,13 +320,11 @@ def main():
     )
 
     # --- Metrics ---
-    logitlens_metric = LogitLensAccMetric(LogitLens(lm_head))
+    logitlens_metric = LogitLensAccMetric(LogitLens(get_lm_head(llm)))
     ve_metric = VarianceExplained()
-    ce_metric = CELossRecovered(nn_model, layer_idx=args.layer_idx)
 
     train_metrics = MetricComposer([logitlens_metric, ve_metric])
     eval_metrics = MetricComposer([logitlens_metric, ve_metric])
-    test_metrics = MetricComposer([logitlens_metric, ve_metric, ce_metric])
 
     # --- Trainer ---
     optimizer = optim.Adam(
@@ -334,7 +332,6 @@ def main():
     )
     trainer = Trainer(
         sae_model=sae_model,
-        optimizer=optimizer,
         metrics=train_metrics,
         eval_metrics=eval_metrics,
         device=device,
@@ -352,121 +349,34 @@ def main():
     else:
         wandb.init(mode="disabled")
 
-    # --- Training loop (with optional early stopping) ---
-    best_eval_loss = float("inf")
-    patience_counter = 0
-    stopped_epoch = args.num_epochs
-
-    for epoch in range(args.num_epochs):
-        logger.info(f"=== Epoch {epoch + 1}/{args.num_epochs} ===")
-
-        train_out = trainer.train_epoch(
-            train_source,
-            max_batches=args.max_batches,
-            epoch=epoch + 1,
-            num_epochs=args.num_epochs,
-        )
-        logger.info(
-            f"[Train] loss={train_out['loss']:.4f} "
-            f"VE={train_out.get('variance_explained', 0):.4f} "
-            f"logitlens={train_out.get('logitlens_acc', 0) * 100:.2f}%"
-        )
-
-        eval_out = trainer.evaluate(eval_source, max_batches=args.max_batches)
-        logger.info(
-            f"[Eval] loss={eval_out['loss']:.4f} "
-            f"VE={eval_out.get('variance_explained', 0):.4f} "
-            f"logitlens={eval_out.get('logitlens_acc', 0) * 100:.2f}% "
-            f"CE_recovered={eval_out.get('loss_recovered', 0):.4f}"
-        )
-
-        wandb.log(
-            {
-                "epoch": epoch + 1,
-                **{f"train/{k}": v for k, v in train_out.items()},
-                **{f"eval/{k}": v for k, v in eval_out.items()},
-            }
-        )
-
-        # Early stopping: track best eval loss and save best model
-        if args.patience > 0:
-            if eval_out["loss"] < best_eval_loss:
-                best_eval_loss = eval_out["loss"]
-                patience_counter = 0
-                sae_model.save_pretrained(save_dir)
-                logger.info(f"Best model saved (eval_loss={best_eval_loss:.4f})")
-            else:
-                patience_counter += 1
-                logger.info(f"No improvement ({patience_counter}/{args.patience})")
-            if patience_counter >= args.patience:
-                stopped_epoch = epoch + 1
-                logger.info(f"Early stopping at epoch {stopped_epoch}")
-                break
-
-    # --- Load best model for final test (if early stopping was used) ---
-    if args.patience > 0:
-        logger.info("Loading best model for final test...")
-        # Free old model and optimizer to avoid OOM when loading best checkpoint
-        del trainer.sae_model, sae_model
-        del optimizer
-        torch.cuda.empty_cache()
-        sae_model = SAEModel.from_pretrained(save_dir).to(device)
+    def load_best_sae(checkpoint_dir: Path) -> SAEModel:
+        sae_model = SAEModel.from_pretrained(checkpoint_dir).to(device)
         if args.tied_decoder:
             sae_model.attach_embedding(emb, freeze=args.freeze_decoder)
         if args.anchor_coeff > 0:
             sae_model.attach_anchor_embedding(emb)
-        sae_model = sae_model.float()
-        trainer.sae_model = sae_model
-    else:
-        sae_model.save_pretrained(save_dir)
+        return sae_model.float()
 
-    # --- Final test evaluation (with CE loss) ---
-    logger.info("=== Final Test ===")
-    trainer.eval_metrics = test_metrics
-    test_out = trainer.evaluate(test_source)
-    logger.info(
-        f"[Test] loss={test_out['loss']:.4f} "
-        f"VE={test_out.get('variance_explained', 0):.4f} "
-        f"logitlens={test_out.get('logitlens_acc', 0) * 100:.2f}% "
-        f"CE_recovered={test_out.get('loss_recovered', 0):.4f}"
+    # --- Fit (with optional early stopping) ---
+    fit_out = trainer.fit(
+        train_source=train_source,
+        eval_source=valid_source,
+        optimizer=optimizer,
+        num_epochs=args.num_epochs,
+        max_batches=args.max_batches,
+        patience=args.patience,
+        save_dir=save_dir,
+        log_fn=wandb.log,
+        load_best_model_fn=load_best_sae,
     )
-    wandb.log({f"test/{k}": v for k, v in test_out.items()})
-
-    # --- Compute dead feature rate and L0 (over test set) ---
-    logger.info("Computing dead feature rate and L0 on test set...")
-    feature_counts = torch.zeros(sae_model.config.dim_sparse, device=device)
-    l0_sum = 0.0
-    n_samples = 0
-    sae_model.eval()
-    with torch.no_grad():
-        for batch in test_source:
-            activations = batch["activations"].to(device).float()
-            mask = batch.get("attention_mask")
-            if mask is not None:
-                activations = activations[mask.bool()]
-            _, z = sae_model.encode(activations)
-            nonzero = (z != 0).float()
-            feature_counts += nonzero.sum(dim=0)
-            l0_sum += nonzero.sum(dim=1).sum().item()
-            n_samples += activations.size(0)
-
-    dead_rate = (feature_counts == 0).float().mean().item()
-    l0 = l0_sum / n_samples if n_samples > 0 else 0.0
-    logger.info(
-        f"Dead feature rate: {dead_rate:.4f}, L0: {l0:.2f} (over {n_samples} samples)"
-    )
+    stopped_epoch = fit_out["stopped_epoch"]
+    eval_out = fit_out["eval"]
 
     logger.info(f"Model saved to {save_dir}")
 
     results = {
         "config": vars(args),
         "stopped_epoch": stopped_epoch,
-        "test": {
-            k: float(v) if isinstance(v, (int, float)) else v
-            for k, v in test_out.items()
-        },
-        "dead_rate": dead_rate,
-        "l0": l0,
         "last_eval": {
             k: float(v) if isinstance(v, (int, float)) else v
             for k, v in eval_out.items()

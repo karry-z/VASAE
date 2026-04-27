@@ -73,17 +73,24 @@ def collect_results(results_dir: Path) -> pd.DataFrame:
         with open(results_file) as f:
             data = json.load(f)
 
+        eval_results_file = results_file.with_name("results_eval.json")
+        if eval_results_file.exists():
+            with open(eval_results_file) as f:
+                eval_data = json.load(f)
+        else:
+            eval_data = data
+
         exp_name = data["config"]["exp_name"]
         parsed = parse_exp_name(exp_name)
-        test = data.get("test", {})
+        test = eval_data.get("test", {})
 
         row = {
             **parsed,
             "stopped_epoch": data.get("stopped_epoch"),
             "ve": test.get("variance_explained"),
             "ce_recovery": test.get("loss_recovered"),
-            "dead_rate": data.get("dead_feature_rate"),
-            "l0": data.get("l0"),
+            "dead_rate": eval_data.get("dead_rate", data.get("dead_rate")),
+            "l0": eval_data.get("l0", data.get("l0")),
         }
         rows.append(row)
 

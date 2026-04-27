@@ -36,34 +36,43 @@ def _make_online_data_source(n_batches=N_BATCHES):
 
 
 @pytest.fixture
-def trainer():
+def model():
     cfg = SAEConfig(
         dim_model=DIM_MODEL,
         dim_sparse=DIM_SPARSE,
         sparsity_type="topk",
         k=4,
     )
-    model = SAEModel(cfg)
-    optimizer = torch.optim.Adam(model.parameters(), lr=1e-3)
+    return SAEModel(cfg)
+
+
+@pytest.fixture
+def optimizer(model):
+    return torch.optim.Adam(model.parameters(), lr=1e-3)
+
+
+@pytest.fixture
+def trainer(model):
     metrics = MetricComposer([DummyMetric()])
     return Trainer(
         sae_model=model,
-        optimizer=optimizer,
         metrics=metrics,
         device="cpu",
     )
 
 
 class TestTrainer:
-    def test_train_epoch_returns_dict(self, trainer):
-        result = trainer.train_epoch(_make_data_source())
+    def test_train_epoch_returns_dict(self, trainer, optimizer):
+        result = trainer.train_epoch(_make_data_source(), optimizer=optimizer)
         assert isinstance(result, dict)
         assert "loss" in result
         assert "dummy_metric" in result
 
-    def test_train_epoch_max_batches(self, trainer):
+    def test_train_epoch_max_batches(self, trainer, optimizer):
         # With max_batches=1, should only process ~1 batch
-        result = trainer.train_epoch(_make_data_source(10), max_batches=1)
+        result = trainer.train_epoch(
+            _make_data_source(10), optimizer=optimizer, max_batches=1
+        )
         assert isinstance(result, dict)
 
     def test_evaluate_returns_dict(self, trainer):
@@ -77,20 +86,32 @@ class TestTrainer:
         for p in trainer.sae_model.parameters():
             assert p.grad is None
 
-    def test_train_updates_weights(self, trainer):
+    def test_train_updates_weights(self, trainer, optimizer):
         # Snapshot initial weights
         params_before = {
             n: p.clone()
             for n, p in trainer.sae_model.named_parameters()
             if p.requires_grad
         }
-        trainer.train_epoch(_make_data_source())
+        trainer.train_epoch(_make_data_source(), optimizer=optimizer)
         changed = False
         for n, p in trainer.sae_model.named_parameters():
             if p.requires_grad and not torch.allclose(params_before[n], p):
                 changed = True
                 break
         assert changed, "Training should update at least one parameter"
+
+    def test_fit_returns_training_summary(self, trainer, optimizer):
+        result = trainer.fit(
+            train_source=_make_data_source(),
+            eval_source=_make_data_source(),
+            optimizer=optimizer,
+            num_epochs=1,
+        )
+
+        assert result["stopped_epoch"] == 1
+        assert "loss" in result["train"]
+        assert "loss" in result["eval"]
 
     def test_online_data_source(self, trainer):
         """Trainer should handle data with input_ids/attention_mask keys."""

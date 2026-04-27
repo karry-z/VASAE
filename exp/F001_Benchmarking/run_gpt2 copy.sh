@@ -1,46 +1,40 @@
 #!/bin/bash
 
-#SBATCH --job-name=001F_bench_llama
+#SBATCH --job-name=001F_bench_gpt2
 #SBATCH --output=exp/001_F_Benchmarking/logs/%x_%j_%a.log
 #SBATCH --gpus=1
 #SBATCH --time=24:00:00
-#SBATCH --array=0-95
+#SBATCH --array=0-35%12
 
-cd ~/work/VASAE
-export HF_HOME=/scratch/b5bq/pu22650.b5bq/hf_cache
-VENV_SITE="$(uv run python -c 'import site; print(site.getsitepackages()[0])')"
-export LD_LIBRARY_PATH="${VENV_SITE}/nvidia/cusparselt/lib:${VENV_SITE}/nvidia/cusparse/lib:${LD_LIBRARY_PATH}"
-nvidia-smi --list-gpus
-
-echo "Running on host $(hostname)"
 echo "Started on $(date)"
-echo "Directory is $(pwd)"
+echo "Running on host $(hostname)"
+cd $VASAE_HOME
+echo "running on working dir: $(pwd)"
+mkdir -p $VASAE_OUT/F001_Benchmarking
+echo "output stores at: $VASAE_OUT/F001_Benchmarking"
 echo "Slurm job ID is ${SLURM_JOBID}"
 echo "Slurm array task ID is ${SLURM_ARRAY_TASK_ID}"
 echo "This jobs runs on the following machines:"
 echo "${SLURM_JOB_NODELIST}"
 printf "\n\n"
 
-# 32 layers x 3 variants (plain, hard, soft) = 96 tasks
+# 12 layers x 3 variants (plain, hard, soft) = 36 tasks
+# task_id = layer * 3 + variant
 task_id=${SLURM_ARRAY_TASK_ID}
 layer=$(( task_id / 3 ))
 variant=$(( task_id % 3 ))
 
-SCRATCH="/scratch/b5bq/pu22650.b5bq/VASAE_out/001_F_Benchmarking"
-mkdir -p "$SCRATCH"
-
 # Common arguments
 COMMON_ARGS=(
-    --model-name meta-llama/Llama-3.1-8B
-    --dtype bfloat16
+    --model-name gpt2
     --layer-idx "$layer"
     --dataset wikitext
     --dataset-config wikitext-103-raw-v1
     --max-length 128
-    --train-batchsize 8
-    --valid-batchsize 8
-    --train-samples 20000
-    --eval-samples 2000
+    --train-batchsize 32
+    --valid-batchsize 32
+    --train-samples 50000
+    --eval-samples 10000
     --test-samples 5000
     --sparsity-type topk
     --k 32
@@ -48,26 +42,26 @@ COMMON_ARGS=(
     --num-epochs 20
     --patience 3
     --lr 1e-3
-    --wandb-group "001F_bench_llama"
-    --save-dir "$SCRATCH"
+    --wandb-group "001F_bench_gpt2"
+    --save-dir $VASAE_OUT/F001_Benchmarking
 )
 
 if [ "$variant" -eq 0 ]; then
-    # Plain SAE: untied decoder, no anchor, dim_sparse = vocab_size (128256)
+    # Plain SAE: untied decoder, no anchor, dim_sparse = vocab_size (50257)
     variant_name="plain"
-    VARIANT_ARGS=(--dim-sparse 128256)
+    VARIANT_ARGS=(--dim-sparse 50257)
 elif [ "$variant" -eq 1 ]; then
-    # VASAE-Hard: tied decoder, frozen, dim_sparse = vocab_size (auto = 128256)
+    # VASAE-Hard: tied decoder, dim_sparse = vocab_size (auto)
     variant_name="hard"
     VARIANT_ARGS=(--tied-decoder --freeze-decoder)
 elif [ "$variant" -eq 2 ]; then
     # VASAE-Soft: untied decoder, dim_sparse = vocab_size, anchor regularizer
     variant_name="soft"
-    VARIANT_ARGS=(--dim-sparse 128256 --anchor-coeff 1e-4 --anchor-mode hard --anchor-every 50)
+    VARIANT_ARGS=(--dim-sparse 50257 --anchor-coeff 1e-4 --anchor-mode hard)
 fi
 
-exp_name="001F_llama_L${layer}_${variant_name}"
-RUN_DIR="${SCRATCH}/${exp_name}"
+exp_name="F001_gpt2_L${layer}_${variant_name}"
+RUN_DIR="$VASAE_OUT/F001_Benchmarking/${exp_name}"
 echo "=== Train: layer=${layer}, variant=${variant_name} ==="
 
 # Skip if both train and eval outputs already exist
@@ -86,10 +80,9 @@ fi
 if [ ! -f "${RUN_DIR}/results_eval.json" ]; then
     uv run python scripts/eval/eval_sae_online.py \
         --sae-path "$RUN_DIR" \
-        --model-name meta-llama/Llama-3.1-8B \
+        --model-name gpt2 \
         --layer-idx "$layer" \
-        --dtype bfloat16 \
-        --test-batchsize 8 \
+        --test-batchsize 32 \
         --max-length 128 \
         --dataset wikitext \
         --dataset-config wikitext-103-raw-v1 \

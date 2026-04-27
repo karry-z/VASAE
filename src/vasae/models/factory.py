@@ -7,7 +7,9 @@ import torch.nn as nn
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
 
-def load_model(model_name: str, device: str = "cuda", dtype=None) -> Tuple:
+def load_model(
+    model_name: str, device: str = "cuda", dtype=None
+) -> Tuple[nn.Module, AutoTokenizer]:
     """Load any HuggingFace causal LM and its tokenizer.
 
     Returns:
@@ -17,11 +19,11 @@ def load_model(model_name: str, device: str = "cuda", dtype=None) -> Tuple:
     if dtype is not None:
         kwargs["torch_dtype"] = dtype
 
-    tokenizer = AutoTokenizer.from_pretrained(model_name)
+    tokenizer: AutoTokenizer = AutoTokenizer.from_pretrained(model_name)
     if tokenizer.pad_token is None:
         tokenizer.pad_token = tokenizer.eos_token
 
-    model = AutoModelForCausalLM.from_pretrained(model_name, **kwargs)
+    model: nn.Module = AutoModelForCausalLM.from_pretrained(model_name, **kwargs)
     model.to(device).eval()
     return model, tokenizer
 
@@ -38,7 +40,11 @@ def get_layers(model: nn.Module) -> nn.ModuleList:
         return model.transformer.h
     if hasattr(model, "model") and hasattr(model.model, "layers"):
         return model.model.layers
-    if hasattr(model, "model") and hasattr(model.model, "decoder") and hasattr(model.model.decoder, "layers"):
+    if (
+        hasattr(model, "model")
+        and hasattr(model.model, "decoder")
+        and hasattr(model.model.decoder, "layers")
+    ):
         return model.model.decoder.layers
     if hasattr(model, "gpt_neox") and hasattr(model.gpt_neox, "layers"):
         return model.gpt_neox.layers
@@ -54,7 +60,11 @@ def get_embedding(model: nn.Module) -> nn.Embedding:
         return model.transformer.wte
     if hasattr(model, "model") and hasattr(model.model, "embed_tokens"):
         return model.model.embed_tokens
-    if hasattr(model, "model") and hasattr(model.model, "decoder") and hasattr(model.model.decoder, "embed_tokens"):
+    if (
+        hasattr(model, "model")
+        and hasattr(model.model, "decoder")
+        and hasattr(model.model.decoder, "embed_tokens")
+    ):
         return model.model.decoder.embed_tokens
     if hasattr(model, "gpt_neox") and hasattr(model.gpt_neox, "embed_in"):
         return model.gpt_neox.embed_in
@@ -79,7 +89,6 @@ def get_lm_head(model: nn.Module) -> nn.Linear:
 # ---------------------------------------------------------------------------
 # Legacy offline helpers (used by offline training scripts)
 # ---------------------------------------------------------------------------
-
 @dataclass
 class BlackBoxModelConfig:
     name: str = "gpt2"

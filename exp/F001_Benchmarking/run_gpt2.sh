@@ -38,7 +38,7 @@ COMMON_ARGS=(
     --dataset-config wikitext-103-raw-v1
     --max-length 128
     --train-batchsize 32
-    --eval-batchsize 32
+    --valid-batchsize 32
     --train-samples 50000
     --eval-samples 10000
     --test-samples 5000
@@ -67,17 +67,32 @@ elif [ "$variant" -eq 2 ]; then
 fi
 
 exp_name="001F_gpt2_L${layer}_${variant_name}"
+RUN_DIR="${SCRATCH}/${exp_name}"
 echo "=== Train: layer=${layer}, variant=${variant_name} ==="
 
-# Skip if results already exist
-if [ -f "${SCRATCH}/${exp_name}/results.json" ]; then
-    echo "Results already exist for ${exp_name}, skipping."
+# Skip if both train and eval outputs already exist
+if [ -f "${RUN_DIR}/results.json" ] && [ -f "${RUN_DIR}/results_eval.json" ]; then
+    echo "Train and eval results already exist for ${exp_name}, skipping."
     exit 0
 fi
 
-uv run python scripts/training/train_sae_online.py \
-    "${COMMON_ARGS[@]}" \
-    "${VARIANT_ARGS[@]}" \
-    --exp-name "$exp_name"
+if [ ! -f "${RUN_DIR}/results.json" ]; then
+    uv run python scripts/training/train_sae_online.py \
+        "${COMMON_ARGS[@]}" \
+        "${VARIANT_ARGS[@]}" \
+        --exp-name "$exp_name"
+fi
+
+if [ ! -f "${RUN_DIR}/results_eval.json" ]; then
+    uv run python scripts/eval/eval_sae_online.py \
+        --sae-path "$RUN_DIR" \
+        --model-name gpt2 \
+        --layer-idx "$layer" \
+        --test-batchsize 32 \
+        --max-length 128 \
+        --dataset wikitext \
+        --dataset-config wikitext-103-raw-v1 \
+        --device cuda
+fi
 
 echo "done"

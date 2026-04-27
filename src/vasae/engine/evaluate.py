@@ -10,6 +10,7 @@ def evaluate(
 ):
 
     aggregator = Aggregator()
+    metrics.reset()
     model.eval()
     for batch_i, data in enumerate(data_loader):
         data, display_text = data["activations"], data["display_text"]
@@ -36,4 +37,4 @@ def evaluate(
         if max_batchsize > 0 and batch_i > max_batchsize:
             break
 
-    return aggregator.compute()
+    return {**aggregator.compute(), **metrics.finalize()}

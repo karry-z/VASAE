@@ -30,6 +30,7 @@ SCRATCH="/scratch/b5bq/pu22650.b5bq/VASAE_out/001A_F_AblationSoft"
 mkdir -p "$SCRATCH"
 
 exp_name="001AF_llama_freq_L${layer}_every${freq}"
+RUN_DIR="${SCRATCH}/${exp_name}"
 echo "=== layer=${layer}, anchor_every=${freq} ==="
 
 # Reuse 001_F results for anchor_every=50 (same config as 001_F soft)
@@ -42,36 +43,51 @@ if [ "$freq" -eq 50 ]; then
     fi
 fi
 
-# Skip if results already exist
-if [ -f "${SCRATCH}/${exp_name}/results.json" ]; then
-    echo "Results already exist for ${exp_name}, skipping."
+# Skip if both train and eval outputs already exist
+if [ -f "${RUN_DIR}/results.json" ] && [ -f "${RUN_DIR}/results_eval.json" ]; then
+    echo "Train and eval results already exist for ${exp_name}, skipping."
     exit 0
 fi
 
-uv run python scripts/training/train_sae_online.py \
-    --model-name meta-llama/Llama-3.1-8B \
-    --dtype bfloat16 \
-    --layer-idx "$layer" \
-    --dataset wikitext \
-    --dataset-config wikitext-103-raw-v1 \
-    --max-length 128 \
-    --train-batchsize 8 \
-    --eval-batchsize 8 \
-    --train-samples 20000 \
-    --eval-samples 2000 \
-    --test-samples 5000 \
-    --dim-sparse 128256 \
-    --sparsity-type topk \
-    --k 32 \
-    --nonneg-latents \
-    --anchor-coeff 1e-4 \
-    --anchor-mode hard \
-    --anchor-every "$freq" \
-    --num-epochs 20 \
-    --patience 3 \
-    --lr 1e-3 \
-    --wandb-group "001AF_freq_llama" \
-    --save-dir "$SCRATCH" \
-    --exp-name "$exp_name"
+if [ ! -f "${RUN_DIR}/results.json" ]; then
+    uv run python scripts/training/train_sae_online.py \
+        --model-name meta-llama/Llama-3.1-8B \
+        --dtype bfloat16 \
+        --layer-idx "$layer" \
+        --dataset wikitext \
+        --dataset-config wikitext-103-raw-v1 \
+        --max-length 128 \
+        --train-batchsize 8 \
+        --valid-batchsize 8 \
+        --train-samples 20000 \
+        --eval-samples 2000 \
+        --test-samples 5000 \
+        --dim-sparse 128256 \
+        --sparsity-type topk \
+        --k 32 \
+        --nonneg-latents \
+        --anchor-coeff 1e-4 \
+        --anchor-mode hard \
+        --anchor-every "$freq" \
+        --num-epochs 20 \
+        --patience 3 \
+        --lr 1e-3 \
+        --wandb-group "001AF_freq_llama" \
+        --save-dir "$SCRATCH" \
+        --exp-name "$exp_name"
+fi
+
+if [ ! -f "${RUN_DIR}/results_eval.json" ]; then
+    uv run python scripts/eval/eval_sae_online.py \
+        --sae-path "$RUN_DIR" \
+        --model-name meta-llama/Llama-3.1-8B \
+        --layer-idx "$layer" \
+        --dtype bfloat16 \
+        --test-batchsize 8 \
+        --max-length 128 \
+        --dataset wikitext \
+        --dataset-config wikitext-103-raw-v1 \
+        --device cuda
+fi
 
 echo "done"

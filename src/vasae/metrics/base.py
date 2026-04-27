@@ -24,10 +24,52 @@ class MetricComposer:
     def __init__(self, metrics: List[IMetric]):
         self.metrics = metrics
 
+    def reset(self) -> None:
+        """Reset stateful metrics before a new pass.
+
+        Notes
+        -----
+        Metrics may optionally define a ``reset`` method. Stateless metrics do
+        not need to implement it and are skipped.
+        """
+        for m in self.metrics:
+            reset = getattr(m, "reset", None)
+            if reset is not None:
+                reset()
+
     def compute(self, context: Dict[str, Any]) -> Dict[str, float]:
+        """Compute all metrics for a batch context.
+
+        Parameters
+        ----------
+        context
+            Batch-level values consumed by the metrics, such as hidden states,
+            reconstructions, sparse activations, or token inputs.
+
+        Returns
+        -------
+        dict[str, float]
+            Merged metric outputs for the current batch.
+        """
         results = {}
         for m in self.metrics:
             results.update(m.compute(context))
+        return results
+
+    def finalize(self) -> Dict[str, float]:
+        """Finalize stateful metrics after all batches have been processed.
+
+        Returns
+        -------
+        dict[str, float]
+            Merged outputs from metrics that define ``finalize``. Metrics
+            without a ``finalize`` method are skipped.
+        """
+        results = {}
+        for m in self.metrics:
+            finalize = getattr(m, "finalize", None)
+            if finalize is not None:
+                results.update(finalize())
         return results
 
 

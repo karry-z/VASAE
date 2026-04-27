@@ -1,5 +1,6 @@
 from logging import Logger
-from typing import Optional
+from pathlib import Path
+from typing import Callable, Optional
 
 import torch
 
@@ -17,14 +18,12 @@ class Trainer:
     def __init__(
         self,
         sae_model: SAEModel,
-        optimizer: torch.optim.Optimizer,
         metrics: MetricComposer,
         eval_metrics: Optional[MetricComposer] = None,
         device: str = "cpu",
         logger: Optional[Logger] = None,
     ):
         self.sae_model = sae_model
-        self.optimizer = optimizer
         self.metrics = metrics
         self.eval_metrics = (
             eval_metrics or metrics
@@ -32,9 +31,116 @@ class Trainer:
         self.device = device
         self.logger = logger
 
+    def fit(
+        self,
+        train_source,
+        eval_source,
+        optimizer: torch.optim.Optimizer,
+        num_epochs: int,
+        max_batches: int = 0,
+        patience: int = 0,
+        save_dir: str | Path | None = None,
+        log_fn: Optional[Callable[[dict], None]] = None,
+        load_best_model_fn: Optional[Callable[[Path], SAEModel]] = None,
+    ) -> dict:
+        """Train across epochs, evaluate, log, and optionally early-stop."""
+        save_path = Path(save_dir) if save_dir is not None else None
+        best_eval_loss = float("inf")
+        patience_counter = 0
+        stopped_epoch = num_epochs
+        last_train: dict = {}
+        last_eval: dict = {}
+
+        for epoch in range(num_epochs):
+            epoch_num = epoch + 1
+            if self.logger is not None:
+                self.logger.info(f"=== Epoch {epoch_num}/{num_epochs} ===")
+
+            train_out = self.train_epoch(
+                train_source,
+                optimizer=optimizer,
+                max_batches=max_batches,
+                epoch=epoch_num,
+                num_epochs=num_epochs,
+            )
+            last_train = train_out
+            if self.logger is not None:
+                self.logger.info(
+                    f"[Train] loss={train_out['loss']:.4f} "
+                    f"VE={train_out.get('variance_explained', 0):.4f} "
+                    f"logitlens={train_out.get('logitlens_acc', 0) * 100:.2f}%"
+                )
+
+            eval_out = self.evaluate(eval_source, max_batches=max_batches)
+            last_eval = eval_out
+            if self.logger is not None:
+                self.logger.info(
+                    f"[Eval] loss={eval_out['loss']:.4f} "
+                    f"VE={eval_out.get('variance_explained', 0):.4f} "
+                    f"logitlens={eval_out.get('logitlens_acc', 0) * 100:.2f}% "
+                    f"CE_recovered={eval_out.get('loss_recovered', 0):.4f}"
+                )
+
+            if log_fn is not None:
+                log_fn(
+                    {
+                        "epoch": epoch_num,
+                        **{f"train/{k}": v for k, v in train_out.items()},
+                        **{f"eval/{k}": v for k, v in eval_out.items()},
+                    }
+                )
+
+            if patience > 0:
+                if eval_out["loss"] < best_eval_loss:
+                    best_eval_loss = eval_out["loss"]
+                    patience_counter = 0
+                    if save_path is not None:
+                        self.sae_model.save_pretrained(save_path)
+                    if self.logger is not None:
+                        self.logger.info(
+                            f"Best model saved (eval_loss={best_eval_loss:.4f})"
+                        )
+                else:
+                    patience_counter += 1
+                    if self.logger is not None:
+                        self.logger.info(
+                            f"No improvement ({patience_counter}/{patience})"
+                        )
+
+                if patience_counter >= patience:
+                    stopped_epoch = epoch_num
+                    if self.logger is not None:
+                        self.logger.info(f"Early stopping at epoch {stopped_epoch}")
+                    break
+
+        if patience > 0 and save_path is not None:
+            if self.logger is not None:
+                self.logger.info("Loading best model for final test...")
+            del optimizer
+            old_model = self.sae_model
+            self.sae_model = None
+            del old_model
+            if torch.cuda.is_available():
+                torch.cuda.empty_cache()
+            self.sae_model = (
+                load_best_model_fn(save_path)
+                if load_best_model_fn is not None
+                else SAEModel.from_pretrained(save_path).to(self.device).float()
+            )
+        elif save_path is not None:
+            self.sae_model.save_pretrained(save_path)
+
+        return {
+            "stopped_epoch": stopped_epoch,
+            "best_eval_loss": best_eval_loss,
+            "train": last_train,
+            "eval": last_eval,
+        }
+
     def train_epoch(
         self,
         data_source,
+        optimizer: torch.optim.Optimizer,
         max_batches: int = 0,
         log_every: int = 10,
         epoch: int = 0,
@@ -44,12 +150,14 @@ class Trainer:
 
         Args:
             data_source: DataLoader (offline) or OnlineActivationSource (online).
+            optimizer: Optimizer used for this training epoch.
             max_batches: Stop after this many batches (0 = no limit).
             log_every: Log every N batches.
             epoch: Current epoch number (1-based).
             num_epochs: Total number of epochs.
         """
         self.sae_model.train()
+        self.metrics.reset()
         aggregator = Aggregator()
         n_total = len(data_source) if hasattr(data_source, "__len__") else "?"
 
@@ -61,7 +169,7 @@ class Trainer:
             if mask is not None:
                 activations = activations[mask.bool()]  # [N_valid, D]
 
-            self.optimizer.zero_grad()
+            optimizer.zero_grad()
             output: SAEOutput = self.sae_model(activations)
 
             context = {
@@ -83,7 +191,7 @@ class Trainer:
             )
 
             output.loss.backward()
-            self.optimizer.step()
+            optimizer.step()
 
             if self.logger is not None and (batch_i + 1) % log_every == 0:
                 epoch_str = f"ep {epoch}/{num_epochs} " if num_epochs > 0 else ""
@@ -103,7 +211,7 @@ class Trainer:
             if max_batches > 0 and batch_i >= max_batches:
                 break
 
-        return aggregator.compute()
+        return {**aggregator.compute(), **self.metrics.finalize()}
 
     @torch.no_grad()
     def evaluate(self, data_source, max_batches: int = 0, log_every: int = 0) -> dict:
@@ -113,6 +221,7 @@ class Trainer:
         (CE loss recovered) via the eval_metrics composer.
         """
         self.sae_model.eval()
+        self.eval_metrics.reset()
         aggregator = Aggregator()
 
         n_total = len(data_source) if hasattr(data_source, "__len__") else "?"
@@ -157,4 +266,4 @@ class Trainer:
         if self.logger is not None:
             self.logger.info(f"[Eval] {n_total} batches done")
 
-        return aggregator.compute()
+        return {**aggregator.compute(), **self.eval_metrics.finalize()}
