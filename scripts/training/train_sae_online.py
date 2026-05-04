@@ -22,33 +22,46 @@ Examples:
 
 import argparse
 import json
-import os
+import logging
+from collections.abc import Sequence
 
 # Disable progress bars before any HF/tqdm imports
-os.environ["HF_HUB_DISABLE_PROGRESS_BARS"] = "1"
-os.environ["TQDM_DISABLE"] = "1"
+# os.environ["HF_HUB_DISABLE_PROGRESS_BARS"] = "1"
+# os.environ["TQDM_DISABLE"] = "1"
 
 # Preload CUDA libraries before torch import (some nodes lack LD_LIBRARY_PATH)
-import ctypes
-import site
+# import ctypes
+# import site
 
-_sp = site.getsitepackages()[0]
-for _lib in [
-    "nvidia/cusparselt/lib/libcusparseLt.so.0",
-    "nvidia/cusparse/lib/libcusparse.so.12",
-]:
-    _path = os.path.join(_sp, _lib)
-    if os.path.exists(_path):
-        ctypes.CDLL(_path)
+# _sp = site.getsitepackages()[0]
+# for _lib in [
+#     "nvidia/cusparselt/lib/libcusparseLt.so.0",
+#     "nvidia/cusparse/lib/libcusparse.so.12",
+# ]:
+#     _path = os.path.join(_sp, _lib)
+#     if os.path.exists(_path):
+#         ctypes.CDLL(_path)
 
-import shutil
 from pathlib import Path
+from typing import TYPE_CHECKING
 
-import torch
 import torch.optim as optim
 
+from vasae.data.online_sources import load_hf_text_dataset
+from vasae.models.online import attach_sae_embeddings, load_online_llm
 from vasae.utils.log import get_logger
 from vasae.utils.seed import set_seed
+
+if TYPE_CHECKING:
+    from nnsight import NNsight
+    from transformers import PreTrainedTokenizerBase
+
+    from vasae.data.corpus_windows import BalancedMixtureSource
+    from vasae.data.schema import DataConfig
+
+logger = get_logger()
+
+CORPUS_CHOICES = ("fineweb", "dclm", "pile")
 
 
 def parse_args():
@@ -71,6 +84,13 @@ def parse_args():
     )
 
     # data
+    p.add_argument(
+        "--data-source",
+        type=str,
+        default="hf",
+        choices=["hf", "jsonl"],
+        help="Training data source: HuggingFace dataset split or local JSONL corpus mixture.",
+    )
     p.add_argument("--dataset", type=str, default="wikitext")
     p.add_argument(
         "--dataset-config",
@@ -91,6 +111,31 @@ def parse_args():
     p.add_argument("--train-samples", type=int, default=8000)
     p.add_argument("--eval-samples", type=int, default=2000)
     p.add_argument("--test-samples", type=int, default=1000)
+    p.add_argument(
+        "--corpus-dir",
+        type=Path,
+        default=None,
+        help="Root directory containing <corpus>/raw/{train,heldout}.jsonl for --data-source jsonl.",
+    )
+    p.add_argument(
+        "--corpora",
+        nargs="+",
+        choices=CORPUS_CHOICES,
+        default=list(CORPUS_CHOICES),
+        help="Corpora to use for balanced JSONL mixture training.",
+    )
+    p.add_argument(
+        "--train-tokens",
+        type=int,
+        default=200_000_000,
+        help="Total token budget for balanced JSONL mixture training.",
+    )
+    p.add_argument(
+        "--valid-tokens",
+        type=int,
+        default=300_000,
+        help="Total token budget for balanced JSONL mixture validation.",
+    )
 
     # sae architecture
     p.add_argument(
@@ -159,60 +204,203 @@ def parse_args():
     return p.parse_args()
 
 
+def jsonable(value):
+    if isinstance(value, Path):
+        return str(value)
+    if isinstance(value, (list, tuple)):
+        return [jsonable(item) for item in value]
+    if isinstance(value, dict):
+        return {key: jsonable(item) for key, item in value.items()}
+    return value
+
+
+def save_training_results(
+    results_path: Path,
+    config: dict,
+    stopped_epoch: int,
+    eval_out: dict,
+):
+    results = {
+        "config": jsonable(config),
+        "stopped_epoch": stopped_epoch,
+        "last_eval": {
+            key: float(value) if isinstance(value, (int, float)) else value
+            for key, value in eval_out.items()
+        },
+    }
+    with results_path.open("w") as handle:
+        json.dump(results, handle, indent=2)
+    logger.info(f"Results saved to {results_path}")
+
+
+def infer_dim_sparse(
+    requested_dim: int,
+    tied_decoder: bool,
+    dim_model: int,
+    vocab_size: int,
+) -> int:
+    if requested_dim > 0:
+        return requested_dim
+    if tied_decoder:
+        return vocab_size
+    return 8 * dim_model
+
+
+def build_hf_train_eval_sources(
+    *,
+    data_cfg,
+    cache_root,
+    nn_model,
+    tokenizer,
+    layer_idx: int,
+    train_samples: int,
+    eval_samples: int,
+    test_samples: int,
+):
+    from vasae.data.activation_source import OnlineActivationSource
+
+    ds = load_hf_text_dataset(data_cfg, cache_root)
+    n_total = len(ds)
+    n_train = min(train_samples, n_total)
+    n_eval = min(eval_samples, n_total - n_train)
+    n_test = min(test_samples, n_total - n_train - n_eval)
+    train_ds = ds.select(range(n_train))
+    eval_ds = ds.select(range(n_train, n_train + n_eval))
+    logger.info(f"Data split: train={n_train}, eval={n_eval}, test={n_test}")
+
+    train_source = OnlineActivationSource(
+        model=nn_model,
+        tokenizer=tokenizer,
+        layer_idx=layer_idx,
+        text_dataset=train_ds,
+        batch_size=data_cfg.train_batchsize,
+        max_length=data_cfg.max_length,
+    )
+    valid_source = OnlineActivationSource(
+        model=nn_model,
+        tokenizer=tokenizer,
+        layer_idx=layer_idx,
+        text_dataset=eval_ds,
+        batch_size=data_cfg.valid_batchsize,
+        max_length=data_cfg.max_length,
+    )
+    return (
+        train_source,
+        valid_source,
+        {
+            "n_train": n_train,
+            "n_eval": n_eval,
+            "n_test": n_test,
+        },
+    )
+
+
+def build_jsonl_train_eval_sources(
+    *,
+    data_cfg: "DataConfig",
+    nn_model: "NNsight",
+    tokenizer: "PreTrainedTokenizerBase",
+    layer_idx: int,
+    model_name: str,
+    corpus_dir: Path | None,
+    corpora: Sequence[str],
+    train_tokens: int,
+    valid_tokens: int,
+) -> tuple[
+    "BalancedMixtureSource",
+    "BalancedMixtureSource",
+    dict[str, str | list[str] | int],
+]:
+    from vasae.data.corpus_windows import (
+        BalancedMixtureSource,
+        corpus_jsonl,
+        default_corpus_dir,
+    )
+
+    corpus_dir = corpus_dir or default_corpus_dir()
+    corpora = tuple(corpora)
+    train_paths = {
+        corpus: corpus_jsonl(corpus_dir, corpus, "train") for corpus in corpora
+    }
+    heldout_paths = {
+        corpus: corpus_jsonl(corpus_dir, corpus, "heldout") for corpus in corpora
+    }
+
+    logger.info(
+        "Training JSONL mixture with %s total tokens, model=%s, layer=%s, paths=%s",
+        f"{train_tokens:,}",
+        model_name,
+        layer_idx,
+        {key: str(value) for key, value in train_paths.items()},
+    )
+    train_source = BalancedMixtureSource(
+        model=nn_model,
+        tokenizer=tokenizer,
+        layer_idx=layer_idx,
+        corpus_paths=train_paths,
+        total_token_budget=train_tokens,
+        batch_size=data_cfg.train_batchsize,
+        max_length=data_cfg.max_length,
+    )
+    valid_source = BalancedMixtureSource(
+        model=nn_model,
+        tokenizer=tokenizer,
+        layer_idx=layer_idx,
+        corpus_paths=heldout_paths,
+        total_token_budget=valid_tokens,
+        batch_size=data_cfg.valid_batchsize,
+        max_length=data_cfg.max_length,
+    )
+    return (
+        train_source,
+        valid_source,
+        {
+            "corpus_dir": str(corpus_dir),
+            "corpora": list(corpora),
+            "train_tokens": train_tokens,
+            "valid_tokens": valid_tokens,
+        },
+    )
+
+
+def build_train_metrics(lm_head):
+    from vasae.metrics.base import MetricComposer
+    from vasae.metrics.logitlens import LogitLens, LogitLensAccMetric
+    from vasae.metrics.variance_explained import VarianceExplained
+
+    return MetricComposer(
+        [
+            LogitLensAccMetric(LogitLens(lm_head)),
+            VarianceExplained(),
+        ]
+    )
+
+
 def main():
     args = parse_args()
     set_seed(args.seed)
-    logger = get_logger()
     device = args.device
     logger.info(f"use device: {device}")
 
     save_dir: Path = Path(args.save_dir) / args.exp_name
     save_dir.mkdir(parents=True, exist_ok=True)
+    logger.info(f"Output will be saved in: {save_dir}")
 
-    # --- Lazy imports (nnsight ~10s, transformers ~8s, wandb ~2s) --- so --help don't need to wait so long.
-    import datasets
-    import transformers
-    from datasets import load_dataset, load_from_disk
-    from nnsight import NNsight
+    # --- Lazy imports so --help don't need to wait so long.
+    import transformers  # transformers ~8s
+    import wandb  # wandb ~2s
 
-    import wandb
-
-    datasets.disable_progress_bars()
-    transformers.logging.set_verbosity_error()
-
-    from vasae.data.activation_source import OnlineActivationSource
     from vasae.data.schema import DataConfig
     from vasae.engine.trainer import Trainer
-    from vasae.metrics.base import MetricComposer
-    from vasae.metrics.logitlens import LogitLens, LogitLensAccMetric
-    from vasae.metrics.variance_explained import VarianceExplained
-    from vasae.models.factory import get_embedding, get_layers, get_lm_head, load_model
     from vasae.models.sae import SAEConfig, SAEModel
 
     # --- Load LLM (model-agnostic) ---
-    dtype_map = {
-        "float16": torch.float16,
-        "bfloat16": torch.bfloat16,
-        "float32": torch.float32,
-    }
-    dtype = dtype_map.get(args.dtype)
-
-    logger.info(f"Loading {args.model_name}...")
-    llm, tokenizer = load_model(args.model_name, device=device, dtype=dtype)
-    nn_model = NNsight(llm)
-
-    n_layers = len(get_layers(llm))
-    emb = get_embedding(llm)
-    dim_input = emb.weight.size(1)
-    vocab_size = emb.weight.size(0)
-
-    logger.info(
-        f"Model: {type(llm).__name__}, dim={dim_input}, vocab={vocab_size}, "
-        f"layers={n_layers}, using layer {args.layer_idx}"
+    llm_ctx = load_online_llm(
+        args.model_name,
+        device=device,
+        dtype_name=args.dtype,
+        layer_idx=args.layer_idx,
     )
-
-    if args.layer_idx >= n_layers:
-        raise ValueError(f"layer_idx={args.layer_idx} >= n_layers={n_layers}")
 
     # --- Data config ---
     data_cfg = DataConfig(
@@ -225,69 +413,39 @@ def main():
         test_batchsize=args.test_batchsize,
     )
 
-    # --- Load dataset (with shared cache) ---
-    ds_cache_name = (
-        f"{data_cfg.dataset}_{data_cfg.dataset_config or 'default'}".replace("/", "_")
-    )
-    data_cache_dir = Path(args.save_dir) / ".data_cache" / ds_cache_name
-
-    if (data_cache_dir / "dataset_info.json").exists():
-        logger.info(f"Loading cached dataset from {data_cache_dir}")
-        ds = load_from_disk(str(data_cache_dir))
+    if args.data_source == "hf":
+        train_source, valid_source, data_summary = build_hf_train_eval_sources(
+            data_cfg=data_cfg,
+            cache_root=args.save_dir,
+            nn_model=llm_ctx.nn_model,
+            tokenizer=llm_ctx.tokenizer,
+            layer_idx=args.layer_idx,
+            train_samples=args.train_samples,
+            eval_samples=args.eval_samples,
+            test_samples=args.test_samples,
+        )
     else:
-        logger.info(f"Loading dataset {data_cfg.dataset} (first run, will cache)...")
-        ds = load_dataset(data_cfg.dataset, data_cfg.dataset_config, split="train")
-        # Rename text column if needed
-        if data_cfg.text_column != "text" and data_cfg.text_column in ds.column_names:
-            ds = ds.rename_column(data_cfg.text_column, "text")
-        # Filter empty texts
-        ds = ds.filter(lambda x: len(x["text"].strip()) > 50)
-        # Save to shared cache (atomic via temp dir + rename)
-        tmp_dir = data_cache_dir.with_name(f"{data_cache_dir.name}.tmp.{os.getpid()}")
-        tmp_dir.mkdir(parents=True, exist_ok=True)
-        ds.save_to_disk(str(tmp_dir))
-        try:
-            tmp_dir.rename(data_cache_dir)
-            logger.info(f"Cached dataset to {data_cache_dir}")
-        except OSError:
-            # Another job already saved — use theirs
-            shutil.rmtree(tmp_dir, ignore_errors=True)
-            logger.info(f"Cache already exists at {data_cache_dir}")
-
-    n_total = len(ds)
-    n_train = min(args.train_samples, n_total)
-    n_eval = min(args.eval_samples, n_total - n_train)
-    n_test = min(args.test_samples, n_total - n_train - n_eval)
-    train_ds = ds.select(range(n_train))
-    eval_ds = ds.select(range(n_train, n_train + n_eval))
-    logger.info(f"Data split: train={n_train}, eval={n_eval}, test={n_test}")
-
-    train_source = OnlineActivationSource(
-        model=nn_model,
-        tokenizer=tokenizer,
-        layer_idx=args.layer_idx,
-        text_dataset=train_ds,
-        batch_size=data_cfg.train_batchsize,
-        max_length=data_cfg.max_length,
-    )
-    valid_source = OnlineActivationSource(
-        model=nn_model,
-        tokenizer=tokenizer,
-        layer_idx=args.layer_idx,
-        text_dataset=eval_ds,
-        batch_size=data_cfg.valid_batchsize,
-        max_length=data_cfg.max_length,
-    )
+        train_source, valid_source, data_summary = build_jsonl_train_eval_sources(
+            data_cfg=data_cfg,
+            nn_model=llm_ctx.nn_model,
+            tokenizer=llm_ctx.tokenizer,
+            layer_idx=args.layer_idx,
+            model_name=args.model_name,
+            corpus_dir=args.corpus_dir,
+            corpora=args.corpora,
+            train_tokens=args.train_tokens,
+            valid_tokens=args.valid_tokens,
+        )
     # --- Build SAE ---
-    if args.dim_sparse > 0:
-        dim_sparse = args.dim_sparse
-    elif args.tied_decoder:
-        dim_sparse = vocab_size
-    else:
-        dim_sparse = 8 * dim_input
+    dim_sparse = infer_dim_sparse(
+        args.dim_sparse,
+        args.tied_decoder,
+        llm_ctx.dim_model,
+        llm_ctx.vocab_size,
+    )
 
     sae_cfg = SAEConfig(
-        dim_model=dim_input,
+        dim_model=llm_ctx.dim_model,
         dim_sparse=dim_sparse,
         encoder_type=args.encoder_type,
         sparsity_type=args.sparsity_type,
@@ -305,14 +463,11 @@ def main():
     )
     sae_model = SAEModel(sae_cfg).to(device)
 
-    if args.tied_decoder:
-        sae_model.attach_embedding(emb, freeze=args.freeze_decoder)
-
-    if args.anchor_coeff > 0:
-        sae_model.attach_anchor_embedding(emb)
-
-    # Ensure SAE is float32 even if LLM embeddings were bfloat16
-    sae_model = sae_model.float()
+    sae_model = attach_sae_embeddings(
+        sae_model,
+        llm_ctx.embedding,
+        freeze_decoder=args.freeze_decoder,
+    ).float()
 
     logger.info(
         f"SAE: dim_sparse={dim_sparse}, tied={args.tied_decoder}, "
@@ -320,11 +475,8 @@ def main():
     )
 
     # --- Metrics ---
-    logitlens_metric = LogitLensAccMetric(LogitLens(get_lm_head(llm)))
-    ve_metric = VarianceExplained()
-
-    train_metrics = MetricComposer([logitlens_metric, ve_metric])
-    eval_metrics = MetricComposer([logitlens_metric, ve_metric])
+    train_metrics = build_train_metrics(llm_ctx.lm_head)
+    eval_metrics = build_train_metrics(llm_ctx.lm_head)
 
     # --- Trainer ---
     optimizer = optim.Adam(
@@ -335,7 +487,6 @@ def main():
         metrics=train_metrics,
         eval_metrics=eval_metrics,
         device=device,
-        logger=logger,
     )
 
     # --- wandb ---
@@ -344,18 +495,18 @@ def main():
             project="VASAE",
             name=args.exp_name,
             group=args.wandb_group,
-            config=vars(args),
+            config=jsonable(vars(args)),
         )
     else:
         wandb.init(mode="disabled")
 
     def load_best_sae(checkpoint_dir: Path) -> SAEModel:
         sae_model = SAEModel.from_pretrained(checkpoint_dir).to(device)
-        if args.tied_decoder:
-            sae_model.attach_embedding(emb, freeze=args.freeze_decoder)
-        if args.anchor_coeff > 0:
-            sae_model.attach_anchor_embedding(emb)
-        return sae_model.float()
+        return attach_sae_embeddings(
+            sae_model,
+            llm_ctx.embedding,
+            freeze_decoder=args.freeze_decoder,
+        ).float()
 
     # --- Fit (with optional early stopping) ---
     fit_out = trainer.fit(
@@ -369,23 +520,13 @@ def main():
         log_fn=wandb.log,
         load_best_model_fn=load_best_sae,
     )
-    stopped_epoch = fit_out["stopped_epoch"]
-    eval_out = fit_out["eval"]
-
     logger.info(f"Model saved to {save_dir}")
-
-    results = {
-        "config": vars(args),
-        "stopped_epoch": stopped_epoch,
-        "last_eval": {
-            k: float(v) if isinstance(v, (int, float)) else v
-            for k, v in eval_out.items()
-        },
-    }
-    results_path = save_dir / "results.json"
-    with open(results_path, "w") as f:
-        json.dump(results, f, indent=2)
-    logger.info(f"Results saved to {results_path}")
+    save_training_results(
+        save_dir / "results.json",
+        config={**vars(args), **data_summary},
+        stopped_epoch=fit_out["stopped_epoch"],
+        eval_out=fit_out["eval"],
+    )
 
     wandb.finish()
 

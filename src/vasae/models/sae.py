@@ -168,9 +168,9 @@ class SAEModel(PreTrainedModel):
                 f"dim_sparse ({self.config.dim_sparse}) must equal embedding vocab size "
                 f"({embedding.weight.size(0)}) to tie decoder."
             )
-        if self.config.dim_input != embedding.weight.size(1):
+        if self.config.dim_model != embedding.weight.size(1):
             raise ValueError(
-                f"dim_input ({self.config.dim_input}) must equal embedding dim "
+                f"dim_model ({self.config.dim_model}) must equal embedding dim "
                 f"({embedding.weight.size(1)}) to tie decoder."
             )
 

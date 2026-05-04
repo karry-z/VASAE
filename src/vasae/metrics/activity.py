@@ -39,12 +39,21 @@ class ActivityStats(IMetric):
 
     def finalize(self) -> Dict[str, float]:
         if self.feature_counts is None or self.n_samples == 0:
-            return {"dead_rate": 0.0, "l0": 0.0, "n_samples": 0}
+            return {
+                "dead_rate": 0.0,
+                "l0": 0.0,
+                "n_samples": 0,
+                "n_alive": 0,
+                "alive_features": [],
+            }
 
         dead_rate = (self.feature_counts == 0).float().mean().item()
         l0 = self.l0_sum / self.n_samples
+        alive_features = (self.feature_counts > 0).nonzero(as_tuple=True)[0].tolist()
         return {
             "dead_rate": dead_rate,
             "l0": l0,
             "n_samples": self.n_samples,
+            "n_alive": len(alive_features),
+            "alive_features": alive_features,
         }

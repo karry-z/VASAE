@@ -1,13 +1,15 @@
+import logging
+
 import torch
 
 from vasae.metrics.base import Aggregator, MetricComposer
 from vasae.models.sae import SAEOutput
 
+logger = logging.getLogger(__name__)
+
 
 @torch.no_grad()
-def evaluate(
-    model, data_loader, metrics: MetricComposer, device, logger, max_batchsize=0
-):
+def evaluate(model, data_loader, metrics: MetricComposer, device, max_batchsize=0):
 
     aggregator = Aggregator()
     metrics.reset()

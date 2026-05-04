@@ -1,4 +1,4 @@
-from logging import Logger
+import logging
 from types import SimpleNamespace
 from typing import Dict
 
@@ -8,6 +8,8 @@ from vasae.engine.config import TrainConfig
 from vasae.metrics.base import Aggregator, MetricComposer
 from vasae.models.sae import SAEModel, SAEOutput
 
+logger = logging.getLogger(__name__)
+
 
 def train_one_epoch(
     model: SAEModel,
@@ -16,7 +18,6 @@ def train_one_epoch(
     device,
     optimizer: torch.optim.Optimizer,
     metrics: MetricComposer,
-    logger: Logger,
     epoch: int,
 ):
     model.train()
@@ -45,13 +46,12 @@ def train_one_epoch(
 
         output.loss.backward()
         optimizer.step()
-        if logger is not None:
-            logger.info(
-                f"[Train] Epoch {epoch+1}/{train_cfg.num_epochs} "
-                f"batch {batch_i+1}/{len(loader)} "
-                f"loss {output.loss.item():.4f} "
-                f"acc: {eval_outcomes['logitlens_acc']*100:.2f}%"
-            )
+        logger.info(
+            f"[Train] Epoch {epoch+1}/{train_cfg.num_epochs} "
+            f"batch {batch_i+1}/{len(loader)} "
+            f"loss {output.loss.item():.4f} "
+            f"acc: {eval_outcomes['logitlens_acc']*100:.2f}%"
+        )
 
         if train_cfg.max_batchsize > 0 and batch_i > train_cfg.max_batchsize:
             break

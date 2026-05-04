@@ -53,10 +53,118 @@ Source: [The Pile paper](https://arxiv.org/abs/2101.00027), [Datasheet for the P
 
 # Workflow
 
-收集数据集 大约 1 min
+收集数据集：
 ```bash
-sbatch fetch_corpus_slurm.sh
+sbatch exp/023_Dataset/fetch_corpus_slurm.sh
 ```
+
+验证 JSONL、manifest、token 数和 split 边界
+```bash
+uv run --no-sync python scripts/collect/validate_corpus.py \
+  --out-dir "$VASAE_OUT/Dataset/data"
+```
+
+快速 smoke test，确认探索脚本能跑通：
+```bash
+uv run --no-sync python scripts/training/train_sae_online.py \
+  --data-source jsonl \
+  --model-name gpt2 \
+  --layer-idx 5 \
+  --corpus-dir "$VASAE_OUT/Dataset/data" \
+  --train-tokens 10000 \
+  --valid-tokens 2000 \
+  --train-batchsize 4 \
+  --valid-batchsize 4 \
+  --max-length 128 \
+  --dim-sparse 50257 \
+  --sparsity-type topk \
+  --k 32 \
+  --nonneg-latents \
+  --anchor-coeff 1e-4 \
+  --anchor-mode hard \
+  --num-epochs 1 \
+  --save-dir "$VASAE_OUT/Dataset/runs" \
+  --exp-name "gpt2_L5_mixture_soft_smoke" \
+  --no-wandb
+
+for corpus in fineweb dclm pile; do
+  uv run --no-sync python scripts/eval/eval_sae_online.py \
+    --data-source jsonl \
+    --sae-path "$VASAE_OUT/Dataset/runs/gpt2_L5_mixture_soft_smoke" \
+    --model-name gpt2 \
+    --layer-idx 5 \
+    --corpus "$corpus" \
+    --eval-tokens 2000 \
+    --corpus-dir "$VASAE_OUT/Dataset/data" \
+    --test-batchsize 4 \
+    --max-length 128
+done
+
+uv run --no-sync python scripts/aggregate/summarize_dataset_results.py \
+  --run-dir "$VASAE_OUT/Dataset/runs/gpt2_L5_mixture_soft_smoke"
+```
+
+完整探索实验：
+```bash
+sbatch exp/023_Dataset/run_train_eval_slurm.sh
+```
+默认仍是 GPT-2-small L5；如需复用同一入口测试其他支持的模型/层，可通过 `MODEL_NAME`、`LAYER_IDX`、`DTYPE` 和 `RUN_NAME` 覆盖 Slurm 环境变量。`DIM_SPARSE` 默认会从模型 vocab size 自动解析，也可以手动覆盖。
+
+默认输出：
+- checkpoint 和训练 sanity eval: `$VASAE_OUT/Dataset/runs/gpt2_L5_mixture_soft/results.json`
+- held-out eval: `results_eval_fineweb.json`, `results_eval_dclm.json`, `results_eval_pile.json`
+- 汇总: `summary.json`, `summary.md`
 
 
 # Results
+
+## 运行信息
+
+本次完整探索作业为 `exp/023_Dataset/logs/023_train_eval_4414657.log`，输出目录：
+
+```text
+/projects/b5bq/VASAE/Dataset/runs/gpt2_L5_mixture_soft
+```
+
+实际语料收集完成情况：
+
+| corpus | train tokens | train docs | heldout tokens | heldout docs |
+|---|---:|---:|---:|---:|
+| FineWeb | 66,666,901 | 95,905 | 1,000,447 | 1,453 |
+| DCLM | 66,667,394 | 53,104 | 1,000,329 | 770 |
+| The Pile | 66,666,757 | 45,181 | 1,035,254 | 32 |
+| **total** | **200,001,052** | **194,190** | **3,036,030** | **2,255** |
+
+训练配置：GPT-2-small L5，VASAE-Soft，`k=32`，`lambda=1e-4`，`max_length=128`，`batch_size=32`，`num_epochs=1`，训练 token budget 为 200M，训练期 sanity validation token budget 为 300k。
+
+训练期指标：
+
+| split | loss | MSE | VE | logitlens |
+|---|---:|---:|---:|---:|
+| train mixture | 0.9609 | 0.9610 | 0.9902 | 0.8388 |
+| valid mixture sanity | 0.8649 | 0.8649 | 0.9912 | 0.8433 |
+
+## Held-out Evaluation
+
+每个 corpus 使用 1M token held-out budget 评估。结果文件为 `results_eval_fineweb.json`、`results_eval_dclm.json`、`results_eval_pile.json`，汇总文件为 `summary.json` 和 `summary.md`。
+
+| corpus | MSE | VE | logitlens | CE recovered | dead_rate | L0 | n_alive |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| FineWeb | 0.8324 | 0.9917 | 0.8566 | 0.9814 | 0.9142 | 31.9562 | 4,311 |
+| DCLM | 0.8372 | 0.9914 | 0.8472 | 0.9791 | 0.9138 | 31.9578 | 4,331 |
+| The Pile | 0.9065 | 0.9903 | 0.8341 | 0.9793 | 0.9145 | 31.9599 | 4,299 |
+
+## Active Feature Overlap
+
+| feature sets | intersection | union | jaccard |
+|---|---:|---:|---:|
+| FineWeb / DCLM | 4,274 | 4,368 | 0.9785 |
+| FineWeb / The Pile | 4,260 | 4,350 | 0.9793 |
+| DCLM / The Pile | 4,269 | 4,361 | 0.9789 |
+| all three | 4,257 |  |  |
+
+## Observations
+
+混合训练后的重构和功能指标在三个 held-out split 上都比较稳定：VE 均约为 0.990-0.992，CE recovered 约为 0.979-0.981。The Pile 的 MSE 略高、logitlens 略低，符合其文本来源更异质的预期。
+
+feature 活跃集合在三个 held-out split 上高度重叠，pairwise Jaccard 约为 0.979，三者共有 4,257 个 alive features。当前 1M-token held-out 评估没有显示出很强的数据集特异 active feature 子集；如果要继续验证低频/领域特征差异，下一步可以扩大 held-out token budget，或针对 The Pile 子域、代码/论文/论坛等来源做分组评估。

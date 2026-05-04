@@ -5,6 +5,7 @@ Works with any model whose activations have been collected beforehand
 """
 
 import argparse
+import logging
 from pathlib import Path
 
 import torch
@@ -26,6 +27,8 @@ from vasae.models.sae import SAEConfig, SAEModel
 from vasae.utils.log import get_logger
 from vasae.utils.seed import set_seed
 
+logger = logging.getLogger(__name__)
+
 
 def train_model(
     model: SAEModel,
@@ -34,7 +37,6 @@ def train_model(
     train_cfg: TrainConfig,
     train_loader,
     valid_loader,
-    logger,
     metrics: MetricComposer,
     device,
 ):
@@ -47,7 +49,6 @@ def train_model(
             device=device,
             optimizer=optimizer,
             metrics=metrics,
-            logger=logger,
             epoch=epoch,
         )
 
@@ -56,7 +57,6 @@ def train_model(
             data_loader=valid_loader,
             metrics=metrics,
             device=device,
-            logger=logger,
             max_batchsize=train_cfg.max_batchsize,
         )
 
@@ -195,7 +195,7 @@ def main():
     model_path = Path(sae_cfg.sae_save_path)
     model_path.parent.mkdir(parents=True, exist_ok=True)
 
-    logger = get_logger()
+    get_logger()
 
     train_loader, valid_loader, test_loader = get_dataloader(data_cfg, args.seed)
 
@@ -258,7 +258,6 @@ def main():
         train_cfg=train_cfg,
         train_loader=train_loader,
         valid_loader=valid_loader,
-        logger=logger,
         metrics=metrics,
         device=args.device,
     )
@@ -273,7 +272,6 @@ def main():
         data_loader=test_loader,
         metrics=metrics,
         device=args.device,
-        logger=logger,
         max_batchsize=train_cfg.max_batchsize,
     )
 

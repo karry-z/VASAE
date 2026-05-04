@@ -1,4 +1,4 @@
-from logging import Logger
+import logging
 from pathlib import Path
 from typing import Callable, Optional
 
@@ -6,6 +6,8 @@ import torch
 
 from vasae.metrics.base import Aggregator, MetricComposer
 from vasae.models.sae import SAEModel, SAEOutput
+
+logger = logging.getLogger(__name__)
 
 
 class Trainer:
@@ -21,7 +23,6 @@ class Trainer:
         metrics: MetricComposer,
         eval_metrics: Optional[MetricComposer] = None,
         device: str = "cpu",
-        logger: Optional[Logger] = None,
     ):
         self.sae_model = sae_model
         self.metrics = metrics
@@ -29,7 +30,6 @@ class Trainer:
             eval_metrics or metrics
         )  # eval metric are used for eval stage, may different from metrics used in training
         self.device = device
-        self.logger = logger
 
     def fit(
         self,
@@ -53,8 +53,7 @@ class Trainer:
 
         for epoch in range(num_epochs):
             epoch_num = epoch + 1
-            if self.logger is not None:
-                self.logger.info(f"=== Epoch {epoch_num}/{num_epochs} ===")
+            logger.info(f"=== Epoch {epoch_num}/{num_epochs} ===")
 
             train_out = self.train_epoch(
                 train_source,
@@ -64,22 +63,20 @@ class Trainer:
                 num_epochs=num_epochs,
             )
             last_train = train_out
-            if self.logger is not None:
-                self.logger.info(
-                    f"[Train] loss={train_out['loss']:.4f} "
-                    f"VE={train_out.get('variance_explained', 0):.4f} "
-                    f"logitlens={train_out.get('logitlens_acc', 0) * 100:.2f}%"
-                )
+            logger.info(
+                f"[Train] loss={train_out['loss']:.4f} "
+                f"VE={train_out.get('variance_explained', 0):.4f} "
+                f"logitlens={train_out.get('logitlens_acc', 0) * 100:.2f}%"
+            )
 
             eval_out = self.evaluate(eval_source, max_batches=max_batches)
             last_eval = eval_out
-            if self.logger is not None:
-                self.logger.info(
-                    f"[Eval] loss={eval_out['loss']:.4f} "
-                    f"VE={eval_out.get('variance_explained', 0):.4f} "
-                    f"logitlens={eval_out.get('logitlens_acc', 0) * 100:.2f}% "
-                    f"CE_recovered={eval_out.get('loss_recovered', 0):.4f}"
-                )
+            logger.info(
+                f"[Eval] loss={eval_out['loss']:.4f} "
+                f"VE={eval_out.get('variance_explained', 0):.4f} "
+                f"logitlens={eval_out.get('logitlens_acc', 0) * 100:.2f}% "
+                f"CE_recovered={eval_out.get('loss_recovered', 0):.4f}"
+            )
 
             if log_fn is not None:
                 log_fn(
@@ -96,26 +93,20 @@ class Trainer:
                     patience_counter = 0
                     if save_path is not None:
                         self.sae_model.save_pretrained(save_path)
-                    if self.logger is not None:
-                        self.logger.info(
-                            f"Best model saved (eval_loss={best_eval_loss:.4f})"
-                        )
+                    logger.info(
+                        f"Best model saved (eval_loss={best_eval_loss:.4f})"
+                    )
                 else:
                     patience_counter += 1
-                    if self.logger is not None:
-                        self.logger.info(
-                            f"No improvement ({patience_counter}/{patience})"
-                        )
+                    logger.info(f"No improvement ({patience_counter}/{patience})")
 
                 if patience_counter >= patience:
                     stopped_epoch = epoch_num
-                    if self.logger is not None:
-                        self.logger.info(f"Early stopping at epoch {stopped_epoch}")
+                    logger.info(f"Early stopping at epoch {stopped_epoch}")
                     break
 
         if patience > 0 and save_path is not None:
-            if self.logger is not None:
-                self.logger.info("Loading best model for final test...")
+            logger.info("Loading best model for final test...")
             del optimizer
             old_model = self.sae_model
             self.sae_model = None
@@ -193,7 +184,7 @@ class Trainer:
             output.loss.backward()
             optimizer.step()
 
-            if self.logger is not None and (batch_i + 1) % log_every == 0:
+            if log_every > 0 and (batch_i + 1) % log_every == 0:
                 epoch_str = f"ep {epoch}/{num_epochs} " if num_epochs > 0 else ""
                 parts = [
                     f"{epoch_str}batch {batch_i + 1}/{n_total}",
@@ -206,7 +197,7 @@ class Trainer:
                     parts.append(f"l1={output.l1_loss:.4f}")
                 for k, v in eval_outcomes.items():
                     parts.append(f"{k}={v:.4f}")
-                self.logger.info("[Train] " + " | ".join(parts))
+                logger.info("[Train] " + " | ".join(parts))
 
             if max_batches > 0 and batch_i >= max_batches:
                 break
@@ -257,13 +248,12 @@ class Trainer:
                 activations.size(0),
             )
 
-            if log_every > 0 and self.logger is not None and (batch_i + 1) % log_every == 0:
-                self.logger.info(f"[Eval] batch {batch_i + 1}/{n_total}")
+            if log_every > 0 and (batch_i + 1) % log_every == 0:
+                logger.info(f"[Eval] batch {batch_i + 1}/{n_total}")
 
             if max_batches > 0 and batch_i >= max_batches:
                 break
 
-        if self.logger is not None:
-            self.logger.info(f"[Eval] {n_total} batches done")
+        logger.info(f"[Eval] {n_total} batches done")
 
         return {**aggregator.compute(), **self.eval_metrics.finalize()}
