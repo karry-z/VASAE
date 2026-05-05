@@ -5,7 +5,7 @@
 #SBATCH --gpus=1
 #SBATCH --cpus-per-task=8
 #SBATCH --mem=96G
-#SBATCH --time=24:00:00
+#SBATCH --time=08:00:00
 #SBATCH --array=0-9
 
 set -euo pipefail
@@ -39,9 +39,9 @@ variant=${VARIANTS[$variant_idx]}
 
 OUT_DIR="${OUT_DIR:-${VASAE_OUT}/F001_Benchmarking_mix}"
 CORPUS_DIR="${CORPUS_DIR:-${VASAE_OUT}/Dataset/data}"
-TRAIN_TOKENS="${TRAIN_TOKENS:-200000000}"
-VALID_TOKENS="${VALID_TOKENS:-300000}"
-NUM_EPOCHS="${NUM_EPOCHS:-10}"
+TRAIN_TOKENS="${TRAIN_TOKENS:-20000000}"
+VALID_TOKENS="${VALID_TOKENS:-100000}"
+NUM_EPOCHS="${NUM_EPOCHS:-5}"
 PATIENCE="${PATIENCE:-3}"
 MAX_LENGTH="${MAX_LENGTH:-128}"
 BATCH_SIZE="${BATCH_SIZE:-8}"
@@ -133,16 +133,13 @@ if [ -e "${RUN_DIR}/model.safetensors" ] || [ -e "${RUN_DIR}/config.json" ]; the
     echo "FORCE_RETRAIN=1 set; training will overwrite checkpoint files in ${RUN_DIR}."
 fi
 
-uv sync --frozen
+if [ "${RUN_UV_SYNC:-0}" = "1" ]; then
+    uv sync --frozen
+fi
 
 VENV_SITE="$(uv run --no-sync python -c 'import site; print(site.getsitepackages()[0])')"
 export LD_LIBRARY_PATH="${VENV_SITE}/nvidia/cusparselt/lib:${VENV_SITE}/nvidia/cusparse/lib:${LD_LIBRARY_PATH:-}"
 nvidia-smi --list-gpus
-
-uv run --no-sync python scripts/collect/validate_corpus.py \
-    --out-dir "$CORPUS_DIR" \
-    --corpora fineweb dclm pile \
-    --total-train-tokens "$TRAIN_TOKENS"
 
 "${TRAIN_CMD[@]}"
 

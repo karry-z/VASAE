@@ -5,7 +5,7 @@
 #SBATCH --gpus=1
 #SBATCH --cpus-per-task=8
 #SBATCH --mem=64G
-#SBATCH --time=24:00:00
+#SBATCH --time=08:00:00
 #SBATCH --array=0-9
 
 set -euo pipefail
@@ -39,12 +39,15 @@ variant=${VARIANTS[$variant_idx]}
 
 OUT_DIR="${OUT_DIR:-${VASAE_OUT}/F001_Benchmarking_mix}"
 CORPUS_DIR="${CORPUS_DIR:-${VASAE_OUT}/Dataset/data}"
-TRAIN_TOKENS="${TRAIN_TOKENS:-200000000}"
-VALID_TOKENS="${VALID_TOKENS:-300000}"
-NUM_EPOCHS="${NUM_EPOCHS:-10}"
+TRAIN_TOKENS="${TRAIN_TOKENS:-20000000}"
+VALID_TOKENS="${VALID_TOKENS:-100000}"
+NUM_EPOCHS="${NUM_EPOCHS:-5}"
 PATIENCE="${PATIENCE:-3}"
+MAX_BATCHES="${MAX_BATCHES:-0}"
+LOG_EVERY="${LOG_EVERY:-10}"
+LOG_INTERVAL_SECONDS="${LOG_INTERVAL_SECONDS:-300}"
 MAX_LENGTH="${MAX_LENGTH:-128}"
-BATCH_SIZE="${BATCH_SIZE:-32}"
+BATCH_SIZE="${BATCH_SIZE:-256}"
 K="${K:-32}"
 LR="${LR:-1e-3}"
 ANCHOR_COEFF="${ANCHOR_COEFF:-1e-4}"
@@ -68,6 +71,9 @@ COMMON_ARGS=(
     --k "$K"
     --nonneg-latents
     --num-epochs "$NUM_EPOCHS"
+    --max-batches "$MAX_BATCHES"
+    --log-every "$LOG_EVERY"
+    --log-interval-seconds "$LOG_INTERVAL_SECONDS"
     --patience "$PATIENCE"
     --lr "$LR"
     --wandb-group "001Fmix_gpt2"
@@ -92,7 +98,7 @@ TRAIN_CMD=(
 )
 
 echo "Running on host $(hostname)"
-echo "Started on $(date)"
+echo "Started on $(date -u '+%Y-%m-%d %H:%M:%S UTC')"
 echo "Directory is $(pwd)"
 echo "SLURM_JOBID=${SLURM_JOBID:-local}"
 echo "SLURM_ARRAY_TASK_ID=${task_id}"
@@ -105,6 +111,9 @@ echo "TRAIN_TOKENS=${TRAIN_TOKENS}"
 echo "VALID_TOKENS=${VALID_TOKENS}"
 echo "NUM_EPOCHS=${NUM_EPOCHS}"
 echo "PATIENCE=${PATIENCE}"
+echo "MAX_BATCHES=${MAX_BATCHES}"
+echo "LOG_EVERY=${LOG_EVERY}"
+echo "LOG_INTERVAL_SECONDS=${LOG_INTERVAL_SECONDS}"
 printf "\n"
 
 if [ "${DRY_RUN:-0}" = "1" ]; then
@@ -135,11 +144,6 @@ uv sync --frozen
 VENV_SITE="$(uv run --no-sync python -c 'import site; print(site.getsitepackages()[0])')"
 export LD_LIBRARY_PATH="${VENV_SITE}/nvidia/cusparselt/lib:${VENV_SITE}/nvidia/cusparse/lib:${LD_LIBRARY_PATH:-}"
 nvidia-smi --list-gpus
-
-uv run --no-sync python scripts/collect/validate_corpus.py \
-    --out-dir "$CORPUS_DIR" \
-    --corpora fineweb dclm pile \
-    --total-train-tokens "$TRAIN_TOKENS"
 
 "${TRAIN_CMD[@]}"
 

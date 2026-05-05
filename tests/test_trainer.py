@@ -3,7 +3,7 @@
 import pytest
 import torch
 
-from vasae.engine.trainer import Trainer
+from vasae.engine.trainer import Trainer, _source_progress_totals
 from vasae.metrics.base import Aggregator, IMetric, MetricComposer
 from vasae.models.sae import SAEConfig, SAEModel
 
@@ -17,6 +17,33 @@ N_BATCHES = 3
 class DummyMetric(IMetric):
     def compute(self, context):
         return {"dummy_metric": 0.5}
+
+
+class CountingMetric(IMetric):
+    def __init__(self):
+        self.calls = 0
+
+    def reset(self):
+        self.calls = 0
+
+    def compute(self, context):
+        self.calls += 1
+        return {"counting_metric": 1.0}
+
+
+class TokenBudgetSource:
+    total_token_budget = 20_000_000
+    batch_size = 32
+    max_length = 128
+
+
+class SmallTokenBudgetSource:
+    total_token_budget = BATCH * SEQ_LEN
+    batch_size = BATCH
+    max_length = SEQ_LEN
+
+    def __iter__(self):
+        yield from _make_online_data_source(3)
 
 
 def _make_data_source(n_batches=N_BATCHES):
@@ -62,18 +89,68 @@ def trainer(model):
 
 
 class TestTrainer:
+    def test_progress_totals_from_token_budget(self):
+        total_batches, estimated, total_tokens = _source_progress_totals(
+            TokenBudgetSource()
+        )
+        assert total_batches == 4_883
+        assert estimated is True
+        assert total_tokens == 20_000_000
+
+    def test_progress_totals_respect_max_batches(self):
+        total_batches, estimated, total_tokens = _source_progress_totals(
+            TokenBudgetSource(),
+            max_batches=200,
+        )
+        assert total_batches == 200
+        assert estimated is True
+        assert total_tokens == 819_200
+
     def test_train_epoch_returns_dict(self, trainer, optimizer):
         result = trainer.train_epoch(_make_data_source(), optimizer=optimizer)
         assert isinstance(result, dict)
         assert "loss" in result
         assert "dummy_metric" in result
 
-    def test_train_epoch_max_batches(self, trainer, optimizer):
-        # With max_batches=1, should only process ~1 batch
+    def test_train_epoch_max_batches_is_exact(self, model, optimizer):
+        metric = CountingMetric()
+        trainer = Trainer(
+            sae_model=model,
+            metrics=MetricComposer([metric]),
+            device="cpu",
+        )
         result = trainer.train_epoch(
-            _make_data_source(10), optimizer=optimizer, max_batches=1
+            _make_data_source(10),
+            optimizer=optimizer,
+            max_batches=1,
         )
         assert isinstance(result, dict)
+        assert metric.calls == 1
+
+    def test_train_epoch_logs_token_budget_progress(self, trainer, optimizer, caplog):
+        caplog.set_level("INFO", logger="vasae.engine.trainer")
+        trainer.train_epoch(
+            SmallTokenBudgetSource(),
+            optimizer=optimizer,
+            max_batches=1,
+            log_every=1,
+        )
+        messages = "\n".join(record.getMessage() for record in caplog.records)
+        assert "batch 1/~1" in messages
+        assert "tokens=40/40 (100.00%)" in messages
+        assert "batch 1/?" not in messages
+
+    def test_evaluate_max_batches_is_exact(self, model):
+        metric = CountingMetric()
+        trainer = Trainer(
+            sae_model=model,
+            metrics=MetricComposer([DummyMetric()]),
+            eval_metrics=MetricComposer([metric]),
+            device="cpu",
+        )
+        result = trainer.evaluate(_make_data_source(10), max_batches=2)
+        assert isinstance(result, dict)
+        assert metric.calls == 2
 
     def test_evaluate_returns_dict(self, trainer):
         result = trainer.evaluate(_make_data_source())

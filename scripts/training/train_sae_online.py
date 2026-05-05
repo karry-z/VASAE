@@ -183,6 +183,18 @@ def parse_args():
     # training
     p.add_argument("--num-epochs", type=int, default=5)
     p.add_argument("--max-batches", type=int, default=0)
+    p.add_argument(
+        "--log-every",
+        type=int,
+        default=10,
+        help="Log training/eval progress every N batches (0 = disabled).",
+    )
+    p.add_argument(
+        "--log-interval-seconds",
+        type=int,
+        default=300,
+        help="Also log progress at least every N seconds (0 = disabled).",
+    )
     p.add_argument("--lr", type=float, default=1e-3)
     p.add_argument(
         "--patience",
@@ -228,6 +240,7 @@ def save_training_results(
             for key, value in eval_out.items()
         },
     }
+    logger.info(f"Saving results to {results_path}...")
     with results_path.open("w") as handle:
         json.dump(results, handle, indent=2)
     logger.info(f"Results saved to {results_path}")
@@ -519,6 +532,8 @@ def main():
         save_dir=save_dir,
         log_fn=wandb.log,
         load_best_model_fn=load_best_sae,
+        log_every=args.log_every,
+        log_interval_seconds=args.log_interval_seconds,
     )
     logger.info(f"Model saved to {save_dir}")
     save_training_results(

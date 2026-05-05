@@ -30,14 +30,20 @@ def get_layer_proxy(model: NNsight, layer_idx: int):
 
 
 def extract_activations(
-    model: NNsight, input_ids: torch.Tensor, layer_idx: int
+    model: NNsight,
+    input_ids: torch.Tensor,
+    layer_idx: int,
+    attention_mask: torch.Tensor | None = None,
 ) -> torch.Tensor:
     """Extract activations from a specific transformer layer (model-agnostic).
 
     Note: nnsight exposes layer.output as the hidden_states tensor [B, S, D]
     directly (not a tuple), so we use layer.output without indexing.
     """
-    with model.trace(input_ids):
+    trace_kwargs = {"use_cache": False}
+    if attention_mask is not None:
+        trace_kwargs["attention_mask"] = attention_mask
+    with torch.no_grad(), model.trace(input_ids, **trace_kwargs):
         layer = get_layer_proxy(model, layer_idx)
         h = layer.output.save()
     return h
@@ -51,7 +57,7 @@ def patch_and_forward(
     intervention_fn: Callable[[torch.Tensor], torch.Tensor],
 ) -> torch.Tensor:
     """Patch activations at a specific layer and return final logits (model-agnostic)."""
-    with model.trace(input_ids, attention_mask=attention_mask):
+    with model.trace(input_ids, attention_mask=attention_mask, use_cache=False):
         layer = get_layer_proxy(model, layer_idx)
         h = layer.output
         layer.output = intervention_fn(h)

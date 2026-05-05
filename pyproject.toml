@@ -43,6 +43,7 @@ build-backend = "hatchling.build"
 
 [dependency-groups]
 dev = [
+    "isort>=7.0.0",
     "pytest>=9.0.2",
 ]
 

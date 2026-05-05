@@ -24,7 +24,11 @@ def load_model(
         tokenizer.pad_token = tokenizer.eos_token
 
     model: nn.Module = AutoModelForCausalLM.from_pretrained(model_name, **kwargs)
+    if hasattr(model.config, "use_cache"):
+        model.config.use_cache = False
     model.to(device).eval()
+    for param in model.parameters():
+        param.requires_grad_(False)
     return model, tokenizer
 
 

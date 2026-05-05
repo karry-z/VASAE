@@ -151,7 +151,12 @@ class HeldoutCorpusSource:
         ):
             input_ids = batch["input_ids"].to(self.model.device)
             attention_mask = batch["attention_mask"].to(self.model.device)
-            activations = extract_activations(self.model, input_ids, self.layer_idx)
+            activations = extract_activations(
+                self.model,
+                input_ids,
+                self.layer_idx,
+                attention_mask=attention_mask,
+            )
             yield {
                 "activations": activations,
                 "input_ids": input_ids,
@@ -212,7 +217,12 @@ class BalancedMixtureSource:
                     continue
                 input_ids = batch["input_ids"].to(self.model.device)
                 attention_mask = batch["attention_mask"].to(self.model.device)
-                activations = extract_activations(self.model, input_ids, self.layer_idx)
+                activations = extract_activations(
+                    self.model,
+                    input_ids,
+                    self.layer_idx,
+                    attention_mask=attention_mask,
+                )
                 yield {
                     "activations": activations,
                     "input_ids": input_ids,

@@ -1,0 +1,34 @@
+{
+  "args": {
+    "sae_dir": null,
+    "sae_paths": [
+      "0:/scratch/b5bq/pu22650.b5bq/VASAE_out/001_F_Benchmarking/001F_gpt2_L0_soft"
+    ],
+    "model_name": "gpt2",
+    "variant": "soft",
+    "layers": "0",
+    "dataset": "wikitext",
+    "dataset_config": "wikitext-103-raw-v1",
+    "split": "test",
+    "n_samples": 100,
+    "max_length": 256,
+    "batch_size": 16,
+    "output_dir": "/scratch/b5bq/pu22650.b5bq/VASAE_out/eval_sae_features_smoke/gpt2_L0_soft_n100",
+    "device": "cuda"
+  },
+  "layers": [
+    0
+  ],
+  "n_prompts": 100,
+  "max_length_padded": 256,
+  "vocab_size": 50257,
+  "tokenizer_name": "GPT2Tokenizer",
+  "n_batches": 7,
+  "per_layer": {
+    "0": {
+      "n_features": 50257,
+      "total_records": 295090
+    }
+  },
+  "timestamp_utc": "2026-05-01T13:34:17.436414+00:00"
+}

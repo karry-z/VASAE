@@ -23,7 +23,6 @@ class SAEOutput(ModelOutput):
     sparse_activations: Optional[torch.Tensor] = None
     pre_activations: Optional[torch.Tensor] = None
     loss_per_sample: Optional[torch.Tensor] = None
-    loss_lowrank: Optional[float] = None
     loss_anchor: Optional[torch.Tensor] = None
 
 
@@ -44,8 +43,6 @@ class SAEConfig(PretrainedConfig):
         mse_reduction: str = "mean",  # "mean" or "none" (we still provide loss_per_sample)
         sae_save_path: Path | None = None,
         freeze_decoder: bool = True,
-        use_lowrank: bool = True,
-        lowrank_coeff: float = 0.1,
         use_abs_topk: bool = False,  # use absolute value for topk selection
         anchor_coeff: float = 0.0,  # weak token-anchoring regularizer coefficient
         anchor_mode: str = "hard",  # "hard" | "logsumexp" | "softmax"
@@ -66,8 +63,6 @@ class SAEConfig(PretrainedConfig):
         self.mse_reduction = mse_reduction
         self.sae_save_path = sae_save_path
         self.freeze_decoder = freeze_decoder
-        self.use_lowrank = use_lowrank
-        self.lowrank_coeff = lowrank_coeff
         self.use_abs_topk = bool(use_abs_topk)
         self.anchor_coeff = float(anchor_coeff)
         self.anchor_mode = anchor_mode
@@ -127,14 +122,6 @@ class SAEModel(PreTrainedModel):
             config.dim_sparse, config.dim_model, bias=(not config.tied_decoder)
         )
 
-        if config.use_lowrank:
-            self.decoder_lowrank = nn.Sequential(
-                nn.Linear(config.dim_sparse, config.dim_sparse // 2),
-                nn.Linear(config.dim_sparse // 2, config.dim_model),
-            )
-        else:
-            self.decoder_lowrank = None
-
         # anchor loss
         if config.anchor_coeff > 0:
             self.anchor_loss_fn = AnchorLoss(
@@ -153,11 +140,6 @@ class SAEModel(PreTrainedModel):
             self.decoder.weight.requires_grad_(False)
             if self.decoder.bias is not None:
                 self.decoder.bias.requires_grad_(False)
-
-        if config.use_lowrank:
-            self.learnable_lowrank_coeff = nn.Parameter(torch.randn(config.dim_model))
-        else:
-            self.learnable_lowrank_coeff = None
 
         self.post_init()
 
@@ -197,10 +179,7 @@ class SAEModel(PreTrainedModel):
         return pre, z
 
     def decode(self, z: torch.Tensor) -> torch.Tensor:
-        out = self.decoder(z)
-        if self.config.use_lowrank:
-            out += self.config.lowrank_coeff * self.decoder_lowrank(z)
-        return out
+        return self.decoder(z)
 
     def forward(
         self,
@@ -254,6 +233,5 @@ class SAEModel(PreTrainedModel):
             sparse_activations=z,
             pre_activations=(pre if output_pre_activations else None),
             loss_per_sample=(mse_per if output_loss_per_sample else None),
-            loss_lowrank=(None),
             loss_anchor=loss_anchor,
         )
