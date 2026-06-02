@@ -1,0 +1,277 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>VASAE: Vocabulary-Aligned Sparse Autoencoders</title>
+    <meta
+      name="description"
+      content="VASAE aligns learned SAE dictionary directions with token vocabulary geometry while preserving reconstruction quality."
+    >
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Serif:wght@500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="assets/styles.css">
+  </head>
+  <body>
+    <a class="skip-link" href="#top" data-i18n="skip">Skip to main content</a>
+    <header class="site-header">
+      <div class="topbar container">
+        <a class="site-mark" href="#top" aria-label="VASAE home">
+          <span aria-hidden="true">VASAE</span>
+          <span data-i18n="siteMark">Project</span>
+        </a>
+        <div class="language-switch" aria-label="Language">
+          <button class="language-switch__button is-active" type="button" data-lang-switch="en" aria-pressed="true">EN</button>
+          <button class="language-switch__button" type="button" data-lang-switch="zh" aria-pressed="false">中文</button>
+        </div>
+      </div>
+    </header>
+
+    <main id="top">
+      <section class="hero section-band">
+        <div class="hero-copy hero-copy-wide">
+          <p class="meta-line" data-i18n="hero.meta">Preprint version · SAE feature naming · Token-aligned dictionaries</p>
+          <h1 data-i18n="hero.title">VASAE: Vocabulary-Aligned Sparse Autoencoders</h1>
+          <p class="authors" data-i18n="hero.authors">Kairui Zhang · VASAE project</p>
+          <p class="lead">
+            <span data-i18n="hero.lead">Use VASAE when citing training-time SAE feature naming via vocabulary-aligned dictionary directions. The method keeps SAE dictionary directions learnable, anchors them to fixed token embeddings, and names aligned features by nearest-token lookup.</span>
+          </p>
+          <div class="button-row resource-row">
+            <a class="button resource-button primary" href="#citation"><span class="button-prefix">PDF</span><span data-i18n="cta.read">Read Preprint</span></a>
+            <button class="button resource-button" type="button" data-copy-bibtex><span class="button-prefix">BIB</span><span data-copy-label data-i18n="cta.copy">Copy BibTeX</span></button>
+            <a class="button resource-button" href="#gallery"><span class="button-prefix">MAP</span><span data-i18n="cta.explore">Explore Examples</span></a>
+            <a class="button resource-button" href="#figures"><span class="button-prefix">FIG</span><span data-i18n="cta.figures">View Figures</span></a>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="why-vasae">
+        <div class="section-heading">
+          <p class="eyebrow" data-i18n="why.eyebrow">Why VASAE?</p>
+          <h2 data-i18n="why.title">SAEs learn useful directions, but naming those directions is usually a separate step.</h2>
+        </div>
+        <div class="two-column">
+          <p data-i18n="why.p1">Standard sparse autoencoders decompose residual-stream activations into sparse feature directions. Those directions are usually named after training by inspecting top-activating contexts or using automated explanation tools.</p>
+          <p data-i18n="why.p2">VASAE turns feature naming into a reconstruction-preserving geometric alignment problem: keep the dictionary learnable, but pull feature directions toward fixed token-embedding anchors.</p>
+        </div>
+        <p class="claim-note" data-i18n="why.scope">Scope: an intrinsic token name is the nearest vocabulary anchor for a learned dictionary direction. It is not a full semantic explanation or a causal claim.</p>
+      </section>
+
+      <section class="section section-tinted" id="method">
+        <div class="section-heading">
+          <p class="eyebrow" data-i18n="method.eyebrow">Method in one picture</p>
+          <h2 data-i18n="method.title">Keep the SAE useful for reconstruction, then attach vocabulary names geometrically.</h2>
+        </div>
+        <div class="method-grid">
+          <article class="method-lane">
+            <h3 data-i18n="method.standard">Standard SAE</h3>
+            <ol class="flow-list">
+              <li data-i18n="flow.residual">Residual stream</li>
+              <li data-i18n="flow.code">Sparse code</li>
+              <li data-i18n="flow.direction">Learned dictionary direction</li>
+              <li data-i18n="flow.posthoc">Post-hoc feature name</li>
+            </ol>
+          </article>
+          <article class="method-lane emphasized">
+            <h3>VASAE</h3>
+            <ol class="flow-list">
+              <li data-i18n="flow.residual">Residual stream</li>
+              <li data-i18n="flow.code">Sparse code</li>
+              <li data-i18n="flow.direction">Learned dictionary direction</li>
+              <li data-i18n="flow.nearest">Nearest token embedding</li>
+              <li data-i18n="flow.name">Intrinsic token name</li>
+            </ol>
+          </article>
+        </div>
+        <p class="callout" data-i18n="method.callout">The decoder remains learnable. Token embeddings act as fixed vocabulary anchors, not as frozen decoder features. This matters because the hard-tied decoder baseline loses reconstruction quality.</p>
+      </section>
+
+      <section class="section" id="why-cite">
+        <div class="section-heading">
+          <p class="eyebrow" data-i18n="contrib.eyebrow">What VASAE gives you</p>
+          <h2 data-i18n="contrib.title">VASAE gives a concrete training-time alternative to post-hoc SAE feature naming.</h2>
+        </div>
+        <div class="result-grid">
+          <article class="result-card">
+            <span class="tag" data-i18n="contrib.scope.kicker">Scope</span>
+            <h3 data-i18n="contrib.scope.title">Training-time SAE feature naming.</h3>
+            <p data-i18n="contrib.scope.body">We study whether learned SAE dictionary directions can receive intrinsic nearest-token names during training rather than only after inspection.</p>
+          </article>
+          <article class="result-card">
+            <span class="tag" data-i18n="contrib.mechanism.kicker">Mechanism</span>
+            <h3 data-i18n="contrib.mechanism.title">Soft vocabulary anchoring.</h3>
+            <p data-i18n="contrib.mechanism.body">The decoder remains learnable. A soft anchor objective pulls dictionary directions toward fixed token embeddings without freezing the decoder to the vocabulary matrix.</p>
+          </article>
+          <article class="result-card">
+            <span class="tag" data-i18n="contrib.evidence.kicker">Evidence</span>
+            <h3 data-i18n="contrib.evidence.title">Preserved reconstruction, bounded alignment.</h3>
+            <p data-i18n="contrib.evidence.body">VASAE-Soft preserves reconstruction in the reported runs. GPT-2 alignment is strong through most layers; Llama alignment is stronger in shallow layers than final layers.</p>
+          </article>
+        </div>
+
+        <div class="evidence-strip" aria-label="Evidence highlights">
+          <div><strong>0.965</strong><span data-i18n="metric.reconstruction">GPT-2 VASAE-Soft variance explained</span></div>
+          <div><strong>89-94%</strong><span data-i18n="metric.gpt2">GPT-2 L0-L10 features with s_i >= 0.8</span></div>
+          <div><strong>92.8%</strong><span data-i18n="metric.llama">Llama L0 alignment at lambda=5e-3</span></div>
+        </div>
+
+      </section>
+
+      <section class="section section-tinted" id="gallery">
+        <div class="section-heading">
+          <p class="eyebrow" data-i18n="explore.eyebrow">Explore VASAE</p>
+          <h2 data-i18n="explore.title">Find the evidence you can cite.</h2>
+          <p data-i18n="explore.lead">Each figure shows the top aligned feature token selected at each token position after sentence-level sparse-code centering. The point is not that every token is explained; the point is that dictionary directions can acquire checkable vocabulary anchors.</p>
+        </div>
+
+        <article class="featured-example">
+          <div class="featured-copy">
+            <span class="tag" data-i18n="featured.kicker">Featured clear case</span>
+            <h3 data-i18n="featured.title">Location words around Baker Street</h3>
+            <p data-i18n="featured.body">In the GPT-2 `place_street` example, token names such as street and location-related words appear around `Baker Street`, `located`, and nearby place phrases.</p>
+            <p data-i18n="featured.note">What to look for: local clusters of readable token names, not a sentence-level proof that the model causally uses the named concept.</p>
+          </div>
+          <img src="assets/cases/gpt2/logitlens_place_street.png" alt="GPT-2 place street feature-token case study">
+        </article>
+
+        <form class="gallery-controls" aria-label="Feature gallery filters" autocomplete="off">
+          <label>
+            <span data-i18n="filter.view">View</span>
+            <select id="view-filter">
+              <option value="curated" data-i18n="filter.representative">Representative cases</option>
+              <option value="all" data-i18n="filter.allCases">All cases</option>
+            </select>
+          </label>
+          <label>
+            <span data-i18n="filter.model">Model</span>
+            <select id="model-filter">
+              <option value="all" data-i18n="filter.allModels">All models</option>
+              <option value="gpt2">GPT-2-small</option>
+              <option value="llama_5e-3">Llama-3.1-8B</option>
+            </select>
+          </label>
+          <label>
+            <span data-i18n="filter.caseType">Case type</span>
+            <select id="type-filter">
+              <option value="all" data-i18n="filter.allCases">All cases</option>
+              <option value="clear" data-i18n="filter.clear">Clear</option>
+              <option value="ambiguous" data-i18n="filter.ambiguous">Ambiguous</option>
+              <option value="boundary" data-i18n="filter.boundary">Boundary</option>
+            </select>
+          </label>
+          <label>
+            <span data-i18n="filter.topic">Topic</span>
+            <select id="group-filter">
+              <option value="all" data-i18n="filter.allTopics">All topics</option>
+            </select>
+          </label>
+          <button class="button compact" type="button" id="reset-gallery" data-i18n="filter.reset">Reset</button>
+        </form>
+
+        <p class="gallery-count" id="gallery-count" aria-live="polite"></p>
+        <div class="gallery-grid" id="gallery-grid"></div>
+      </section>
+
+      <section class="section" id="figures">
+        <div class="section-heading">
+          <p class="eyebrow" data-i18n="figures.eyebrow">Figures from the paper</p>
+          <h2 data-i18n="figures.title">Visual anchors for the VASAE claim.</h2>
+          <p data-i18n="figures.lead">The figure set keeps each plot to one takeaway so the page supports navigation instead of repeating the full paper.</p>
+        </div>
+        <div class="figure-anchor-grid">
+          <article class="figure-anchor">
+            <img src="assets/figures/gpt2/fig_overall_distribution.png" alt="GPT-2 feature-token alignment distribution">
+            <div>
+              <h3 data-i18n="figure.align.title">Alignment distribution</h3>
+              <p data-i18n="figure.align.body">GPT-2 VASAE-Soft shifts many dictionary directions above the strong token-alignment threshold.</p>
+              <a href="assets/figures/gpt2/fig_overall_distribution.png" data-i18n="figure.view">View</a>
+            </div>
+          </article>
+          <article class="figure-anchor">
+            <img src="assets/figures/llama_5e-3/fig_layer_boxplots.png" alt="Llama layer-wise alignment boxplots at lambda 5e-3">
+            <div>
+              <h3 data-i18n="figure.layer.title">Layer boundary</h3>
+              <p data-i18n="figure.layer.body">Llama-3.1-8B shows strong shallow-layer alignment but unstable final-layer alignment.</p>
+              <a href="assets/figures/llama_5e-3/fig_layer_boxplots.png" data-i18n="figure.view">View</a>
+            </div>
+          </article>
+          <article class="figure-anchor">
+            <img src="assets/cases/gpt2/logitlens_place_street.png" alt="GPT-2 place street feature-token case study">
+            <div>
+              <h3 data-i18n="figure.examples.title">Feature examples</h3>
+              <p data-i18n="figure.examples.body">Case-study heatmaps let readers inspect nearest-token names in context.</p>
+              <a href="#gallery" data-i18n="figure.explore">Explore map</a>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <section class="section" id="describe">
+        <div class="section-heading">
+          <p class="eyebrow" data-i18n="describe.eyebrow">How to describe VASAE</p>
+          <h2 data-i18n="describe.title">A short description researchers can reuse.</h2>
+        </div>
+        <div class="description-grid">
+          <article class="quote-card">
+            <h3 data-i18n="describe.short.title">One-sentence description</h3>
+            <p data-i18n="describe.short.body">VASAE trains sparse autoencoder dictionary directions with a soft vocabulary-anchor objective, producing nearest-token names for many learned features while preserving reconstruction quality.</p>
+          </article>
+          <article class="quote-card">
+            <h3 data-i18n="describe.cite.title">Cite VASAE when discussing</h3>
+            <ul class="plain-list">
+              <li data-i18n="describe.cite.1">SAE feature naming.</li>
+              <li data-i18n="describe.cite.2">Vocabulary-aligned dictionary learning.</li>
+              <li data-i18n="describe.cite.3">Training-time alternatives to post-hoc feature interpretation.</li>
+              <li data-i18n="describe.cite.4">Geometric interfaces between residual-stream features and token embeddings.</li>
+            </ul>
+          </article>
+        </div>
+      </section>
+
+      <section class="section" id="boundary">
+        <div class="section-heading">
+          <p class="eyebrow" data-i18n="boundary.eyebrow">Claim Boundary</p>
+          <h2 data-i18n="boundary.title">An intrinsic token name is a geometric anchor.</h2>
+        </div>
+        <div class="boundary-grid">
+          <article>
+            <h3 data-i18n="boundary.means.title">What it means</h3>
+            <p data-i18n="boundary.means.body">The intrinsic token name is the token whose embedding is nearest to a learned SAE dictionary direction. It is a vocabulary-level geometric label.</p>
+          </article>
+          <article>
+            <h3 data-i18n="boundary.not.title">What it does not mean</h3>
+            <ul class="plain-list">
+              <li data-i18n="boundary.not.1">Not a complete semantic explanation of the feature.</li>
+              <li data-i18n="boundary.not.2">Not evidence that the feature causally controls the named token.</li>
+              <li data-i18n="boundary.not.3">Not a guarantee that every activating context uses the named concept.</li>
+              <li data-i18n="boundary.not.4">Not a one-to-one mapping; multiple features can share the same token name.</li>
+            </ul>
+          </article>
+        </div>
+      </section>
+
+      <section class="section section-tinted" id="citation">
+        <div class="section-heading">
+          <p class="eyebrow" data-i18n="citation.eyebrow">Citation</p>
+          <h2 data-i18n="citation.title">Cite VASAE.</h2>
+          <p data-i18n="citation.lead">If VASAE helps you discuss SAE feature naming, vocabulary-aligned dictionary learning, or alternatives to post-hoc interpretation, please cite the preprint version below.</p>
+        </div>
+        <pre class="bibtex" id="bibtex">@misc{vasae2025,
+  title  = {VASAE: Vocabulary-Aligned Sparse Autoencoders},
+  author = {VASAE authors},
+  year   = {2025},
+  url    = {https://github.com/karry-z/VASAE}
+}</pre>
+        <button class="button primary" type="button" data-copy-bibtex><span data-copy-label data-i18n="citation.copy">Copy BibTeX</span></button>
+        <p class="fine-print" data-i18n="citation.note">Citation metadata will be updated after the formal version is available.</p>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <span>VASAE</span>
+      <span data-i18n="footer.tagline">Reconstruction-preserving geometric token alignment for SAE dictionary directions.</span>
+    </footer>
+
+    <script src="assets/gallery-data.js"></script>
+    <script src="assets/site.js"></script>
+  </body>
+</html>

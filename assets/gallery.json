@@ -1,0 +1,320 @@
+{
+  "generatedFrom": [
+    "exp/F002_AlignmentAnalysis/casestudy/gpt2/manifest.json",
+    "exp/F002_AlignmentAnalysis/casestudy/llama_5e-3/manifest.json"
+  ],
+  "items": [
+    {
+      "slug": "names_townsend",
+      "model": "gpt2",
+      "modelLabel": "GPT-2-small",
+      "caseType": "clear",
+      "group": "Names / music",
+      "title": "Names Townsend",
+      "text": "Pete Townsend, the legendary guitarist of The Who, walked down the street",
+      "layers": [
+        0,
+        2,
+        4,
+        6,
+        8,
+        10
+      ],
+      "tokensShown": 12,
+      "image": "assets/cases/gpt2/logitlens_names_townsend.png",
+      "note": "Theme tokens around Townsend, guitar, and The Who are visible in early and middle layers.",
+      "modelNote": "L0-L10: 89-94% aligned; L11 drops to 68.5%."
+    },
+    {
+      "slug": "names_fey",
+      "model": "gpt2",
+      "modelLabel": "GPT-2-small",
+      "caseType": "clear",
+      "group": "Awards / people",
+      "title": "Names Fey",
+      "text": "Tina Fey hosted the awards ceremony alongside her longtime collaborator",
+      "layers": [
+        0,
+        2,
+        4,
+        6,
+        8,
+        10
+      ],
+      "tokensShown": 11,
+      "image": "assets/cases/gpt2/logitlens_names_fey.png",
+      "note": "Award and ceremony tokens appear near the celebrity-name context.",
+      "modelNote": "L0-L10: 89-94% aligned; L11 drops to 68.5%."
+    },
+    {
+      "slug": "names_nicole",
+      "model": "gpt2",
+      "modelLabel": "GPT-2-small",
+      "caseType": "clear",
+      "group": "Awards / events",
+      "title": "Names Nicole",
+      "text": "Nicole Kidman accepted the award and thanked her family and friends",
+      "layers": [
+        0,
+        2,
+        4,
+        6,
+        8,
+        10
+      ],
+      "tokensShown": 12,
+      "image": "assets/cases/gpt2/logitlens_names_nicole.png",
+      "note": "Award, acceptance, and family-related tokens appear in the event template.",
+      "modelNote": "L0-L10: 89-94% aligned; L11 drops to 68.5%."
+    },
+    {
+      "slug": "morph_ible",
+      "model": "gpt2",
+      "modelLabel": "GPT-2-small",
+      "caseType": "ambiguous",
+      "group": "Morphology",
+      "title": "Morph Ible",
+      "text": "The proposal was perfectly feasible, entirely sensible, and quite reasonable",
+      "layers": [
+        0,
+        2,
+        4,
+        6,
+        8,
+        10
+      ],
+      "tokensShown": 12,
+      "image": "assets/cases/gpt2/logitlens_morph_ible.png",
+      "note": "Adjective and adverb patterns are visible, but token names are less cleanly semantic.",
+      "modelNote": "L0-L10: 89-94% aligned; L11 drops to 68.5%."
+    },
+    {
+      "slug": "place_street",
+      "model": "gpt2",
+      "modelLabel": "GPT-2-small",
+      "caseType": "clear",
+      "group": "Location",
+      "title": "Place Street",
+      "text": "The cafe is located on Baker Street, just around the corner from the avenue",
+      "layers": [
+        0,
+        2,
+        4,
+        6,
+        8,
+        10
+      ],
+      "tokensShown": 12,
+      "image": "assets/cases/gpt2/logitlens_place_street.png",
+      "note": "Street and place-related names are the clearest local correspondence.",
+      "modelNote": "L0-L10: 89-94% aligned; L11 drops to 68.5%."
+    },
+    {
+      "slug": "self_intro",
+      "model": "gpt2",
+      "modelLabel": "GPT-2-small",
+      "caseType": "clear",
+      "group": "Template",
+      "title": "Self Intro",
+      "text": "my name is Bryan, I am a huge fan of yours. I was always very impressed with you",
+      "layers": [
+        0,
+        2,
+        4,
+        6,
+        8,
+        10
+      ],
+      "tokensShown": 12,
+      "image": "assets/cases/gpt2/logitlens_self_intro.png",
+      "note": "Name, first-person, and fan-template words appear in shallow layers.",
+      "modelNote": "L0-L10: 89-94% aligned; L11 drops to 68.5%."
+    },
+    {
+      "slug": "factual_einstein",
+      "model": "gpt2",
+      "modelLabel": "GPT-2-small",
+      "caseType": "ambiguous",
+      "group": "Facts",
+      "title": "Factual Einstein",
+      "text": "Albert Einstein was born in the year 1879 in the city of Ulm in the country of",
+      "layers": [
+        0,
+        2,
+        4,
+        6,
+        8,
+        10
+      ],
+      "tokensShown": 12,
+      "image": "assets/cases/gpt2/logitlens_factual_einstein.png",
+      "note": "Entity and fact tokens are partly readable, but this is not a factual-recall claim.",
+      "modelNote": "L0-L10: 89-94% aligned; L11 drops to 68.5%."
+    },
+    {
+      "slug": "ioi_simple",
+      "model": "gpt2",
+      "modelLabel": "GPT-2-small",
+      "caseType": "boundary",
+      "group": "IOI / relation",
+      "title": "Ioi Simple",
+      "text": "When John and Mary went to the store, John gave a drink to",
+      "layers": [
+        0,
+        2,
+        4,
+        6,
+        8,
+        10
+      ],
+      "tokensShown": 12,
+      "image": "assets/cases/gpt2/logitlens_ioi_simple.png",
+      "note": "Entity and place cues appear, but role binding is not stable enough for an IOI claim.",
+      "modelNote": "L0-L10: 89-94% aligned; L11 drops to 68.5%."
+    },
+    {
+      "slug": "names_townsend",
+      "model": "llama_5e-3",
+      "modelLabel": "Llama-3.1-8B",
+      "caseType": "boundary",
+      "group": "Names / music",
+      "title": "Names Townsend",
+      "text": "Pete Townsend, the legendary guitarist of The Who, walked down the street",
+      "layers": [
+        0,
+        15,
+        31
+      ],
+      "tokensShown": 12,
+      "image": "assets/cases/llama_5e-3/logitlens_names_townsend.png",
+      "note": "Theme tokens around Townsend, guitar, and The Who are visible in early and middle layers. Llama examples are shown as boundary cases because final-layer alignment is unstable.",
+      "modelNote": "lambda=5e-3: L0 92.8%, L15 60.67%, L31 0% aligned."
+    },
+    {
+      "slug": "names_fey",
+      "model": "llama_5e-3",
+      "modelLabel": "Llama-3.1-8B",
+      "caseType": "boundary",
+      "group": "Awards / people",
+      "title": "Names Fey",
+      "text": "Tina Fey hosted the awards ceremony alongside her longtime collaborator",
+      "layers": [
+        0,
+        15,
+        31
+      ],
+      "tokensShown": 12,
+      "image": "assets/cases/llama_5e-3/logitlens_names_fey.png",
+      "note": "Award and ceremony tokens appear near the celebrity-name context. Llama examples are shown as boundary cases because final-layer alignment is unstable.",
+      "modelNote": "lambda=5e-3: L0 92.8%, L15 60.67%, L31 0% aligned."
+    },
+    {
+      "slug": "names_nicole",
+      "model": "llama_5e-3",
+      "modelLabel": "Llama-3.1-8B",
+      "caseType": "boundary",
+      "group": "Awards / events",
+      "title": "Names Nicole",
+      "text": "Nicole Kidman accepted the award and thanked her family and friends",
+      "layers": [
+        0,
+        15,
+        31
+      ],
+      "tokensShown": 12,
+      "image": "assets/cases/llama_5e-3/logitlens_names_nicole.png",
+      "note": "Award, acceptance, and family-related tokens appear in the event template. Llama examples are shown as boundary cases because final-layer alignment is unstable.",
+      "modelNote": "lambda=5e-3: L0 92.8%, L15 60.67%, L31 0% aligned."
+    },
+    {
+      "slug": "morph_ible",
+      "model": "llama_5e-3",
+      "modelLabel": "Llama-3.1-8B",
+      "caseType": "boundary",
+      "group": "Morphology",
+      "title": "Morph Ible",
+      "text": "The proposal was perfectly feasible, entirely sensible, and quite reasonable",
+      "layers": [
+        0,
+        15,
+        31
+      ],
+      "tokensShown": 12,
+      "image": "assets/cases/llama_5e-3/logitlens_morph_ible.png",
+      "note": "Adjective and adverb patterns are visible, but token names are less cleanly semantic. Llama examples are shown as boundary cases because final-layer alignment is unstable.",
+      "modelNote": "lambda=5e-3: L0 92.8%, L15 60.67%, L31 0% aligned."
+    },
+    {
+      "slug": "place_street",
+      "model": "llama_5e-3",
+      "modelLabel": "Llama-3.1-8B",
+      "caseType": "boundary",
+      "group": "Location",
+      "title": "Place Street",
+      "text": "The cafe is located on Baker Street, just around the corner from the avenue",
+      "layers": [
+        0,
+        15,
+        31
+      ],
+      "tokensShown": 12,
+      "image": "assets/cases/llama_5e-3/logitlens_place_street.png",
+      "note": "Street and place-related names are the clearest local correspondence. Llama examples are shown as boundary cases because final-layer alignment is unstable.",
+      "modelNote": "lambda=5e-3: L0 92.8%, L15 60.67%, L31 0% aligned."
+    },
+    {
+      "slug": "self_intro",
+      "model": "llama_5e-3",
+      "modelLabel": "Llama-3.1-8B",
+      "caseType": "boundary",
+      "group": "Template",
+      "title": "Self Intro",
+      "text": "my name is Bryan, I am a huge fan of yours. I was always very impressed with you",
+      "layers": [
+        0,
+        15,
+        31
+      ],
+      "tokensShown": 12,
+      "image": "assets/cases/llama_5e-3/logitlens_self_intro.png",
+      "note": "Name, first-person, and fan-template words appear in shallow layers. Llama examples are shown as boundary cases because final-layer alignment is unstable.",
+      "modelNote": "lambda=5e-3: L0 92.8%, L15 60.67%, L31 0% aligned."
+    },
+    {
+      "slug": "factual_einstein",
+      "model": "llama_5e-3",
+      "modelLabel": "Llama-3.1-8B",
+      "caseType": "boundary",
+      "group": "Facts",
+      "title": "Factual Einstein",
+      "text": "Albert Einstein was born in the year 1879 in the city of Ulm in the country of",
+      "layers": [
+        0,
+        15,
+        31
+      ],
+      "tokensShown": 12,
+      "image": "assets/cases/llama_5e-3/logitlens_factual_einstein.png",
+      "note": "Entity and fact tokens are partly readable, but this is not a factual-recall claim. Llama examples are shown as boundary cases because final-layer alignment is unstable.",
+      "modelNote": "lambda=5e-3: L0 92.8%, L15 60.67%, L31 0% aligned."
+    },
+    {
+      "slug": "ioi_simple",
+      "model": "llama_5e-3",
+      "modelLabel": "Llama-3.1-8B",
+      "caseType": "boundary",
+      "group": "IOI / relation",
+      "title": "Ioi Simple",
+      "text": "When John and Mary went to the store, John gave a drink to",
+      "layers": [
+        0,
+        15,
+        31
+      ],
+      "tokensShown": 12,
+      "image": "assets/cases/llama_5e-3/logitlens_ioi_simple.png",
+      "note": "Entity and place cues appear, but role binding is not stable enough for an IOI claim. Llama examples are shown as boundary cases because final-layer alignment is unstable.",
+      "modelNote": "lambda=5e-3: L0 92.8%, L15 60.67%, L31 0% aligned."
+    }
+  ]
+}
