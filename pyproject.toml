@@ -1,53 +1,20 @@
 [project]
 name = "vasae"
 version = "0.1.0"
-description = "vocab-aligned sae"
+description = "Sparse autoencoders with vocabulary-anchor regularization"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
-    "accelerate>=1.13.0",
-    "bert-score>=0.3.13",
     "datasets>=4.6.1",
-    "evaluate>=0.4.6",
-    "scipy>=1.17.1",
-    "torch>=2.10.0",
-    "torchvision>=0.25.0",
-    "transformers>=5.3.0",
     "nnsight>=0.4",
-    "wandb>=0.19.0",
-    "matplotlib>=3.10.0",
-    "Pillow>=11.0.0",
-    "scikit-learn>=1.6.0",
+    "numpy>=2.0",
+    "torch>=2.10.0",
+    "transformers>=5.3.0",
 ]
-
-[project.optional-dependencies]
-test = [
-    "pytest>=8.0",
-]
-
-
-[[tool.uv.index]]
-name = "pytorch-cu128"
-url = "https://download.pytorch.org/whl/cu128"
-explicit = true
-
-[tool.uv.sources]
-torch = { index = "pytorch-cu128" }
-torchvision = { index = "pytorch-cu128" }
-torchaudio = { index = "pytorch-cu128" }
-
 
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
-
-[dependency-groups]
-dev = [
-    "pytest>=9.0.2",
-]
-
-[tool.pytest.ini_options]
-testpaths = ["tests"]
 
 [tool.hatch.build.targets.wheel]
 only-include = ["src"]
