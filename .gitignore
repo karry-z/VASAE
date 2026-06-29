@@ -1,11 +1,20 @@
+*.log
 __pycache__/
 jobs/
+log/
 logs/
 out/
+outputs/
+VASAE_out/
+.data_cache/
+*.pt
+*.pth
+*.safetensors
 *.egg-info
 launch.json
 wandb/
+.ipynb_checkpoints/
+notebooks/
 # when release, open below comments
 # .gitignore
 # .vscode/
-
