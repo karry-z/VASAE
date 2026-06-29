@@ -40,6 +40,9 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--checkpoint", required=True, help="Path to checkpoint.pt or a run directory containing it.")
     parser.add_argument("--model-name", default="gpt2", help="Hugging Face causal LM used for activation extraction.")
     parser.add_argument("--layer-idx", type=int, default=11, help="Transformer layer to evaluate.")
+    parser.add_argument("--dataset", default=DATASET_NAME, help="Hugging Face dataset name.")
+    parser.add_argument("--dataset-config", default=DATASET_CONFIG, help="Hugging Face dataset config.")
+    parser.add_argument("--text-column", default=TEXT_COLUMN, help="Dataset column containing text.")
     parser.add_argument("--max-length", type=int, default=128, help="Tokenization length.")
     parser.add_argument("--samples", type=int, default=1000, help="Evaluation text rows.")
     parser.add_argument("--batch-size", type=int, default=32, help="Text batch size.")
@@ -96,9 +99,15 @@ def load_eval_source(args, device: torch.device, dtype):
     lm.eval()
     nn_model = NNsight(lm)
 
-    LOGGER.info("Loading dataset %s/%s", DATASET_NAME, DATASET_CONFIG)
-    dataset = load_dataset(DATASET_NAME, DATASET_CONFIG, split="train")
-    dataset = dataset.filter(lambda row: isinstance(row[TEXT_COLUMN], str) and row[TEXT_COLUMN].strip() != "")
+    dataset_label = f"{args.dataset}/{args.dataset_config}" if args.dataset_config else args.dataset
+    LOGGER.info("Loading dataset %s", dataset_label)
+    dataset_args = [args.dataset]
+    if args.dataset_config:
+        dataset_args.append(args.dataset_config)
+    dataset = load_dataset(*dataset_args, split="train")
+    if args.text_column not in dataset.column_names:
+        raise ValueError(f"--text-column {args.text_column!r} not found in dataset columns {dataset.column_names}.")
+    dataset = dataset.filter(lambda row: isinstance(row[args.text_column], str) and row[args.text_column].strip() != "")
     dataset = dataset.select(range(min(args.samples, len(dataset))))
 
     source = OnlineActivationSource(
@@ -108,6 +117,7 @@ def load_eval_source(args, device: torch.device, dtype):
         text_dataset=dataset,
         batch_size=args.batch_size,
         max_length=args.max_length,
+        text_column=args.text_column,
     )
     return lm, nn_model, dataset, source
 

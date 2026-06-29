@@ -1,4 +1,4 @@
-"""Train the paper-facing SAE variants from Wikitext activations."""
+"""Train the paper-facing SAE variants from text activations."""
 
 from __future__ import annotations
 
@@ -39,21 +39,32 @@ LOGGER = logging.getLogger("train_vasae")
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description=(
-            "Train the paper SAE baselines on Wikitext-103 activations. "
+            "Train the paper-facing SAE variants on text activations. "
             "The sparse dimension is fixed to the vocabulary size."
         ),
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
+    parser.add_argument("--save-dir", type=Path, default=RUNS_DIR, help="Directory for local run outputs.")
+    parser.add_argument("--exp-name", default=None, help="Run directory name. Defaults to model/layer/method.")
     parser.add_argument("--model-name", default="gpt2", help="Hugging Face causal LM.")
     parser.add_argument("--layer-idx", type=int, default=11, help="Transformer layer to reconstruct.")
     parser.add_argument("--method", choices=METHODS, default="vasae_soft", help="Training method.")
+    parser.add_argument("--dataset", default=DATASET_NAME, help="Hugging Face dataset name.")
+    parser.add_argument("--dataset-config", default=DATASET_CONFIG, help="Hugging Face dataset config.")
+    parser.add_argument("--text-column", default=TEXT_COLUMN, help="Dataset column containing text.")
     parser.add_argument("--max-length", type=int, default=128, help="Tokenization length.")
     parser.add_argument("--train-samples", type=int, default=8000, help="Training text rows.")
     parser.add_argument("--eval-samples", type=int, default=2000, help="Evaluation text rows.")
     parser.add_argument("--test-samples", type=int, default=1000, help="Final test text rows.")
     parser.add_argument("--batch-size", type=int, default=32, help="Text batch size for activation extraction.")
     parser.add_argument("--k", type=int, default=32, help="TopK active features per token.")
-    parser.add_argument("--anchor-coeff", type=float, default=0.1, help="VASAE-soft vocabulary-anchor coefficient.")
+    parser.add_argument(
+        "--anchor-coeff",
+        type=float,
+        default=1e-4,
+        help="VASAE-soft vocabulary-anchor coefficient; 1e-4 is the paper-facing minimal-release default.",
+    )
+    parser.add_argument("--anchor-every", type=int, default=1, help="Apply the anchor loss every N training steps.")
     parser.add_argument("--num-epochs", type=int, default=5, help="Training epochs.")
     parser.add_argument("--lr", type=float, default=1e-3, help="Adam learning rate.")
     parser.add_argument("--device", default="auto", help="'auto', 'cpu', 'cuda', or a torch device string.")
@@ -116,9 +127,15 @@ def load_language_model(args, device: torch.device, dtype):
 
 
 def load_text_splits(args):
-    LOGGER.info("Loading dataset %s/%s", DATASET_NAME, DATASET_CONFIG)
-    dataset = load_dataset(DATASET_NAME, DATASET_CONFIG, split="train")
-    dataset = dataset.filter(lambda row: isinstance(row[TEXT_COLUMN], str) and row[TEXT_COLUMN].strip() != "")
+    dataset_label = f"{args.dataset}/{args.dataset_config}" if args.dataset_config else args.dataset
+    LOGGER.info("Loading dataset %s", dataset_label)
+    dataset_args = [args.dataset]
+    if args.dataset_config:
+        dataset_args.append(args.dataset_config)
+    dataset = load_dataset(*dataset_args, split="train")
+    if args.text_column not in dataset.column_names:
+        raise ValueError(f"--text-column {args.text_column!r} not found in dataset columns {dataset.column_names}.")
+    dataset = dataset.filter(lambda row: isinstance(row[args.text_column], str) and row[args.text_column].strip() != "")
 
     total = len(dataset)
     n_train = min(args.train_samples, total)
@@ -145,6 +162,7 @@ def build_activation_sources(args, model, tokenizer, train_rows, eval_rows, test
             text_dataset=rows,
             batch_size=args.batch_size,
             max_length=args.max_length,
+            text_column=args.text_column,
         )
 
     return source(train_rows), source(eval_rows), source(test_rows)
@@ -163,7 +181,7 @@ def build_sae(args, embedding, device: torch.device) -> tuple[SAEModel, dict]:
             k=args.k,
             decoder_mode=decoder_mode,
             anchor_coeff=anchor_coeff,
-            anchor_every=1,
+            anchor_every=args.anchor_every,
         )
     ).to(device).float()
 
@@ -291,8 +309,8 @@ def main(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
     device, dtype = prepare_runtime(args)
 
-    run_name = f"{args.model_name.replace('/', '_')}_L{args.layer_idx}_{args.method}"
-    output_dir = RUNS_DIR / run_name
+    run_name = args.exp_name or f"{args.model_name.replace('/', '_')}_L{args.layer_idx}_{args.method}"
+    output_dir = args.save_dir / run_name
     output_dir.mkdir(parents=True, exist_ok=True)
 
     lm, tokenizer, _ = load_language_model(args, device, dtype)

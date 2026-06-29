@@ -2,6 +2,8 @@
 
 VASAE trains sparse autoencoders with learnable decoder directions softly anchored to fixed token embeddings. Each feature receives an intrinsic nearest-token name by cosine similarity between its decoder direction and the vocabulary embedding space. These names are geometric labels, not full semantic explanations or causal claims.
 
+This repository is a minimal core implementation release, not a full paper-reproduction package or a general-purpose library.
+
 ## Installation
 
 This project requires Python 3.12 or newer, as specified in `pyproject.toml`.
@@ -20,11 +22,13 @@ Train a plain TopK SAE baseline:
 uv run python scripts/train_vasae.py --method plain
 ```
 
-Train VASAE-soft:
+Train VASAE-soft with the minimal-release default anchor coefficient:
 
 ```bash
-uv run python scripts/train_vasae.py --method vasae_soft --anchor-coeff 0.1
+uv run python scripts/train_vasae.py --method vasae_soft --anchor-coeff 1e-4
 ```
+
+`1e-4` is the paper-facing default for this minimal release. It is not a claim of universal optimality.
 
 Evaluate reconstruction metrics for a saved run:
 
@@ -61,7 +65,7 @@ src/vasae/
 
 ## Reproduction Boundary
 
-This release keeps the core implementation and command-line entry points only. It does not track experiment results, generated summaries, paper figures, notebooks, or plotting programs. Local runs write checkpoints and metrics under ignored output directories such as `outputs/runs`.
+This release keeps the core implementation and command-line entry points only. It does not track experiment results, generated summaries, notebooks, or plotting programs. Local runs write checkpoints and metrics under ignored local output directories such as `outputs/runs`.
 
 ## Limitations
 
@@ -69,4 +73,10 @@ Nearest-token names are not semantic explanations, not causal evidence, and not 
 
 ## Citation
 
-No citation metadata has been specified in this repository.
+```bibtex
+@inproceedings{zhang2026vasae,
+  title={VASAE: Naming SAE Dictionary Directions with Vocabulary-Aligned Anchoring},
+  author={Zhang, Kairui and Yu, Ziwen and Abdallah, Zahraa S and Lewis, Martha},
+  booktitle={Mechanistic Interpretability Workshop at ICML 2026}
+}
+```
