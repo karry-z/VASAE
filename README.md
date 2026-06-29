@@ -10,13 +10,6 @@ This project requires Python 3.12 or newer, as specified in `pyproject.toml`.
 uv sync
 ```
 
-Optional extras:
-
-```bash
-uv sync --extra wandb
-uv sync --extra test
-```
-
 No license has been specified for this repository.
 
 ## Minimal Usage
@@ -24,13 +17,13 @@ No license has been specified for this repository.
 Train a plain TopK SAE baseline:
 
 ```bash
-uv run python scripts/train_vasae.py --method plain --save-dir outputs/runs
+uv run python scripts/train_vasae.py --method plain
 ```
 
 Train VASAE-soft:
 
 ```bash
-uv run python scripts/train_vasae.py --method vasae_soft --anchor-coeff 0.1 --save-dir outputs/runs
+uv run python scripts/train_vasae.py --method vasae_soft --anchor-coeff 0.1
 ```
 
 Evaluate reconstruction metrics for a saved run:
@@ -58,7 +51,12 @@ Nearest-token names are assigned from decoder geometry. They should be read as v
 ```text
 scripts/
 src/vasae/
-tests/
+  analysis.py
+  data.py
+  engine.py
+  metrics.py
+  models.py
+  utils.py
 ```
 
 ## Reproduction Boundary

@@ -12,25 +12,9 @@ dependencies = [
     "transformers>=5.3.0",
 ]
 
-[project.optional-dependencies]
-test = [
-    "pytest>=8.0",
-]
-wandb = [
-    "wandb>=0.19.0",
-]
-
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
-
-[dependency-groups]
-dev = [
-    "pytest>=8.0",
-]
-
-[tool.pytest.ini_options]
-testpaths = ["tests"]
 
 [tool.hatch.build.targets.wheel]
 only-include = ["src"]
