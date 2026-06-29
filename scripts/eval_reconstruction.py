@@ -216,8 +216,11 @@ def main(argv: list[str] | None = None) -> int:
             update_reconstruction_sums(sums, activations, reconstruction)
 
             if lm_head is not None:
-                original_ids = lm_head(activations).argmax(dim=-1)
-                recon_ids = lm_head(reconstruction).argmax(dim=-1)
+                head_weight = getattr(lm_head, "weight", None)
+                head_device = head_weight.device if head_weight is not None else device
+                head_dtype = head_weight.dtype if head_weight is not None else activations.dtype
+                original_ids = lm_head(activations.to(device=head_device, dtype=head_dtype)).argmax(dim=-1)
+                recon_ids = lm_head(reconstruction.to(device=head_device, dtype=head_dtype)).argmax(dim=-1)
                 logit_lens_correct += (original_ids == recon_ids).sum().item()
                 logit_lens_total += original_ids.numel()
 

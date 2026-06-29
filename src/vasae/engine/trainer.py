@@ -97,7 +97,7 @@ class Trainer:
                     parts.append(f"{k}={v:.4f}")
                 self.logger.info("[Train] " + " | ".join(parts))
 
-            if max_batches > 0 and batch_i >= max_batches:
+            if max_batches > 0 and (batch_i + 1) >= max_batches:
                 break
 
         return aggregator.compute()
@@ -147,7 +147,7 @@ class Trainer:
             if log_every > 0 and self.logger is not None and (batch_i + 1) % log_every == 0:
                 self.logger.info(f"[Eval] batch {batch_i + 1}/{n_total}")
 
-            if max_batches > 0 and batch_i >= max_batches:
+            if max_batches > 0 and (batch_i + 1) >= max_batches:
                 break
 
         if self.logger is not None:

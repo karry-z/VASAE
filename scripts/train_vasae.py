@@ -61,7 +61,13 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--dtype", choices=("float16", "bfloat16", "float32"), default=None, help="Language-model dtype.")
     parser.add_argument("--save-dir", default="experiments/paper/runs", help="Directory for run outputs.")
     parser.add_argument("--exp-name", default=None, help="Experiment subdirectory name.")
-    parser.add_argument("--no-wandb", action="store_true", help="Disable Weights & Biases logging.")
+    wandb_group = parser.add_mutually_exclusive_group()
+    wandb_group.add_argument("--wandb", action="store_true", help="Enable Weights & Biases logging.")
+    wandb_group.add_argument(
+        "--no-wandb",
+        action="store_true",
+        help="Compatibility flag; W&B is disabled by default unless --wandb is passed.",
+    )
     return parser
 
 
@@ -358,10 +364,13 @@ def main(argv: list[str] | None = None) -> int:
     )
 
     wandb_run = None
-    if not args.no_wandb:
-        import wandb
-
-        wandb_run = wandb.init(project="VASAE", name=exp_name, config=vars(args))
+    if args.wandb:
+        try:
+            import wandb
+        except ImportError:
+            logger.warning("--wandb was requested but wandb is not installed; continuing without W&B logging.")
+        else:
+            wandb_run = wandb.init(project="VASAE", name=exp_name, config=vars(args))
 
     config_payload = {
         "args": {key: str(value) if isinstance(value, Path) else value for key, value in vars(args).items()},

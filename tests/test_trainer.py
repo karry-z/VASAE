@@ -36,6 +36,17 @@ def _make_online_data_source(n_batches=N_BATCHES):
         }
 
 
+class CountingDataSource:
+    def __init__(self, n_batches):
+        self.n_batches = n_batches
+        self.yielded = 0
+
+    def __iter__(self):
+        for _ in range(self.n_batches):
+            self.yielded += 1
+            yield {"activations": torch.randn(BATCH, SEQ_LEN, DIM_INPUT)}
+
+
 @pytest.fixture
 def trainer():
     cfg = SAEConfig(
@@ -63,9 +74,16 @@ class TestTrainer:
         assert "dummy_metric" in result
 
     def test_train_epoch_max_batches(self, trainer):
-        # With max_batches=1, should only process ~1 batch
-        result = trainer.train_epoch(_make_data_source(10), max_batches=1)
+        source = CountingDataSource(10)
+        result = trainer.train_epoch(source, max_batches=1)
         assert isinstance(result, dict)
+        assert source.yielded == 1
+
+    def test_evaluate_max_batches(self, trainer):
+        source = CountingDataSource(10)
+        result = trainer.evaluate(source, max_batches=1)
+        assert isinstance(result, dict)
+        assert source.yielded == 1
 
     def test_evaluate_returns_dict(self, trainer):
         result = trainer.evaluate(_make_data_source())
