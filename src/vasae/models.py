@@ -149,8 +149,12 @@ class SAEModel(PreTrainedModel):
             )
 
         object.__setattr__(self, "_tied_embedding", embedding)
+        decoder_weight = embedding.weight.T.contiguous().to(
+            device=self.decoder.weight.device,
+            dtype=self.decoder.weight.dtype,
+        )
         self.decoder.weight = nn.Parameter(
-            embedding.weight.T.contiguous(), requires_grad=(not freeze)
+            decoder_weight, requires_grad=(not freeze)
         )
         if self.decoder.bias is not None:
             self.decoder.bias.requires_grad_(not freeze)

@@ -18,6 +18,7 @@ class OnlineActivationSource:
         text_dataset,
         batch_size: int = 32,
         max_length: int = 128,
+        text_column: str = "text",
     ):
         self.model = model
         self.tokenizer = tokenizer
@@ -25,13 +26,14 @@ class OnlineActivationSource:
         self.text_dataset = text_dataset
         self.batch_size = batch_size
         self.max_length = max_length
+        self.text_column = text_column
 
         self.dataloader = DataLoader(
             text_dataset, batch_size=batch_size, shuffle=True, collate_fn=self._collate
         )
 
     def _collate(self, batch):
-        texts = [item["text"] if isinstance(item, dict) else item for item in batch]
+        texts = [item[self.text_column] if isinstance(item, dict) else item for item in batch]
         return self.tokenizer(
             texts,
             return_tensors="pt",

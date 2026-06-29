@@ -27,7 +27,7 @@ def nearest_token_alignment(
 
     k = min(top_k, vocab_embeddings.size(0))
     features = F.normalize(feature_directions, dim=1)
-    vocab = F.normalize(vocab_embeddings.to(features.dtype), dim=1)
+    vocab = F.normalize(vocab_embeddings.to(device=features.device, dtype=features.dtype), dim=1)
 
     all_scores = []
     all_ids = []

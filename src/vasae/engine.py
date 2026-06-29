@@ -62,13 +62,25 @@ def _get_layer_proxy(model: NNsight, layer_idx: int):
     )
 
 
+def _as_hidden_tensor(output: Any) -> torch.Tensor:
+    if isinstance(output, tuple):
+        return output[0]
+    return output
+
+
+def _replace_hidden(output: Any, hidden: torch.Tensor) -> Any:
+    if isinstance(output, tuple):
+        return (hidden, *output[1:])
+    return hidden
+
+
 def extract_activations(
     model: NNsight, input_ids: torch.Tensor, layer_idx: int
 ) -> torch.Tensor:
     """Extract activations from a specific transformer layer."""
     with model.trace(input_ids):
         layer = _get_layer_proxy(model, layer_idx)
-        h = layer.output.save()
+        h = _as_hidden_tensor(layer.output).save()
     return h
 
 
@@ -82,8 +94,9 @@ def patch_and_forward(
     """Patch activations at a specific layer and return final logits."""
     with model.trace(input_ids, attention_mask=attention_mask):
         layer = _get_layer_proxy(model, layer_idx)
-        h = layer.output
-        layer.output = intervention_fn(h)
+        output = layer.output
+        hidden = _as_hidden_tensor(output)
+        layer.output = _replace_hidden(output, intervention_fn(hidden))
         logits = model.output.logits.save()
     return logits
 

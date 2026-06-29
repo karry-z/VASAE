@@ -83,11 +83,13 @@ def load_decoder_and_vocab(checkpoint_path: Path, model_name: str, device: torch
 
 
 def alignment_bucket(score: float) -> str:
-    if score >= 0.40:
+    if score >= 0.8:
         return "strong"
-    if score >= 0.25:
+    if score >= 0.5:
         return "medium"
-    return "weak"
+    if score >= 0.3:
+        return "weak"
+    return "none"
 
 
 def build_alignment_results(args, tokenizer, feature_directions, vocab_embeddings):
@@ -99,7 +101,7 @@ def build_alignment_results(args, tokenizer, feature_directions, vocab_embedding
         chunk_size=args.chunk_size,
     )
 
-    bucket_counts = {"strong": 0, "medium": 0, "weak": 0}
+    bucket_counts = {"strong": 0, "medium": 0, "weak": 0, "none": 0}
     max_scores: list[float] = []
     features = []
     for feature_idx, (ids_row, scores_row) in enumerate(zip(token_ids.cpu().tolist(), scores.cpu().tolist())):
