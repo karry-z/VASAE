@@ -1,4 +1,4 @@
-"""Train the paper-facing SAE variants from text activations."""
+"""Train the paper-facing SAE variants from Wikitext activations."""
 
 from __future__ import annotations
 
@@ -39,7 +39,7 @@ LOGGER = logging.getLogger("train_vasae")
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description=(
-            "Train the paper-facing SAE variants on text activations. "
+            "Train the paper SAE baselines on Wikitext-103 activations. "
             "The sparse dimension is fixed to the vocabulary size."
         ),
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,

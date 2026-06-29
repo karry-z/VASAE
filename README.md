@@ -2,7 +2,6 @@
 
 VASAE trains sparse autoencoders with learnable decoder directions softly anchored to fixed token embeddings. Each feature receives an intrinsic nearest-token name by cosine similarity between its decoder direction and the vocabulary embedding space. These names are geometric labels, not full semantic explanations or causal claims.
 
-This repository is a minimal core implementation release, not a full paper-reproduction package or a general-purpose library.
 
 ## Installation
 
