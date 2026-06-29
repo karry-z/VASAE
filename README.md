@@ -13,7 +13,6 @@ uv sync
 Optional extras:
 
 ```bash
-uv sync --extra figures
 uv sync --extra wandb
 uv sync --extra test
 ```
@@ -25,25 +24,25 @@ No license has been specified for this repository.
 Train a plain TopK SAE baseline:
 
 ```bash
-uv run python scripts/train_vasae.py --method plain --no-wandb --save-dir experiments/paper/runs
+uv run python scripts/train_vasae.py --method plain --save-dir outputs/runs
 ```
 
 Train VASAE-soft:
 
 ```bash
-uv run python scripts/train_vasae.py --method vasae_soft --anchor-coeff 0.1 --no-wandb --save-dir experiments/paper/runs
+uv run python scripts/train_vasae.py --method vasae_soft --anchor-coeff 0.1 --save-dir outputs/runs
 ```
 
 Evaluate reconstruction metrics for a saved run:
 
 ```bash
-uv run python scripts/eval_reconstruction.py --checkpoint experiments/paper/runs/gpt2_L11_vasae_soft
+uv run python scripts/eval_reconstruction.py --checkpoint outputs/runs/gpt2_L11_vasae_soft
 ```
 
 Analyze vocabulary alignment and nearest-token names:
 
 ```bash
-uv run python scripts/analyze_alignment.py --checkpoint experiments/paper/runs/gpt2_L11_vasae_soft --top-k 5
+uv run python scripts/analyze_alignment.py --checkpoint outputs/runs/gpt2_L11_vasae_soft --top-k 5
 ```
 
 ## Method Boundary
@@ -57,22 +56,18 @@ Nearest-token names are assigned from decoder geometry. They should be read as v
 ## Project Structure
 
 ```text
-docs/
-experiments/paper/
 scripts/
 src/vasae/
 tests/
 ```
 
-## Reproducing Paper Results
+## Reproduction Boundary
 
-Cleaned paper-facing summaries and figures are under `experiments/paper/`. Reproduction command templates are in `docs/reproduction.md`.
+This release keeps the core implementation and command-line entry points only. It does not track experiment results, generated summaries, paper figures, notebooks, or plotting programs. Local runs write checkpoints and metrics under ignored output directories such as `outputs/runs`.
 
 ## Limitations
 
 Nearest-token names are not semantic explanations, not causal evidence, and not guaranteed to be context-invariant. They identify nearby vocabulary directions in the embedding space used for anchoring.
-
-See `docs/limitations.md` for the full interpretation boundary.
 
 ## Citation
 

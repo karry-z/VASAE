@@ -13,9 +13,6 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-figures = [
-    "matplotlib>=3.10.0",
-]
 test = [
     "pytest>=8.0",
 ]

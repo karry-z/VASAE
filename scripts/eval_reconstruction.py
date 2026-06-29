@@ -6,7 +6,6 @@ import argparse
 import csv
 import json
 import logging
-import os
 from pathlib import Path
 
 
@@ -43,11 +42,6 @@ def setup_logger() -> logging.Logger:
         datefmt="%Y%m%d %H:%M:%S",
     )
     return logging.getLogger("eval_reconstruction")
-
-
-def quiet_external_progress() -> None:
-    os.environ.setdefault("HF_HUB_DISABLE_PROGRESS_BARS", "1")
-    os.environ.setdefault("TQDM_DISABLE", "1")
 
 
 def checkpoint_file(path: Path) -> Path:
@@ -159,7 +153,6 @@ def write_outputs(output_dir: Path, results: dict) -> None:
 
 def main(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
-    quiet_external_progress()
     logger = setup_logger()
 
     import torch

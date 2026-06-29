@@ -5,7 +5,6 @@ from __future__ import annotations
 import argparse
 import json
 import logging
-import os
 from pathlib import Path
 
 
@@ -31,7 +30,6 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--device", default="auto", help="'auto', 'cpu', 'cuda', or a torch device string.")
     parser.add_argument("--dtype", choices=("float16", "bfloat16", "float32"), default=None, help="Vocabulary embedding dtype.")
     parser.add_argument("--output-dir", default=None, help="Directory for results.json.")
-    parser.add_argument("--save-max-sims", action="store_true", help="Also save max_sims.pt with top cosine similarity per feature.")
     return parser
 
 
@@ -42,11 +40,6 @@ def setup_logger() -> logging.Logger:
         datefmt="%Y%m%d %H:%M:%S",
     )
     return logging.getLogger("analyze_alignment")
-
-
-def quiet_external_progress() -> None:
-    os.environ.setdefault("HF_HUB_DISABLE_PROGRESS_BARS", "1")
-    os.environ.setdefault("TQDM_DISABLE", "1")
 
 
 def checkpoint_file(path: Path) -> Path:
@@ -128,10 +121,8 @@ def summarize(max_scores: list[float]) -> dict:
 
 def main(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
-    quiet_external_progress()
     logger = setup_logger()
 
-    import torch
     import transformers
 
     transformers.logging.set_verbosity_error()
@@ -199,8 +190,6 @@ def main(argv: list[str] | None = None) -> int:
         "features": features,
     }
     (output_dir / "results.json").write_text(json.dumps(results, indent=2, sort_keys=True) + "\n")
-    if args.save_max_sims:
-        torch.save(scores_cpu[:, 0], output_dir / "max_sims.pt")
     logger.info("Saved geometric nearest-token alignment results to %s", output_dir)
     return 0
 

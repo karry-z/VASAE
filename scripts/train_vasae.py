@@ -6,7 +6,6 @@ import argparse
 import csv
 import json
 import logging
-import os
 from pathlib import Path
 
 
@@ -59,7 +58,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--lr", type=float, default=1e-3, help="Adam learning rate.")
     parser.add_argument("--device", default="auto", help="'auto', 'cpu', 'cuda', or a torch device string.")
     parser.add_argument("--dtype", choices=("float16", "bfloat16", "float32"), default=None, help="Language-model dtype.")
-    parser.add_argument("--save-dir", default="experiments/paper/runs", help="Directory for run outputs.")
+    parser.add_argument("--save-dir", default="outputs/runs", help="Directory for run outputs.")
     parser.add_argument("--exp-name", default=None, help="Experiment subdirectory name.")
     wandb_group = parser.add_mutually_exclusive_group()
     wandb_group.add_argument("--wandb", action="store_true", help="Enable Weights & Biases logging.")
@@ -78,11 +77,6 @@ def setup_logger() -> logging.Logger:
         datefmt="%Y%m%d %H:%M:%S",
     )
     return logging.getLogger("train_vasae")
-
-
-def quiet_external_progress() -> None:
-    os.environ.setdefault("HF_HUB_DISABLE_PROGRESS_BARS", "1")
-    os.environ.setdefault("TQDM_DISABLE", "1")
 
 
 def dataset_config_name(value: str | None) -> str | None:
@@ -278,7 +272,6 @@ def compute_feature_stats(sae_model, data_source, device) -> dict:
 
 def main(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
-    quiet_external_progress()
     logger = setup_logger()
 
     import torch
