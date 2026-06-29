@@ -74,9 +74,7 @@ class Trainer:
             aggregator.add(
                 {
                     "loss": output.loss,
-                    "l1_loss": output.l1_loss,
                     "loss_reconst": output.recon_loss,
-                    "loss_lowrank": output.loss_lowrank,
                     "loss_anchor": output.loss_anchor,
                     **eval_outcomes,
                 },
@@ -93,12 +91,8 @@ class Trainer:
                     f"loss={output.loss.item():.4f}",
                     f"recon={output.recon_loss:.4f}",
                 ]
-                if output.loss_anchor:
-                    parts.append(f"anchor={output.loss_anchor:.4f}")
-                if output.loss_lowrank:
-                    parts.append(f"lowrank={output.loss_lowrank:.4f}")
-                if output.l1_loss:
-                    parts.append(f"l1={output.l1_loss:.4f}")
+                if output.loss_anchor is not None:
+                    parts.append(f"anchor={output.loss_anchor.item():.4f}")
                 for k, v in eval_outcomes.items():
                     parts.append(f"{k}={v:.4f}")
                 self.logger.info("[Train] " + " | ".join(parts))
@@ -145,8 +139,6 @@ class Trainer:
                 {
                     "loss": output.loss.detach().cpu().item(),
                     "loss_reconst": output.recon_loss,
-                    "loss_l1": output.l1_loss,
-                    "loss_lowrank": output.loss_lowrank,
                     **eval_outcomes,
                 },
                 activations.size(0),
